@@ -31,7 +31,7 @@ class AppConstants:
     """Application metadata and identification constants."""
 
     APP_ID = "org.leoberbert.zashterminal"
-    APP_TITLE = "Zashterminal"
+    APP_TITLE = "Terminal Zash"
     APP_VERSION = "1.8.4"
     DEVELOPER_NAME = "Leonardo Berbert"
     DEVELOPER_TEAM = ["Leonardo Berbert"]

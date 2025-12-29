@@ -410,7 +410,7 @@ class WindowUIBuilder:
         scroll_controller.connect("scroll", self.window._on_tab_bar_scroll)
         self.scrolled_tab_bar.add_controller(scroll_controller)
 
-        self.single_tab_title_widget = Adw.WindowTitle(title=_("Zashterminal"))
+        self.single_tab_title_widget = Adw.WindowTitle(title=_("Terminal Zash"))
 
         self.title_stack = Gtk.Stack()
         self.title_stack.add_named(self.scrolled_tab_bar, "tabs-view")
