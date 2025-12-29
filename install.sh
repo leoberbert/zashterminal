@@ -104,7 +104,10 @@ echo "Installing zashterminal..."
 yay -S --noconfirm zashterminal
 
 echo "Exporting application to the host..."
-distrobox-export --app zashterminal
+# Clean previous exports to avoid multiple .desktop entries
+distrobox-export --app zashterminal --delete 2>/dev/null || true
+# Export with our icon instead of the distrobox default
+distrobox-export --app zashterminal --icon /usr/share/icons/hicolor/scalable/apps/zashterminal.svg
 INBOX
 }
 
