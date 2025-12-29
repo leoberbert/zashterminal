@@ -127,9 +127,14 @@ for attempt in 1 2 3; do
 done
 
 if [ "$success" -eq 1 ]; then
-  # Remove any generic container launcher; keep only the exported app entry
-  rm -f "$HOME/.local/share/applications/${CONTAINER_NAME}.desktop" 2>/dev/null || true
-  rm -f "$HOME/.local/share/applications/${CONTAINER_NAME}-"*.desktop 2>/dev/null || true
+  # Remove generic container launchers but keep the exported app entry
+  for desktop in "$HOME/.local/share/applications"/${CONTAINER_NAME}*.desktop; do
+    [ -f "$desktop" ] || continue
+    case "$desktop" in
+      *"$DESKTOP_ID"*.desktop) ;; # keep the exported application
+      *) rm -f "$desktop" ;;
+    esac
+  done
   update-desktop-database "$HOME/.local/share/applications" 2>/dev/null || true
   log "Done. You can run '$PACKAGE_NAME' directly on the host."
 else
