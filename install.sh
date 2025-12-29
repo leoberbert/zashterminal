@@ -4,6 +4,7 @@ set -euo pipefail
 
 CONTAINER_NAME="arch-box-zash"
 PACKAGE_NAME="zashterminal"
+DESKTOP_ID="org.leoberbert.zashterminal"
 ARCH_IMAGE="${ARCH_IMAGE:-docker.io/library/archlinux:latest}"
 
 log() { echo -e "[$(date +%H:%M:%S)] $*"; }
@@ -111,7 +112,14 @@ INBOX
 log "Starting automation for $PACKAGE_NAME"
 abort_if_live
 ensure_tools
-rm -f "$HOME/.local/share/applications/"*"$PACKAGE_NAME"*.desktop "$HOME/.local/share/applications/"*"$CONTAINER_NAME"*.desktop
+# Clean old container launchers but keep previously exported app entries
+for desktop in "$HOME/.local/share/applications"/${CONTAINER_NAME}*.desktop; do
+  [ -f "$desktop" ] || continue
+  case "$desktop" in
+    *"$DESKTOP_ID"*.desktop) ;; # keep the exported application if it exists
+    *) rm -f "$desktop" ;;
+  esac
+done
 
 success=0
 for attempt in 1 2 3; do
