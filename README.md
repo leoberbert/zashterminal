@@ -76,24 +76,24 @@ To build and run Zashterm, you will need:
 
 Arch/Manjaro (AUR):
 ```bash
-yay -S zashterm        # ou
-paru -S zashterm
+yay -S zashterminal        # ou
+paru -S zashterminal
 ```
 
 Debian/Ubuntu/Fedora/openSUSE/etc. via Distrobox installer:
 ```bash
 # Quick install (no clone required)
-curl -fsSL https://raw.githubusercontent.com/leoberbert/zashterm/refs/heads/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/leoberbert/zashterminal/refs/heads/main/install.sh | bash
 
 # Alternatively, download and run
-curl -fsSLO https://raw.githubusercontent.com/leoberbert/zashterm/refs/heads/main/install.sh
+curl -fsSLO https://raw.githubusercontent.com/leoberbert/zashterminal/refs/heads/main/install.sh
 bash install.sh
 ```
 
 ## Usage
 
 ```bash
-zashterm [options] [directory]
+zashterminal [options] [directory]
 ```
 
 #### Arguments
@@ -110,21 +110,21 @@ zashterm [options] [directory]
 
 ```bash
 # Open terminal in a specific directory
-zashterm ~/projects
+zashterminal ~/projects
 
 # Execute a command
-zashterm -e htop
+zashterminal -e htop
 
 # SSH connection
-zashterm --ssh user@server.example.com
+zashterminal --ssh user@server.example.com
 
 # Execute command and close after completion
-zashterm --close-after-execute -e "ls -la"
+zashterminal --close-after-execute -e "ls -la"
 ```
 
 ## Configuration
 
-Configuration files are stored in `~/.config/zashterm/`:
+Configuration files are stored in `~/.config/zashterminal/`:
 
 | File/Directory | Description |
 |----------------|-------------|
