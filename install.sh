@@ -71,6 +71,7 @@ create_container() {
 cleanup_container() {
   log "Cleaning up container and exported app..."
   distrobox-export --app "$PACKAGE_NAME" --delete 2>/dev/null || true
+  distrobox-export --bin "$PACKAGE_NAME" --delete 2>/dev/null || true
   distrobox rm --force --name "$CONTAINER_NAME" 2>/dev/null || true
 }
 
@@ -110,6 +111,7 @@ INBOX
 log "Starting automation for $PACKAGE_NAME"
 abort_if_live
 ensure_tools
+rm -f "$HOME/.local/share/applications/"*"$PACKAGE_NAME"*.desktop "$HOME/.local/share/applications/"*"$CONTAINER_NAME"*.desktop
 
 success=0
 for attempt in 1 2 3; do
