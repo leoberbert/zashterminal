@@ -2,9 +2,8 @@
 
 set -euo pipefail
 
-CONTAINER_NAME="arch-zashterminal"
+CONTAINER_NAME="arch-box-zash"
 PACKAGE_NAME="zashterminal"
-DESKTOP_ID="org.leoberbert.zashterminal"
 ARCH_IMAGE="${ARCH_IMAGE:-docker.io/library/archlinux:latest}"
 
 log() { echo -e "[$(date +%H:%M:%S)] $*"; }
@@ -21,17 +20,43 @@ ensure_tools() {
     return
   fi
 
+  # Detect distro (best-effort)
   . /etc/os-release
+  PKG_INSTALL=""
+
   case "${ID_LIKE:-$ID}" in
-    *debian*|*ubuntu*) PKG_INSTALL="sudo apt update && sudo apt install -y podman distrobox" ;;
-    *fedora*|*rhel*|*centos*) PKG_INSTALL="sudo dnf install -y podman distrobox" ;;
-    *suse*) PKG_INSTALL="sudo zypper install -y podman distrobox" ;;
-    *arch*) PKG_INSTALL="sudo pacman -Syu --needed --noconfirm podman distrobox" ;;
-    *) echo "Distro not supported for auto-install."; exit 1 ;;
+    *debian*|*ubuntu*)
+      PKG_INSTALL="sudo apt update && sudo apt install -y podman distrobox"
+      ;;
+    *fedora*|*rhel*|*centos*)
+      PKG_INSTALL="sudo dnf install -y podman distrobox"
+      ;;
+    *suse*)
+      PKG_INSTALL="sudo zypper install -y podman distrobox"
+      ;;
+    *arch*)
+      PKG_INSTALL="sudo pacman -Syu --needed --noconfirm podman distrobox"
+      ;;
+    *)
+      echo "Could not detect the distro to install podman/distrobox."
+      echo "Please install podman and distrobox manually and run this script again."
+      exit 1
+      ;;
   esac
 
-  log "Installing tools..."
+  log "Installing podman and distrobox..."
   eval "$PKG_INSTALL"
+
+  # Fallback: if distrobox is still missing (e.g., Alma/RHEL repos), install from upstream script
+  if ! command -v distrobox >/dev/null 2>&1; then
+    log "distrobox not found in repo. Installing from upstream script..."
+    curl -fsSL https://raw.githubusercontent.com/89luca89/distrobox/main/install | sudo sh
+  fi
+
+  if ! command -v distrobox >/dev/null 2>&1 || ! command -v podman >/dev/null 2>&1; then
+    echo "Failed to install podman/distrobox automatically. Please install them manually and rerun."
+    exit 1
+  fi
 }
 
 create_container() {
@@ -39,40 +64,46 @@ create_container() {
     log "Container $CONTAINER_NAME already exists."
     return
   fi
-  log "Creating container $CONTAINER_NAME..."
+  log "Creating container $CONTAINER_NAME based on $ARCH_IMAGE..."
   distrobox create --name "$CONTAINER_NAME" --image "$ARCH_IMAGE" --yes
 }
 
 cleanup_container() {
-  log "Cleaning up..."
-  distrobox enter "$CONTAINER_NAME" -- distrobox-export --app "$DESKTOP_ID" --delete >/dev/null 2>&1 || true
-  distrobox rm --force "$CONTAINER_NAME" >/dev/null 2>&1 || true
+  log "Cleaning up container and exported app..."
+  distrobox-export --app "$PACKAGE_NAME" --delete 2>/dev/null || true
+  distrobox rm --force --name "$CONTAINER_NAME" 2>/dev/null || true
 }
 
 install_in_container() {
-  log "Installing $PACKAGE_NAME from AUR..."
+  log "Setting up Arch environment and installing $PACKAGE_NAME from AUR..."
   HOST_LANG="${LANG:-en_US.UTF-8}"
-  distrobox enter "$CONTAINER_NAME" -- env LANG_HOST="$HOST_LANG" DESKTOP_ID="$DESKTOP_ID" bash <<'INBOX'
+  distrobox enter "$CONTAINER_NAME" -- env LANG_HOST="$HOST_LANG" bash <<'INBOX'
 set -euo pipefail
 
+# Ensure locales to avoid warnings when host uses pt_BR or other UTF-8 locales
 sudo pacman -Syu --needed --noconfirm glibc base-devel git
-
-# Locales
-sudo sed -i "s/^#\(${LANG_HOST} UTF-8\)/\1/" /etc/locale.gen || true
-sudo sed -i "s/^#\(en_US.UTF-8 UTF-8\)/\1/" /etc/locale.gen || true
+if [ -n "${LANG_HOST:-}" ]; then
+  sudo sed -i "s/^#\\(${LANG_HOST} UTF-8\\)/\\1/" /etc/locale.gen || true
+fi
+sudo sed -i "s/^#\\(en_US.UTF-8 UTF-8\\)/\\1/" /etc/locale.gen || true
+sudo sed -i "s/^#\\(pt_BR.UTF-8 UTF-8\\)/\\1/" /etc/locale.gen || true
 sudo locale-gen || true
+echo "LANG=${LANG_HOST:-en_US.UTF-8}" | sudo tee /etc/locale.conf >/dev/null
+export LANG=${LANG_HOST:-en_US.UTF-8}
+export LC_ALL=${LANG_HOST:-en_US.UTF-8}
 
 if ! command -v yay >/dev/null 2>&1; then
+  echo "Installing yay-bin..."
   rm -rf /tmp/yay-bin
   git clone https://aur.archlinux.org/yay-bin.git /tmp/yay-bin
   cd /tmp/yay-bin && makepkg -si --noconfirm
 fi
 
+echo "Installing zashterminal..."
 yay -S --noconfirm zashterminal
 
-echo "Exporting application..."
-# Exporta usando o ID completo do desktop
-distrobox-export --app "$DESKTOP_ID"
+echo "Exporting application to the host..."
+distrobox-export --app zashterminal
 INBOX
 }
 
@@ -83,26 +114,20 @@ ensure_tools
 success=0
 for attempt in 1 2 3; do
   log "Attempt $attempt/3"
-  
-  if distrobox ls | grep -q "$CONTAINER_NAME"; then
-      cleanup_container
-  fi
-
   create_container
   if install_in_container; then
     success=1
     break
   else
-    log "Attempt $attempt failed."
+    log "Attempt $attempt failed; cleaning up and retrying..."
     cleanup_container
   fi
 done
 
 if [ "$success" -eq 1 ]; then
-  log "Success! Refreshing desktop database..."
-  update-desktop-database ~/.local/share/applications 2>/dev/null || true
-  log "Done. You can now open Zash Terminal from your menu."
+  log "Done. You can run '$PACKAGE_NAME' directly on the host."
 else
-  log "Installation failed after 3 attempts."
+  log "Installation failed after 3 attempts. Rolling back."
+  cleanup_container
   exit 1
 fi
