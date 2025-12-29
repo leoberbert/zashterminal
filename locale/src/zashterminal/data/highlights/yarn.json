@@ -1,0 +1,80 @@
+{
+    "name": "yarn",
+    "description": "Highlights for yarn package manager output",
+    "triggers": [
+        "yarn"
+    ],
+    "enabled": true,
+    "rules": [
+        {
+            "name": "Success Done",
+            "pattern": "(✨|✓)\\s*(Done\\b|success\\b)",
+            "colors": [
+                "green",
+                "bold green"
+            ],
+            "enabled": true,
+            "description": "Highlights success messages"
+        },
+        {
+            "name": "Warning",
+            "pattern": "(warning)\\s+(.+)",
+            "colors": [
+                "bold yellow",
+                "bold yellow"
+            ],
+            "enabled": true,
+            "description": "Highlights warnings"
+        },
+        {
+            "name": "Error",
+            "pattern": "(error)\\s+(.+)",
+            "colors": [
+                "bold red",
+                "bold red"
+            ],
+            "enabled": true,
+            "description": "Highlights errors"
+        },
+        {
+            "name": "Package Names",
+            "pattern": "((@[\\w-]+/)?[\\w.-]+)@(\\d+\\.\\d+\\.\\d+[\\w.-]*)",
+            "colors": [
+                "cyan",
+                null,
+                "magenta"
+            ],
+            "enabled": true,
+            "description": "Highlights package names with versions"
+        },
+        {
+            "name": "Info Label",
+            "pattern": "(info)\\s+",
+            "colors": [
+                "cyan"
+            ],
+            "enabled": true,
+            "description": "Highlights info labels"
+        },
+        {
+            "name": "Adding Packages",
+            "pattern": "(Adding)\\s+(\\S+)\\s+to",
+            "colors": [
+                "green",
+                "cyan"
+            ],
+            "enabled": true,
+            "description": "Highlights packages being added"
+        },
+        {
+            "name": "Fetching",
+            "pattern": "(Fetching)\\s+(\\S+)",
+            "colors": [
+                null,
+                "cyan"
+            ],
+            "enabled": true,
+            "description": "Highlights packages being fetched"
+        }
+    ]
+}

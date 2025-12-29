@@ -1,0 +1,162 @@
+{
+    "name": "docker",
+    "description": "Highlights for docker command output",
+    "triggers": ["docker", "podman", "nerdctl", "docker-compose", "podman-compose"],
+    "enabled": true,
+    "rules": [
+        {
+            "name": "Headers",
+            "pattern": "(?:\\s|^)(CONTAINER ID|IMAGE|COMMAND|CREATED|STATUS|PORTS|NAMES|REPOSITORY|TAG|SIZE)(?:\\s|$)",
+            "colors": ["underline white"],
+            "enabled": true,
+            "description": "Highlights column headers"
+        },
+        {
+            "name": "Container ID",
+            "pattern": "\\b([0-9a-f]{12})\\b",
+            "colors": ["magenta"],
+            "enabled": true,
+            "description": "Highlights short container IDs"
+        },
+        {
+            "name": "Image Name",
+            "pattern": "(\\S+?)/(\\S+?)\\s",
+            "colors": ["yellow", "bright_white"],
+            "enabled": true,
+            "description": "Highlights image names"
+        },
+        {
+            "name": "Tag Latest",
+            "pattern": "(?<=\\s)latest(?=\\s)",
+            "colors": ["cyan"],
+            "enabled": true,
+            "description": "Highlights latest tag"
+        },
+        {
+            "name": "Status Up",
+            "pattern": "(?:\\s{2}|^)(?:Up|Restarting)(?:(?:\\s[\\w,\\d]+)+)?",
+            "colors": ["bold green"],
+            "enabled": true,
+            "description": "Highlights running container status"
+        },
+        {
+            "name": "Health Healthy",
+            "pattern": "\\(healthy\\)",
+            "colors": ["bold green"],
+            "enabled": true,
+            "description": "Highlights healthy status"
+        },
+        {
+            "name": "Health Starting",
+            "pattern": "\\(health: starting\\)",
+            "colors": ["bold yellow"],
+            "enabled": true,
+            "description": "Highlights starting health"
+        },
+        {
+            "name": "Health Unhealthy",
+            "pattern": "\\(unhealthy\\)",
+            "colors": ["bold red"],
+            "enabled": true,
+            "description": "Highlights unhealthy status"
+        },
+        {
+            "name": "Status Exited",
+            "pattern": "(Exited)\\s*\\((\\d+)\\)",
+            "colors": ["bold red", "red"],
+            "enabled": true,
+            "description": "Highlights exited container status"
+        },
+        {
+            "name": "Status Created",
+            "pattern": "\\sCreated\\s",
+            "colors": ["blue"],
+            "enabled": true,
+            "description": "Highlights created container status"
+        },
+        {
+            "name": "None",
+            "pattern": "<none>",
+            "colors": ["bold red"],
+            "enabled": true,
+            "description": "Highlights missing image/tag"
+        },
+        {
+            "name": "IP Address",
+            "pattern": "\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}",
+            "colors": ["blue"],
+            "enabled": true,
+            "description": "Highlights IP addresses"
+        },
+        {
+            "name": "Port Numbers",
+            "pattern": "(\\d{1,5})(-\\d{1,5})?(->)(\\d{1,5})(-\\d{1,5})?(/)(tcp|udp)",
+            "colors": ["bright_green", "bright_green", null, "bright_green", "bright_green", null, "cyan"],
+            "enabled": true,
+            "description": "Highlights port mappings"
+        },
+        {
+            "name": "Size KB",
+            "pattern": "(?<=\\s)\\d+[.,]?\\d*\\s?KB?",
+            "colors": ["green"],
+            "enabled": true,
+            "description": "Highlights kilobyte sizes"
+        },
+        {
+            "name": "Size MB Small",
+            "pattern": "(?<=\\s)\\d{1,2}[.,]?\\d*\\s?MB?",
+            "colors": ["green"],
+            "enabled": true,
+            "description": "Highlights small megabyte sizes"
+        },
+        {
+            "name": "Size MB Large",
+            "pattern": "(?<=\\s)\\d{3,}[.,]?\\d*\\s?MB?",
+            "colors": ["yellow"],
+            "enabled": true,
+            "description": "Highlights large megabyte sizes"
+        },
+        {
+            "name": "Size GB",
+            "pattern": "(?<=\\s)\\d+[.,]?\\d*\\s?GB?",
+            "colors": ["red"],
+            "enabled": true,
+            "description": "Highlights gigabyte sizes"
+        },
+        {
+            "name": "Created Recently",
+            "pattern": "(?:About a|\\d+) (?:seconds?|minutes?) ago",
+            "colors": ["bright_green"],
+            "enabled": true,
+            "description": "Highlights recently created"
+        },
+        {
+            "name": "Created Hours",
+            "pattern": "\\d+\\s+hours\\s+ago",
+            "colors": ["green"],
+            "enabled": true,
+            "description": "Highlights hours ago"
+        },
+        {
+            "name": "Created Days",
+            "pattern": "\\d+\\s+days\\s+ago",
+            "colors": ["green"],
+            "enabled": true,
+            "description": "Highlights days ago"
+        },
+        {
+            "name": "Created Weeks",
+            "pattern": "\\d+\\s+weeks\\s+ago",
+            "colors": ["yellow"],
+            "enabled": true,
+            "description": "Highlights weeks ago"
+        },
+        {
+            "name": "Created Months",
+            "pattern": "\\d+\\s+months\\s+ago",
+            "colors": ["red"],
+            "enabled": true,
+            "description": "Highlights months ago"
+        }
+    ]
+}

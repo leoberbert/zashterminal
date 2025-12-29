@@ -1,0 +1,113 @@
+{
+    "name": "df",
+    "description": "Highlights for df (disk free) command output",
+    "triggers": ["df", "duf"],
+    "enabled": true,
+    "rules": [
+        {
+            "name": "Filesystem Path",
+            "pattern": "^(?!Filesystem)(\\/[-\\w\\d.]+)+\\s",
+            "colors": ["blue"],
+            "enabled": true,
+            "description": "Highlights filesystem device path at line start"
+        },
+        {
+            "name": "Size KB (suffix)",
+            "pattern": "\\s(\\d*[.,]?\\d)(K|B)i?\\s",
+            "colors": ["green", "green"],
+            "enabled": true,
+            "description": "Highlights kilobyte sizes with K/B suffix (human-readable)"
+        },
+        {
+            "name": "Size KB (raw 1-3 digits)",
+            "pattern": "\\s(\\d{1,3})(?=\\s)",
+            "colors": ["green"],
+            "enabled": true,
+            "description": "Highlights small raw block counts (1-3 digits = under 1MB)"
+        },
+        {
+            "name": "Size MB (suffix)",
+            "pattern": "\\s(\\d*[.,]?\\d)(M)i?\\s",
+            "colors": ["yellow", "yellow"],
+            "enabled": true,
+            "description": "Highlights megabyte sizes with M suffix (human-readable)"
+        },
+        {
+            "name": "Size MB (raw 4-6 digits)",
+            "pattern": "\\s(\\d{4,6})(?=\\s)",
+            "colors": ["yellow"],
+            "enabled": true,
+            "description": "Highlights medium raw block counts (4-6 digits = 1MB-999MB)"
+        },
+        {
+            "name": "Size GB (suffix)",
+            "pattern": "\\s(\\d*[.,]?\\d)(G)i?\\s",
+            "colors": ["red", "red"],
+            "enabled": true,
+            "description": "Highlights gigabyte sizes with G suffix (human-readable)"
+        },
+        {
+            "name": "Size GB (raw 7-9 digits)",
+            "pattern": "\\s(\\d{7,9})(?=\\s)",
+            "colors": ["red"],
+            "enabled": true,
+            "description": "Highlights large raw block counts (7-9 digits = 1GB-999GB)"
+        },
+        {
+            "name": "Size TB (suffix)",
+            "pattern": "\\s(\\d*[.,]?\\d)(T)i?\\s",
+            "colors": ["bold red", "bold red"],
+            "enabled": true,
+            "description": "Highlights terabyte sizes with T suffix (human-readable)"
+        },
+        {
+            "name": "Size TB (raw 10-12 digits)",
+            "pattern": "\\s(\\d{10,12})(?=\\s)",
+            "colors": ["bold red"],
+            "enabled": true,
+            "description": "Highlights huge raw block counts (10-12 digits = 1TB+)"
+        },
+        {
+            "name": "Mount Point",
+            "pattern": "\\/$|(\\/[-\\w\\d. ]+)+$",
+            "colors": ["bold green"],
+            "enabled": true,
+            "description": "Highlights mount point paths at line end"
+        },
+        {
+            "name": "Usage OK (0-69%)",
+            "pattern": "\\s([1-6]?[0-9])(%)",
+            "colors": ["green", "green"],
+            "enabled": true,
+            "description": "Highlights disk usage under 70%"
+        },
+        {
+            "name": "Usage Warning (70-89%)",
+            "pattern": "\\s([78][0-9])(%)",
+            "colors": ["yellow", "yellow"],
+            "enabled": true,
+            "description": "Highlights disk usage 70-89%"
+        },
+        {
+            "name": "Usage High (90-97%)",
+            "pattern": "\\s(9[0-7])(%)",
+            "colors": ["red", "red"],
+            "enabled": true,
+            "description": "Highlights disk usage 90-97%"
+        },
+        {
+            "name": "Usage Critical (98-100%)",
+            "pattern": "\\s(9[89]|100)(%)",
+            "colors": ["bold red", "bold red"],
+            "enabled": true,
+            "description": "Highlights disk usage 98-100%"
+        },
+        {
+            "name": "Tmpfs Lines",
+            "pattern": "^tmpfs.*",
+            "colors": ["magenta"],
+            "enabled": true,
+            "description": "Dims tmpfs (virtual) filesystems"
+        }
+    ]
+}

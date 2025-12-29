@@ -1,0 +1,78 @@
+{
+    "name": "lspci",
+    "description": "Highlights for lspci PCI device listing output",
+    "triggers": ["lspci"],
+    "enabled": true,
+    "rules": [
+        {
+            "name": "PCI Address",
+            "pattern": "^([0-9a-f]{2,4}):([0-9a-f]{2})\\.([0-9a-f])",
+            "colors": ["bright_green", "bright_yellow", "red"],
+            "enabled": true,
+            "description": "Highlights PCI slot ID (bus:device.function)"
+        },
+        {
+            "name": "Ethernet Controller",
+            "pattern": "(Ethernet|Network) controller:",
+            "colors": ["cyan"],
+            "enabled": true,
+            "description": "Highlights Ethernet/Network controllers"
+        },
+        {
+            "name": "Wireless",
+            "pattern": "Wireless",
+            "colors": ["bright_cyan"],
+            "enabled": true,
+            "description": "Highlights Wireless devices"
+        },
+        {
+            "name": "SATA Controller",
+            "pattern": "SATA controller:",
+            "colors": ["green"],
+            "enabled": true,
+            "description": "Highlights SATA controllers"
+        },
+        {
+            "name": "Audio Device",
+            "pattern": "Audio device:",
+            "colors": ["blue"],
+            "enabled": true,
+            "description": "Highlights Audio devices"
+        },
+        {
+            "name": "VGA Controller",
+            "pattern": "VGA compatible controller:",
+            "colors": ["magenta"],
+            "enabled": true,
+            "description": "Highlights VGA controllers"
+        },
+        {
+            "name": "USB Controller",
+            "pattern": "USB controller:",
+            "colors": ["yellow"],
+            "enabled": true,
+            "description": "Highlights USB controllers"
+        },
+        {
+            "name": "Bridge",
+            "pattern": "(PCI|ISA|Host) bridge:",
+            "colors": ["red"],
+            "enabled": true,
+            "description": "Highlights PCI/ISA/Host bridges"
+        },
+        {
+            "name": "Other Controller",
+            "pattern": "([A-Z].+?) controller:",
+            "colors": ["blue"],
+            "enabled": true,
+            "description": "Highlights other unspecified controllers"
+        },
+        {
+            "name": "Kernel Info",
+            "pattern": "(Kernel (?:modules|driver in use):) (.+)",
+            "colors": [null, "bright_red"],
+            "enabled": true,
+            "description": "Highlights kernel driver and modules info"
+        }
+    ]
+}

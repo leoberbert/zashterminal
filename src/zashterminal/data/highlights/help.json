@@ -1,0 +1,135 @@
+{
+  "name": "help",
+  "triggers": ["--help", "-h", "help", "man"],
+  "rules": [
+    {
+      "name": "Usage Header",
+      "pattern": "^(Usage:|USAGE:|Synopsis:|SYNOPSIS:)\\s*",
+      "colors": ["bold cyan"],
+      "enabled": true,
+      "description": "Highlights usage/synopsis headers"
+    },
+    {
+      "name": "Section Header",
+      "pattern": "^([A-Z][A-Z ]+:?|[A-Z][a-z]+:)\\s*$",
+      "colors": ["bold yellow"],
+      "enabled": true,
+      "description": "Highlights section headers like OPTIONS, DESCRIPTION, etc."
+    },
+    {
+      "name": "Section Header Underlined",
+      "pattern": "^(OPTIONS|DESCRIPTION|COMMANDS|ARGUMENTS|EXAMPLES|ENVIRONMENT|FILES|SEE ALSO|BUGS|AUTHOR|COPYRIGHT|EXIT STATUS|NOTES|HISTORY|NAME)\\s*$",
+      "colors": ["bold underline magenta"],
+      "enabled": true,
+      "description": "Highlights common uppercase section headers"
+    },
+    {
+      "name": "Long Option with Value",
+      "pattern": "--[a-z][a-z0-9-]*(=|\\s+)[<\\[][A-Za-z0-9_-]+[>\\]]",
+      "colors": ["bold green"],
+      "enabled": true,
+      "description": "Highlights long options with value placeholders like --option=<value>"
+    },
+    {
+      "name": "Long Option",
+      "pattern": "--[a-z][a-z0-9-]*",
+      "colors": ["bold green"],
+      "enabled": true,
+      "description": "Highlights long options like --help, --version"
+    },
+    {
+      "name": "Short Option",
+      "pattern": "(?:^|\\s)-[a-zA-Z0-9](?=\\s|,|$|\\]|\\))",
+      "colors": ["green"],
+      "enabled": true,
+      "description": "Highlights short options like -h, -v"
+    },
+    {
+      "name": "Argument Placeholder Angle",
+      "pattern": "<[A-Za-z][A-Za-z0-9_-]*>",
+      "colors": ["cyan"],
+      "enabled": true,
+      "description": "Highlights argument placeholders in angle brackets like <file>"
+    },
+    {
+      "name": "Argument Placeholder Square",
+      "pattern": "\\[[A-Za-z][A-Za-z0-9_|-]*\\]",
+      "colors": ["cyan"],
+      "enabled": true,
+      "description": "Highlights optional arguments in square brackets like [option]"
+    },
+    {
+      "name": "Ellipsis",
+      "pattern": "\\.\\.\\.",
+      "colors": ["dim white"],
+      "enabled": true,
+      "description": "Highlights ellipsis indicating multiple values"
+    },
+    {
+      "name": "Default Value",
+      "pattern": "\\(default:?\\s*[^)]+\\)|\\[default:?\\s*[^\\]]+\\]",
+      "colors": ["dim yellow"],
+      "enabled": true,
+      "description": "Highlights default value indicators"
+    },
+    {
+      "name": "Required",
+      "pattern": "\\b(required|mandatory)\\b",
+      "colors": ["bold red"],
+      "enabled": true,
+      "description": "Highlights required indicators"
+    },
+    {
+      "name": "Optional",
+      "pattern": "\\b(optional)\\b",
+      "colors": ["dim cyan"],
+      "enabled": true,
+      "description": "Highlights optional indicators"
+    },
+    {
+      "name": "URL",
+      "pattern": "https?://[^\\s<>]+",
+      "colors": ["underline blue"],
+      "enabled": true,
+      "description": "Highlights URLs"
+    },
+    {
+      "name": "Email",
+      "pattern": "[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}",
+      "colors": ["underline blue"],
+      "enabled": true,
+      "description": "Highlights email addresses"
+    },
+    {
+      "name": "Command Example",
+      "pattern": "^\\s{2,}\\$\\s+.+$",
+      "colors": ["yellow"],
+      "enabled": true,
+      "description": "Highlights command examples starting with $"
+    },
+    {
+      "name": "Environment Variable",
+      "pattern": "\\$[A-Z_][A-Z0-9_]*|\\b[A-Z_][A-Z0-9_]{2,}\\b(?=\\s*=|\\s+is|\\s+specifies)",
+      "colors": ["magenta"],
+      "enabled": true,
+      "description": "Highlights environment variables"
+    },
+    {
+      "name": "File Path",
+      "pattern": "(?:^|\\s)(/[a-zA-Z0-9._/-]+|~[a-zA-Z0-9._/-]*)",
+      "colors": ["cyan"],
+      "enabled": true,
+      "description": "Highlights file paths"
+    },
+    {
+      "name": "Subcommand",
+      "pattern": "^\\s{2,}[a-z][a-z0-9-]+(?=\\s{2,})",
+      "colors": ["bold white"],
+      "enabled": true,
+      "description": "Highlights subcommands in command lists"
+    }
+  ],
+  "enabled": true,
+  "description": "Syntax highlighting rules for help output (--help, man pages)",
+  "use_global_rules": true
+}

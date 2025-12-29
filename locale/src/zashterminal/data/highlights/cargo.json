@@ -1,0 +1,84 @@
+{
+    "name": "cargo",
+    "description": "Highlights for cargo (Rust) output",
+    "triggers": [
+        "cargo"
+    ],
+    "enabled": true,
+    "rules": [
+        {
+            "name": "Compiling",
+            "pattern": "\\s*(Compiling)\\s+([\\w-]+)\\s+(v[\\d.]+)",
+            "colors": [
+                "bold green",
+                "cyan",
+                null
+            ],
+            "enabled": true,
+            "description": "Highlights compiling crates"
+        },
+        {
+            "name": "Finished",
+            "pattern": "\\s*(Finished)\\s+(\\w+)\\s+",
+            "colors": [
+                "bold green",
+                "cyan"
+            ],
+            "enabled": true,
+            "description": "Highlights finished compilation"
+        },
+        {
+            "name": "Running",
+            "pattern": "\\s*(Running)\\s+(.+)",
+            "colors": [
+                "magenta",
+                null
+            ],
+            "enabled": true,
+            "description": "Highlights running binaries"
+        },
+        {
+            "name": "Warning",
+            "pattern": "(warning)(\\[.+?\\])?(:)",
+            "colors": [
+                "bold yellow",
+                null,
+                "yellow"
+            ],
+            "enabled": true,
+            "description": "Highlights compiler warnings"
+        },
+        {
+            "name": "Error",
+            "pattern": "(error)(\\[.+?\\])?(:)",
+            "colors": [
+                "bold red",
+                null,
+                "red"
+            ],
+            "enabled": true,
+            "description": "Highlights compiler errors"
+        },
+        {
+            "name": "Downloading/Updating",
+            "pattern": "\\s*(Downloading|Updating)\\s+(.+)",
+            "colors": [
+                "cyan",
+                null
+            ],
+            "enabled": true,
+            "description": "Highlights downloading/updating crates"
+        },
+        {
+            "name": "File Location",
+            "pattern": "-->\\s+([^:]+):(\\d+):(\\d+)",
+            "colors": [
+                "magenta",
+                "yellow",
+                "yellow"
+            ],
+            "enabled": true,
+            "description": "Highlights file location in errors"
+        }
+    ]
+}

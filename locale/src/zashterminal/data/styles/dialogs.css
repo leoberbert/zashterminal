@@ -1,0 +1,116 @@
+/* zashterminal/data/styles/dialogs.css
+ * Consolidated dialog styles for Zashterminal
+ * All static styling for dialogs - dynamic theme colors applied via Python
+ */
+
+/* ==========================================================================
+   Command Manager Dialog
+   ========================================================================== */
+
+/* Command buttons - clean minimal styling */
+.command-manager-dialog .command-button {
+    padding: 6px 14px;
+    border-radius: 8px;
+    background: alpha(currentColor, 0.04);
+    border: 1px solid alpha(currentColor, 0.06);
+    min-width: 70px;
+    min-height: 0;
+}
+
+.command-manager-dialog .command-button.hidden-button {
+    opacity: 0.4;
+}
+
+/* FlowBox grid spacing */
+.command-manager-dialog .commands-flow-box {
+    padding: 4px;
+}
+
+.command-manager-dialog .commands-flow-box > flowboxchild {
+    padding: 3px;
+    min-height: 0;
+}
+
+/* Command input area */
+.command-manager-dialog .bash-textview {
+    padding: 10px 14px;
+    background: transparent;
+    font-family: monospace;
+    min-height: 60px;
+    font-size: 1.05em;
+}
+
+.command-manager-dialog .command-input-frame {
+    border-radius: 10px;
+    background: alpha(currentColor, 0.03);
+    border: 1px solid alpha(currentColor, 0.06);
+}
+
+.command-manager-dialog .command-input-frame:focus-within {
+    border-color: alpha(@accent_bg_color, 0.4);
+}
+
+/* Execute button - prominent accent styling */
+.command-manager-dialog .execute-button {
+    padding: 9px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    background: @accent_bg_color;
+    color: @accent_fg_color;
+    border: none;
+}
+
+/* Add command button */
+.command-manager-dialog .add-command-button {
+    padding: 7px 16px;
+    border-radius: 8px;
+}
+
+/* Form dialog preview */
+.command-form-dialog .command-preview {
+    padding: 10px;
+    background: alpha(currentColor, 0.05);
+    border-radius: 8px;
+    font-family: monospace;
+}
+
+/* ==========================================================================
+   Command Editor Dialog
+   ========================================================================== */
+
+.command-editor-dialog .monospace {
+    font-family: "JetBrains Mono", "Fira Code", "Source Code Pro", monospace;
+}
+
+/* ==========================================================================
+   Shared Dialog Styles
+   ========================================================================== */
+
+/* Base dialog window class */
+.zashterminal-dialog {
+    /* Inherits from system theme */
+}
+
+/* Common button styling for dialogs */
+.dialog-action-button {
+    padding: 8px 16px;
+    border-radius: 8px;
+}
+
+/* ==========================================================================
+   Highlight Dialog
+   ========================================================================== */
+
+/* Rule list styling (consolidated from highlight_dialog.py) */
+.highlight-rule-list {
+    background: transparent;
+}
+
+.highlight-rule-list > row {
+    border-radius: 8px;
+    margin: 2px 4px;
+}
+
+.highlight-rule-list > row:selected {
+    background-color: alpha(@accent_bg_color, 0.15);
+}

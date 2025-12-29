@@ -1,0 +1,90 @@
+{
+    "name": "terraform",
+    "description": "Highlights for terraform output",
+    "triggers": [
+        "terraform"
+    ],
+    "enabled": true,
+    "rules": [
+        {
+            "name": "Create",
+            "pattern": "(\\+)\\s+(\\S+)\\s+(will be created)",
+            "colors": [
+                "bold green",
+                "green",
+                "green"
+            ],
+            "enabled": true,
+            "description": "Highlights resources to be created"
+        },
+        {
+            "name": "Destroy",
+            "pattern": "(-)\\s+(\\S+)\\s+(will be destroyed)",
+            "colors": [
+                "bold red",
+                "red",
+                "red"
+            ],
+            "enabled": true,
+            "description": "Highlights resources to be destroyed"
+        },
+        {
+            "name": "Update/Change",
+            "pattern": "(~)\\s+(\\S+)\\s+(will be updated)",
+            "colors": [
+                "bold yellow",
+                "yellow",
+                "yellow"
+            ],
+            "enabled": true,
+            "description": "Highlights resources to be updated"
+        },
+        {
+            "name": "Plan Summary",
+            "pattern": "(Plan:)\\s+(\\d+)\\s+(to add),\\s+(\\d+)\\s+(to change),\\s+(\\d+)\\s+(to destroy)",
+            "colors": [
+                "cyan",
+                "green",
+                "green",
+                "yellow",
+                "yellow",
+                "red",
+                "red"
+            ],
+            "enabled": true,
+            "description": "Highlights plan summary"
+        },
+        {
+            "name": "Apply Complete",
+            "pattern": "(Apply complete!)\\s+(Resources:)\\s+(\\d+)\\s+(added)",
+            "colors": [
+                "bold green",
+                null,
+                "green",
+                "green"
+            ],
+            "enabled": true,
+            "description": "Highlights successful apply"
+        },
+        {
+            "name": "Error",
+            "pattern": "(Error:)\\s+(.+)",
+            "colors": [
+                "bold red",
+                "red"
+            ],
+            "enabled": true,
+            "description": "Highlights terraform errors"
+        },
+        {
+            "name": "Resource Address",
+            "pattern": "([a-z_]+\\.[a-z_]+)(\\[\"?[^\\]]+\"?\\])?",
+            "colors": [
+                "magenta",
+                "cyan"
+            ],
+            "enabled": true,
+            "description": "Highlights resource addresses"
+        }
+    ]
+}

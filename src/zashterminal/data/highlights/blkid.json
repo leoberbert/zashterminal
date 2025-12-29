@@ -1,0 +1,121 @@
+{
+  "name": "blkid",
+  "triggers": [
+    "blkid"
+  ],
+  "rules": [
+    {
+      "name": "Device Path",
+      "pattern": "^(/dev/)([\\w/-]+):",
+      "colors": [
+        "green",
+        "bright_green"
+      ],
+      "enabled": true,
+      "description": "Highlights device path",
+      "comment": "Highlights device path at line start"
+    },
+    {
+      "name": "Device Mapper",
+      "pattern": "^/dev/(mapper/)([\\w/-]+):",
+      "colors": [
+        "underline green",
+        "bright_green"
+      ],
+      "enabled": true,
+      "description": "Highlights device mapper paths",
+      "comment": "Highlights device mapper paths with underline"
+    },
+    {
+      "name": "UUID",
+      "pattern": "(UUID)=\"([^\"]+)\"",
+      "colors": [
+        "bold yellow",
+        "blue"
+      ],
+      "enabled": true,
+      "description": "Highlights UUID values",
+      "comment": "Key=yellow, value=blue - demonstrates multi-group coloring"
+    },
+    {
+      "name": "UUID_SUB",
+      "pattern": "(UUID_SUB)=\"([^\"]+)\"",
+      "colors": [
+        "green",
+        "bright_green"
+      ],
+      "enabled": true,
+      "description": "Highlights sub-UUID values"
+    },
+    {
+      "name": "LinuxFS",
+      "pattern": "\\b(ext4|btrfs|xfs)\\b",
+      "colors": [
+        "bright_yellow"
+      ],
+      "enabled": true
+    },
+    {
+      "name": "Swap",
+      "pattern": ".*(swap).*",
+      "colors": [
+        "bright_red"
+      ],
+      "enabled": true
+    },
+    {
+      "name": "TYPE",
+      "pattern": "(TYPE)=\"([^\"]+)\"",
+      "colors": [
+        "bold cyan",
+        "cyan"
+      ],
+      "enabled": true,
+      "description": "Highlights filesystem type",
+      "comment": "Filesystem type - stop processing after matching (action: stop example)"
+    },
+    {
+      "name": "LABEL",
+      "pattern": "(LABEL)=\"([^\"]+)\"",
+      "colors": [
+        "bold bright_cyan",
+        "bright_cyan"
+      ],
+      "enabled": true,
+      "description": "Highlights partition label"
+    },
+    {
+      "name": "PARTLABEL",
+      "pattern": "(PARTLABEL)=\"([^\"]+)\"",
+      "colors": [
+        "bold green",
+        "red"
+      ],
+      "enabled": true,
+      "description": "Highlights partition label (GPT)"
+    },
+    {
+      "name": "PARTUUID",
+      "pattern": "(PARTUUID)=\"([^\"]+)\"",
+      "colors": [
+        "green",
+        "magenta"
+      ],
+      "enabled": true,
+      "description": "Highlights partition UUID"
+    },
+    {
+      "name": "PTTYPE",
+      "pattern": "(PTTYPE)=\"([^\"]+)\"",
+      "colors": [
+        null,
+        "yellow"
+      ],
+      "enabled": true,
+      "description": "Highlights partition table type"
+    }
+  ],
+  "enabled": true,
+  "description": "Highlights for blkid block device attributes output",
+  "use_global_rules": false
+}

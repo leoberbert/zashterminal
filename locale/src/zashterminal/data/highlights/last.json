@@ -1,0 +1,85 @@
+{
+    "name": "last",
+    "description": "Highlights for last login history output",
+    "triggers": ["last", "lastb", "lastlog"],
+    "enabled": true,
+    "rules": [
+        {
+            "name": "Reboot",
+            "pattern": "^reboot\\s+system boot",
+            "colors": ["red"],
+            "enabled": true,
+            "description": "Highlights reboot entries"
+        },
+        {
+            "name": "Still Logged In",
+            "pattern": "(still logged in)",
+            "colors": ["on_cyan bold white"],
+            "enabled": true,
+            "description": "Highlights active sessions"
+        },
+        {
+            "name": "Still Running",
+            "pattern": "(still running)",
+            "colors": ["bright_green"],
+            "enabled": true,
+            "description": "Highlights still running entries"
+        },
+        {
+            "name": "Down/Crash",
+            "pattern": "-\\s+(down|crash)",
+            "colors": [null, "on_red white"],
+            "enabled": true,
+            "description": "Highlights down/crash events"
+        },
+        {
+            "name": "Duration",
+            "pattern": "\\(((\\d+\\+)?(\\d+):(\\d+))\\)",
+            "colors": [null, "bright_red", "yellow", "green"],
+            "enabled": true,
+            "description": "Highlights session duration"
+        },
+        {
+            "name": "PTS Session",
+            "pattern": "\\s(pts/\\d+)",
+            "colors": ["green"],
+            "enabled": true,
+            "description": "Highlights pseudo-terminal sessions"
+        },
+        {
+            "name": "TTY Session",
+            "pattern": "\\s(tty\\d+)",
+            "colors": ["blue"],
+            "enabled": true,
+            "description": "Highlights TTY sessions"
+        },
+        {
+            "name": "End Time",
+            "pattern": "-\\s+(\\d+:\\d+)",
+            "colors": [null, "magenta"],
+            "enabled": true,
+            "description": "Highlights logout/end time"
+        },
+        {
+            "name": "IP Address",
+            "pattern": "(?:\\s|\\()(\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})(?:\\s|\\))",
+            "colors": ["bold red"],
+            "enabled": true,
+            "description": "Highlights remote IP addresses"
+        },
+        {
+            "name": "Local Session",
+            "pattern": "(?:\\s|\\()(:0(?:\\.\\d+)?)(?:\\s|\\))",
+            "colors": ["dark cyan"],
+            "enabled": true,
+            "description": "Highlights local X sessions"
+        },
+        {
+            "name": "Time",
+            "pattern": "\\s(\\d+:\\d+)\\s",
+            "colors": ["cyan"],
+            "enabled": true,
+            "description": "Highlights login time"
+        }
+    ]
+}

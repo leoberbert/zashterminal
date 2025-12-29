@@ -1,0 +1,120 @@
+{
+    "name": "lsblk",
+    "description": "Highlights for lsblk (block devices) output",
+    "triggers": ["lsblk"],
+    "enabled": true,
+    "rules": [
+        {
+            "name": "Main Drive",
+            "pattern": "^([a-z]+\\d?)\\s",
+            "colors": ["bold white"],
+            "enabled": true,
+            "description": "Highlights main disk device name"
+        },
+        {
+            "name": "Tree Structure",
+            "pattern": "([├└─│]+|[|`\\-]+)",
+            "colors": ["bright_green"],
+            "enabled": true,
+            "description": "Highlights tree structure characters"
+        },
+        {
+            "name": "Partition Name",
+            "pattern": "(?:[├└─│]+|[|`\\-]+)(\\S+)",
+            "colors": [null, "bright_cyan"],
+            "enabled": true,
+            "description": "Highlights partition names after tree chars"
+        },
+        {
+            "name": "Type Crypt",
+            "pattern": "(?<=\\s)(crypt)\\b",
+            "colors": ["on_magenta white"],
+            "enabled": true,
+            "description": "Highlights encrypted devices"
+        },
+        {
+            "name": "Type Disk",
+            "pattern": "(?<=\\s)(disk)\\b",
+            "colors": ["magenta"],
+            "enabled": true,
+            "description": "Highlights disk type"
+        },
+        {
+            "name": "Type LVM",
+            "pattern": "(?<=\\s)(lvm)\\b",
+            "colors": ["bold cyan"],
+            "enabled": true,
+            "description": "Highlights LVM type"
+        },
+        {
+            "name": "Type Part",
+            "pattern": "(?<=\\s)(part)\\b",
+            "colors": ["cyan"],
+            "enabled": true,
+            "description": "Highlights partition type"
+        },
+        {
+            "name": "Type Loop",
+            "pattern": "(?<=\\s)(loop)\\b",
+            "colors": ["bright_red"],
+            "enabled": true,
+            "description": "Highlights loop device type"
+        },
+        {
+            "name": "Type ROM",
+            "pattern": "(?<=\\s)(rom)\\b",
+            "colors": ["yellow"],
+            "enabled": true,
+            "description": "Highlights ROM type"
+        },
+        {
+            "name": "Size KB",
+            "pattern": "\\s(\\d*[.,]?\\d)Ki?\\s",
+            "colors": ["green"],
+            "enabled": true,
+            "description": "Highlights KB sizes"
+        },
+        {
+            "name": "Size MB",
+            "pattern": "\\s(\\d*[.,]?\\d)Mi?\\s",
+            "colors": ["yellow"],
+            "enabled": true,
+            "description": "Highlights MB sizes"
+        },
+        {
+            "name": "Size GB",
+            "pattern": "\\s(\\d*[.,]?\\d)Gi?\\s",
+            "colors": ["red"],
+            "enabled": true,
+            "description": "Highlights GB sizes"
+        },
+        {
+            "name": "Size TB",
+            "pattern": "\\s(\\d*[.,]?\\d)Ti?\\s",
+            "colors": ["bold red"],
+            "enabled": true,
+            "description": "Highlights TB sizes"
+        },
+        {
+            "name": "Mount Path",
+            "pattern": "(?<=\\s)(/[^\\s]+)+$",
+            "colors": ["bold yellow"],
+            "enabled": true,
+            "description": "Highlights mount paths"
+        },
+        {
+            "name": "SWAP",
+            "pattern": "\\[(SWAP)\\]",
+            "colors": ["bright_magenta"],
+            "enabled": true,
+            "description": "Highlights swap entries"
+        },
+        {
+            "name": "UUID",
+            "pattern": "\\s([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})\\b",
+            "colors": ["dark cyan"],
+            "enabled": true,
+            "description": "Highlights UUIDs"
+        }
+    ]
+}

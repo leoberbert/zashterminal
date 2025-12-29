@@ -1,0 +1,113 @@
+{
+    "name": "kubectl",
+    "description": "Highlights for kubectl (Kubernetes) output",
+    "triggers": ["kubectl", "k", "oc"],
+    "enabled": true,
+    "rules": [
+        {
+            "name": "Green States",
+            "pattern": "\\b(Ready|Running|True|Active|Available|Approved|created)\\b",
+            "colors": ["green"],
+            "enabled": true,
+            "description": "Highlights positive states"
+        },
+        {
+            "name": "Red States",
+            "pattern": "\\b(Disabled?|Errors?|Stopped|False|ErrImagePull|[a-zA-Z]+BackOff|OOMKilled|Terminated|Failed?)\\b",
+            "colors": ["red"],
+            "enabled": true,
+            "description": "Highlights error states"
+        },
+        {
+            "name": "Yellow States",
+            "pattern": "\\b(Warning|Pending|Waiting|ContainerCreating|Released|Bound|already exists)\\b",
+            "colors": ["yellow"],
+            "enabled": true,
+            "description": "Highlights warning/pending states"
+        },
+        {
+            "name": "Completed",
+            "pattern": "\\b(Completed|Succeeded)\\b",
+            "colors": ["cyan"],
+            "enabled": true,
+            "description": "Highlights completed jobs"
+        },
+        {
+            "name": "Master Node",
+            "pattern": "\\smaster\\s",
+            "colors": ["bold green"],
+            "enabled": true,
+            "description": "Highlights master node"
+        },
+        {
+            "name": "IP Address",
+            "pattern": "\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}(/\\d{1,2})?",
+            "colors": ["cyan"],
+            "enabled": true,
+            "description": "Highlights IP addresses"
+        },
+        {
+            "name": "Ports",
+            "pattern": "(\\d+)(:\\d+)?/(TCP|UDP)",
+            "colors": ["yellow", "bold green", "magenta"],
+            "enabled": true,
+            "description": "Highlights port mappings"
+        },
+        {
+            "name": "Type/Name",
+            "pattern": "^([^/ ]+)/(\\S+)",
+            "colors": ["yellow", "bright_white"],
+            "enabled": true,
+            "description": "Highlights resource type/name"
+        },
+        {
+            "name": "No Running Instances",
+            "pattern": "\\s(0/[1-9]+)\\b",
+            "colors": ["bold red"],
+            "enabled": true,
+            "description": "Highlights zero ready pods"
+        },
+        {
+            "name": "Ready Status",
+            "pattern": "([1-9]\\d*)/(\\d+)",
+            "colors": ["green", null],
+            "enabled": true,
+            "description": "Highlights ready/total count"
+        },
+        {
+            "name": "Labels",
+            "pattern": "([\\w\\d\\-_/.]+)=([\\w\\d\\-_./]+)",
+            "colors": ["blue", "bright_yellow"],
+            "enabled": true,
+            "description": "Highlights labels"
+        },
+        {
+            "name": "None/Null",
+            "pattern": "(<none>|\\bnone\\b|null)",
+            "colors": ["magenta"],
+            "enabled": true,
+            "description": "Highlights empty values"
+        },
+        {
+            "name": "YAML Key",
+            "pattern": "^([\\w\\d \\-]+):",
+            "colors": ["bright_blue"],
+            "enabled": true,
+            "description": "Highlights YAML keys"
+        },
+        {
+            "name": "Help Options",
+            "pattern": "( --[^= ]+| -[a-zA-Z]( |,))",
+            "colors": ["bright_green"],
+            "enabled": true,
+            "description": "Highlights CLI options in help"
+        },
+        {
+            "name": "Current Context",
+            "pattern": "^\\*.+$",
+            "colors": ["bold white"],
+            "enabled": true,
+            "description": "Highlights current context marker"
+        }
+    ]
+}

@@ -1,0 +1,154 @@
+{
+  "name": "ping",
+  "triggers": [
+    "ping",
+    "ping6",
+    "fping",
+    "nping"
+  ],
+  "rules": [
+    {
+      "name": "Target Host",
+      "pattern": "(?:from|PING)\\s+(\\S+)\\s",
+      "colors": [
+        "blue"
+      ],
+      "enabled": true,
+      "description": "Highlights target hostname"
+    },
+    {
+      "name": "Sequence Number",
+      "pattern": "(icmp_seq=)(\\d+)",
+      "colors": [
+        null,
+        "yellow"
+      ],
+      "enabled": true,
+      "description": "Highlights ICMP sequence number"
+    },
+    {
+      "name": "TTL",
+      "pattern": "(ttl=)(\\d+)",
+      "colors": [
+        null,
+        "magenta"
+      ],
+      "enabled": true,
+      "description": "Highlights TTL values"
+    },
+    {
+      "name": "Instant Response (<3ms)",
+      "pattern": "([0-2]\\.\\d?\\d?\\d?) ms$",
+      "colors": [
+        "bold green"
+      ],
+      "enabled": true,
+      "description": "Highlights fast ping responses under 50ms"
+    },
+    {
+      "name": "Very Fast Response (3-9ms)",
+      "pattern": "([3-9]\\.\\d?\\d?\\d?) ms$",
+      "colors": [
+        "green"
+      ],
+      "enabled": true,
+      "description": "Highlights medium ping responses 50-200ms"
+    },
+    {
+      "name": "Fast Response (10-59ms)",
+      "pattern": "([1-5]\\d\\.\\d?\\d?\\d?) ms$",
+      "colors": [
+        "cyan"
+      ],
+      "enabled": true,
+      "description": "Highlights slow ping responses over 200ms"
+    },
+    {
+      "name": "Medium Response (60-99ms)",
+      "pattern": "([6-9]\\d\\.\\d?\\d?\\d?) ms$",
+      "colors": [
+        "blue"
+      ],
+      "enabled": true
+    },
+    {
+      "name": "Slow Response (100-200ms)",
+      "pattern": "([1-2]\\d\\d\\.\\d?\\d?\\d?) ms$",
+      "colors": [
+        "yellow"
+      ],
+      "enabled": true,
+      "description": "Highlights zero packet loss"
+    },
+    {
+      "name": "Slowest Response (300-999ms)",
+      "pattern": "([3-9]\\d\\d\\.\\d?\\d?\\d?) ms$",
+      "colors": [
+        "red"
+      ],
+      "enabled": true,
+      "description": "Highlights packet loss percentage"
+    },
+    {
+      "name": "Very Slow Response (300-999ms)",
+      "pattern": "(\\d?\\d\\d\\d\\d\\.\\d?\\d?\\d?) ms$",
+      "colors": [
+        "bold red"
+      ],
+      "enabled": true,
+      "description": "Highlights statistics section header"
+    },
+    {
+      "name": "RTT Values",
+      "pattern": "=\\s*([\\d.]+)/([\\d.]+)/([\\d.]+)/([\\d.]+)",
+      "colors": [
+        "bright_yellow",
+        "bright_blue",
+        "bright_red",
+        "bright_magenta"
+      ],
+      "enabled": true,
+      "description": "Highlights RTT min/avg/max/mdev values"
+    },
+    {
+      "name": "DUP",
+      "pattern": "(DUP!)",
+      "colors": [
+        "red"
+      ],
+      "enabled": true,
+      "description": "Highlights duplicate packets"
+    },
+    {
+      "name": "Errors",
+      "pattern": "(Destination Host Unreachable|Network is unreachable)",
+      "colors": [
+        "bold red"
+      ],
+      "enabled": true,
+      "description": "Highlights error messages"
+    },
+    {
+      "name": "Unknown Host",
+      "pattern": "(unknown host)\\s+(\\S+)",
+      "colors": [
+        "red",
+        "bold red"
+      ],
+      "enabled": true,
+      "description": "Highlights unknown host errors"
+    },
+    {
+      "name": "SENT/RCVD",
+      "pattern": "(SENT|RCVD)",
+      "colors": [
+        "red"
+      ],
+      "enabled": true,
+      "description": "Highlights nping SENT/RCVD labels"
+    }
+  ],
+  "enabled": true,
+  "description": "Highlights for ping command output",
+  "use_global_rules": false
+}

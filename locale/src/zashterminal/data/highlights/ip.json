@@ -1,0 +1,118 @@
+{
+  "name": "ip",
+  "triggers": [
+    "ip"
+  ],
+  "rules": [
+    {
+      "name": "IPv4 Address",
+      "pattern": "\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}",
+      "colors": [
+        "bold magenta"
+      ],
+      "enabled": true,
+      "description": "Highlights IPv4 addresses"
+    },
+    {
+      "name": "IPv6 Address",
+      "pattern": "(?i)(?:(?=.*[a-f])|(?=.*::)|(?=(?:.*:){3}))(?:[a-f0-9]{1,4}:|:)+[a-f0-9]{1,4}",
+      "colors": [
+        "yellow"
+      ],
+      "enabled": true,
+      "description": "Highlights IPv6 addresses"
+    },
+    {
+      "name": "CIDR Range",
+      "pattern": "\\/\\d{1,3}",
+      "colors": [
+        "magenta"
+      ],
+      "enabled": true,
+      "description": "Highlights IP range size"
+    },
+    {
+      "name": "Device",
+      "pattern": "(dev) (\\w+)",
+      "colors": [
+        null,
+        "cyan"
+      ],
+      "enabled": true,
+      "description": "Highlights device names"
+    },
+    {
+      "name": "Default Route",
+      "pattern": "default",
+      "colors": [
+        "bold blue"
+      ],
+      "enabled": true,
+      "description": "Highlights default route"
+    },
+    {
+      "name": "Source",
+      "pattern": "(src) (\\S+)",
+      "colors": [
+        null,
+        "magenta"
+      ],
+      "enabled": true,
+      "description": "Highlights source address"
+    },
+    {
+      "name": "Link Down",
+      "pattern": "linkdown",
+      "colors": [
+        "bold red"
+      ],
+      "enabled": true,
+      "description": "Highlights linkdown status"
+    },
+    {
+      "name": "State UP",
+      "pattern": "(state)\\s+(UP)|<[^>]*(UP)[^>]*>",
+      "colors": [
+        null,
+        "bold green",
+        "bold green"
+      ],
+      "enabled": true,
+      "description": "Highlights UP state"
+    },
+    {
+      "name": "State DOWN",
+      "pattern": "(state)\\s+(DOWN)|<[^>]*(DOWN)[^>]*>",
+      "colors": [
+        null,
+        "bold red",
+        "bold red"
+      ],
+      "enabled": true,
+      "description": "Highlights DOWN state"
+    },
+    {
+      "name": "Scope",
+      "pattern": "(scope) (global|link|host)",
+      "colors": [
+        null,
+        "yellow"
+      ],
+      "enabled": true,
+      "description": "Highlights scope info"
+    },
+    {
+      "name": "Broadcast",
+      "pattern": "(brd) ([\\d.]+)",
+      "colors": [
+        null,
+        "cyan"
+      ],
+      "enabled": true,
+      "description": "Highlights broadcast address"
+    }
+  ],
+  "enabled": true,
+  "description": "Highlights for ip command output",
+  "use_global_rules": false
+}

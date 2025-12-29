@@ -1,0 +1,85 @@
+{
+    "name": "npm",
+    "description": "Highlights for npm output",
+    "triggers": [
+        "npm",
+        "pnpm",
+        "yarn",
+        "bun"
+    ],
+    "enabled": true,
+    "rules": [
+        {
+            "name": "NPM WARN",
+            "pattern": "(npm)\\s+(WARN)\\b",
+            "colors": [
+                null,
+                "yellow"
+            ],
+            "enabled": true,
+            "description": "Highlights npm warnings"
+        },
+        {
+            "name": "NPM ERR!",
+            "pattern": "(npm)\\s+(ERR!)\\b",
+            "colors": [
+                null,
+                "bold red"
+            ],
+            "enabled": true,
+            "description": "Highlights npm errors"
+        },
+        {
+            "name": "Added Packages",
+            "pattern": "(added)\\s+(\\d+)\\s+(packages?)",
+            "colors": [
+                "green",
+                "bold green",
+                "green"
+            ],
+            "enabled": true,
+            "description": "Highlights added packages count"
+        },
+        {
+            "name": "Package Names",
+            "pattern": "(@[\\w-]+/)?([\\w.-]+)@(\\d+\\.\\d+\\.\\d+)",
+            "colors": [
+                null,
+                "cyan",
+                "yellow"
+            ],
+            "enabled": true,
+            "description": "Highlights package names with versions"
+        },
+        {
+            "name": "Vulnerabilities High/Critical",
+            "pattern": "(\\d+)\\s+(high|critical)",
+            "colors": [
+                "bold red",
+                "red"
+            ],
+            "enabled": true,
+            "description": "Highlights high/critical vulnerabilities"
+        },
+        {
+            "name": "Vulnerabilities Moderate",
+            "pattern": "(\\d+)\\s+(moderate)",
+            "colors": [
+                "yellow",
+                "yellow"
+            ],
+            "enabled": true,
+            "description": "Highlights moderate vulnerabilities"
+        },
+        {
+            "name": "Success",
+            "pattern": "✨\\s+(Done)\\b|(success)\\b",
+            "colors": [
+                "bold green",
+                "green"
+            ],
+            "enabled": true,
+            "description": "Highlights success messages"
+        }
+    ]
+}

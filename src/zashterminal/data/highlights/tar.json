@@ -1,0 +1,68 @@
+{
+    "name": "tar",
+    "description": "Highlights for tar archive command output",
+    "triggers": [
+        "tar"
+    ],
+    "enabled": true,
+    "rules": [
+        {
+            "name": "Extracting",
+            "pattern": "^x\\s+(.+)",
+            "colors": [
+                "green"
+            ],
+            "enabled": true,
+            "description": "Highlights extracted files"
+        },
+        {
+            "name": "Adding",
+            "pattern": "^a\\s+(.+)",
+            "colors": [
+                "cyan"
+            ],
+            "enabled": true,
+            "description": "Highlights added files"
+        },
+        {
+            "name": "Error",
+            "pattern": "(tar:.*Error|Cannot)(.+)",
+            "colors": [
+                "bold red",
+                "bold red"
+            ],
+            "enabled": true,
+            "description": "Highlights tar errors"
+        },
+        {
+            "name": "Warning",
+            "pattern": "(tar:.*Warning|warning):?\\s*(.+)",
+            "colors": [
+                "bold yellow",
+                "bold yellow"
+            ],
+            "enabled": true,
+            "description": "Highlights tar warnings"
+        },
+        {
+            "name": "Permission Denied",
+            "pattern": "(Permission denied|Cannot open)",
+            "colors": [
+                "bold red"
+            ],
+            "enabled": true,
+            "description": "Highlights permission errors"
+        },
+        {
+            "name": "Removing Leading Slash",
+            "pattern": "(Removing leading)\\s+([`'\"][^`'\"]+[`'\"])\\s+(from)",
+            "colors": [
+                "yellow",
+                "cyan",
+                "yellow"
+            ],
+            "enabled": true,
+            "description": "Highlights leading slash removal warning"
+        }
+    ]
+}

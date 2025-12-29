@@ -1,0 +1,93 @@
+{
+    "name": "vmstat",
+    "description": "Highlights for vmstat virtual memory statistics output",
+    "triggers": [
+        "vmstat"
+    ],
+    "enabled": true,
+    "rules": [
+        {
+            "name": "Main Headers",
+            "pattern": "^(procs)\\s+(-+memory-+)\\s+(-+swap-+)\\s+(-+io-+)\\s+(-+system-+)\\s+(-+cpu-+)",
+            "colors": [
+                "bold white",
+                "bold cyan",
+                "bold magenta",
+                "bold blue",
+                "bold green",
+                "bold red"
+            ],
+            "enabled": true,
+            "description": "Highlights main column headers"
+        },
+        {
+            "name": "Sub Headers",
+            "pattern": "^\\s*(r\\s+b)\\s+(swpd\\s+free\\s+buff\\s+cache)\\s+(si\\s+so)\\s+(bi\\s+bo)\\s+(in\\s+cs)\\s+(us\\s+sy\\s+id\\s+wa\\s+st)",
+            "colors": [
+                null,
+                "bright_cyan",
+                "bright_magenta",
+                "bright_blue",
+                "bright_green",
+                "bright_red"
+            ],
+            "enabled": true,
+            "description": "Highlights sub-column headers"
+        },
+        {
+            "name": "Disk Mode Headers",
+            "pattern": "^(disk-)\\s+(-+reads-+)\\s+(-+writes-+)\\s+(-+IO-+)",
+            "colors": [
+                "bold white",
+                "bold green",
+                "bold magenta",
+                "bold blue"
+            ],
+            "enabled": true,
+            "description": "Highlights disk mode headers"
+        },
+        {
+            "name": "High CPU User",
+            "pattern": "\\s+([5-9]\\d|100)\\s+\\d+\\s+\\d+\\s+\\d+\\s+\\d+\\s*$",
+            "colors": [
+                "yellow"
+            ],
+            "enabled": true,
+            "description": "Highlights high CPU user usage (50%+)"
+        },
+        {
+            "name": "High Wait",
+            "pattern": "\\s+\\d+\\s+\\d+\\s+\\d+\\s+([1-9]\\d+)\\s+\\d+\\s*$",
+            "colors": [
+                null,
+                null,
+                null,
+                null,
+                "red"
+            ],
+            "enabled": true,
+            "description": "Highlights high I/O wait"
+        },
+        {
+            "name": "High Swap In/Out",
+            "pattern": "\\s+([1-9]\\d*)\\s+([1-9]\\d*)\\s+\\d+\\s+\\d+\\s+\\d+\\s+\\d+",
+            "colors": [
+                null,
+                "red",
+                "red"
+            ],
+            "enabled": true,
+            "description": "Highlights active swapping"
+        },
+        {
+            "name": "Processes Blocked",
+            "pattern": "^\\s+\\d+\\s+([1-9]\\d*)\\s",
+            "colors": [
+                null,
+                "red"
+            ],
+            "enabled": true,
+            "description": "Highlights blocked processes"
+        }
+    ]
+}

@@ -1,0 +1,37 @@
+[project]
+name = "zashterminal"
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+    "Topic :: Terminals :: Terminal Emulators/X Terminals",
+]
+version = "0.1.0"
+authors = [
+    { name = "Leonardo Berbert", email = "leo4berbert@gmail.com" },
+]
+license = "GPL-3.0-or-later"
+license-files = ["LICENSE"]
+readme = "README.md"
+requires-python = ">=3.8"
+dependencies = ["PyGObject", "pycairo", "setproctitle", "requests", "psutil", "regex; extra == 'performance'", "Pygments; extra == 'syntax-highlighting'", "py7zr; extra == 'backup'"]
+
+[project.gui-scripts]
+zashterminal = "zashterminal:main"
+
+[project.urls]
+Homepage = "https://github.com/leoberbert/zashterminal"
+Issues = "https://github.com/leoberbert/zashterminal/issues"
+
+[project.optional-dependencies]
+performance = ["regex"]
+syntax-highlighting = ["Pygments"]
+backup = ["py7zr"]
+all = ["regex", "Pygments", "py7zr"]
+
+[build-system]
+requires = ["uv_build"]
+build-backend = "uv_build"
+
+[tool.setuptools.packages.find]
+include = ["zashterminal"]

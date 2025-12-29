@@ -1,0 +1,90 @@
+{
+  "name": "global",
+  "triggers": [],
+  "rules": [
+    {
+      "name": "Critical/Error",
+      "pattern": "\\b(error|fail(?:ure|ed)?|fatal|critical|exception|crash)\\b",
+      "colors": [
+        "bold red"
+      ],
+      "enabled": true,
+      "description": "Highlights error messages and critical failures"
+    },
+    {
+      "name": "Warning",
+      "pattern": "\\b(warn(?:ing)?|deprecated|alert|caution)\\b",
+      "colors": [
+        "bold yellow"
+      ],
+      "enabled": true,
+      "description": "Highlights warnings and deprecation notices"
+    },
+    {
+      "name": "Success",
+      "pattern": "\\b(success|ok|passed|complete(?:d)?|done)\\b",
+      "colors": [
+        "bold green"
+      ],
+      "enabled": true,
+      "description": "Highlights success messages and completion notices"
+    },
+    {
+      "name": "State (Active)",
+      "pattern": "\\b(enable(?:d)?|active|online|up|connected|true)\\b",
+      "colors": [
+        "green"
+      ],
+      "enabled": true,
+      "description": "Highlights active/enabled states"
+    },
+    {
+      "name": "State (Inactive)",
+      "pattern": "\\b(disable(?:d)?|inactive|offline|down|disconnected|false)\\b",
+      "colors": [
+        "red"
+      ],
+      "enabled": true,
+      "description": "Highlights inactive/disabled states"
+    },
+    {
+      "name": "IPv4 Address",
+      "pattern": "\\b\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\b",
+      "colors": [
+        "bold magenta"
+      ],
+      "enabled": true,
+      "description": "Highlights IPv4 addresses"
+    },
+    {
+      "name": "IPv6 and MAC Address",
+      "pattern": "\\b[a-f0-9]{1,4}(?::[a-f0-9]{1,4}){2,}:[a-f0-9:]{1,}\\b|\\b.*::.*",
+      "colors": [
+        "yellow"
+      ],
+      "enabled": true,
+      "description": "Highlights IPv6 and MAC addresses (colon-separated hex values)"
+    },
+    {
+      "name": "URL (HTTP/S)",
+      "pattern": "https?://[^\\s]+",
+      "colors": [
+        "underline cyan"
+      ],
+      "enabled": true,
+      "description": "Highlights HTTP and HTTPS URLs"
+    },
+    {
+      "name": "Strings (Quotes)",
+      "pattern": "\"[^\"]*\"|'[^']*'",
+      "colors": [
+        "yellow"
+      ],
+      "enabled": true,
+      "description": "Highlights quoted strings"
+    }
+  ],
+  "enabled": true,
+  "description": "Global highlight rules applied to all terminal output",
+  "use_global_rules": false
+}

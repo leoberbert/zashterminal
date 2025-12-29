@@ -1,0 +1,127 @@
+{
+    "name": "ss",
+    "description": "Highlights for ss (socket statistics) output",
+    "triggers": ["ss", "netstat"],
+    "enabled": true,
+    "rules": [
+        {
+            "name": "LISTEN State",
+            "pattern": "\\bLISTEN(ING)?\\b",
+            "colors": ["bold blue"],
+            "enabled": true,
+            "description": "Highlights listening sockets"
+        },
+        {
+            "name": "ESTAB State",
+            "pattern": "\\b(ESTAB|ESTABLISHED|CONNECTED)\\b",
+            "colors": ["bold yellow"],
+            "enabled": true,
+            "description": "Highlights established connections"
+        },
+        {
+            "name": "TIME-WAIT State",
+            "pattern": "\\bTIME[_-]WAIT\\b",
+            "colors": ["bold red"],
+            "enabled": true,
+            "description": "Highlights time-wait state"
+        },
+        {
+            "name": "CLOSE States",
+            "pattern": "\\bCLOS(E(_WAIT)?|ING)\\b",
+            "colors": ["red"],
+            "enabled": true,
+            "description": "Highlights closing states"
+        },
+        {
+            "name": "FIN-WAIT State",
+            "pattern": "\\bFIN[_-]WAIT.*\\b",
+            "colors": ["red"],
+            "enabled": true,
+            "description": "Highlights fin-wait states"
+        },
+        {
+            "name": "SYN States",
+            "pattern": "\\bSYN.*?\\b",
+            "colors": ["bold red"],
+            "enabled": true,
+            "description": "Highlights syn states"
+        },
+        {
+            "name": "UNCONN State",
+            "pattern": "\\bUNCONN\\b",
+            "colors": ["red"],
+            "enabled": true,
+            "description": "Highlights unconnected sockets"
+        },
+        {
+            "name": "FREE State",
+            "pattern": "\\bFREE\\b",
+            "colors": ["bold green"],
+            "enabled": true,
+            "description": "Highlights free sockets"
+        },
+        {
+            "name": "LAST_ACK State",
+            "pattern": "\\bLAST_ACK\\b",
+            "colors": ["red"],
+            "enabled": true,
+            "description": "Highlights last-ack state"
+        },
+        {
+            "name": "UNKNOWN State",
+            "pattern": "\\bUNKNOWN\\b",
+            "colors": ["bold red"],
+            "enabled": true,
+            "description": "Highlights unknown state"
+        },
+        {
+            "name": "Protocol TCP",
+            "pattern": "^tcp",
+            "colors": ["blue"],
+            "enabled": true,
+            "description": "Highlights TCP protocol"
+        },
+        {
+            "name": "Protocol UDP",
+            "pattern": "^udp",
+            "colors": ["yellow"],
+            "enabled": true,
+            "description": "Highlights UDP protocol"
+        },
+        {
+            "name": "Protocol Unix",
+            "pattern": "^unix|STREAM|DGRAM",
+            "colors": ["magenta"],
+            "enabled": true,
+            "description": "Highlights Unix sockets"
+        },
+        {
+            "name": "Local Address",
+            "pattern": "\\s(\\S+?):(\\S+?)\\s",
+            "colors": ["bright_green", "bright_cyan"],
+            "enabled": true,
+            "description": "Highlights local address and port"
+        },
+        {
+            "name": "Process Name",
+            "pattern": "\\(\"([^\"]+)\",",
+            "colors": ["blue"],
+            "enabled": true,
+            "description": "Highlights process name"
+        },
+        {
+            "name": "Timer",
+            "pattern": "\\d+sec",
+            "colors": ["yellow"],
+            "enabled": true,
+            "description": "Highlights timer values"
+        },
+        {
+            "name": "Status Bracket",
+            "pattern": "\\[.*\\]",
+            "colors": ["green"],
+            "enabled": true,
+            "description": "Highlights status in brackets"
+        }
+    ]
+}

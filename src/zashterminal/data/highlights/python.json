@@ -1,0 +1,76 @@
+{
+    "name": "python",
+    "description": "Highlights for python/python3 interpreter output",
+    "triggers": [
+        "python",
+        "python3",
+        "python2",
+        "ipython",
+        "ipython3",
+        "bpython",
+        "pypy",
+        "pypy3"
+    ],
+    "enabled": true,
+    "rules": [
+        {
+            "name": "Traceback",
+            "pattern": "(Traceback \\(most recent call last\\):)",
+            "colors": [
+                "bold red"
+            ],
+            "enabled": true,
+            "description": "Highlights traceback header"
+        },
+        {
+            "name": "Exception Types",
+            "pattern": "\\b(Exception|Error|Warning|TypeError|ValueError|KeyError|IndexError|AttributeError|ImportError|RuntimeError|NameError|SyntaxError|ZeroDivisionError|FileNotFoundError|OSError|IOError)\\b",
+            "colors": [
+                "red"
+            ],
+            "enabled": true,
+            "description": "Highlights exception type names"
+        },
+        {
+            "name": "File Line",
+            "pattern": "(File)\\s+\"([^\"]+)\",\\s+(line)\\s+(\\d+)",
+            "colors": [
+                null,
+                "magenta",
+                null,
+                "yellow"
+            ],
+            "enabled": true,
+            "description": "Highlights file and line references"
+        },
+        {
+            "name": "In Module/Function",
+            "pattern": "(in)\\s+(<\\w+>|\\w+)",
+            "colors": [
+                null,
+                "cyan"
+            ],
+            "enabled": true,
+            "description": "Highlights module/function context"
+        },
+        {
+            "name": "DeprecationWarning",
+            "pattern": "\\b(DeprecationWarning|PendingDeprecationWarning)\\b",
+            "colors": [
+                "yellow"
+            ],
+            "enabled": true,
+            "description": "Highlights deprecation warnings"
+        },
+        {
+            "name": "Error Message",
+            "pattern": "^([A-Za-z]+Error|[A-Za-z]+Exception):\\s+(.+)$",
+            "colors": [
+                "bold red",
+                "red"
+            ],
+            "enabled": true,
+            "description": "Highlights error messages"
+        }
+    ]
+}

@@ -1,0 +1,57 @@
+{
+    "name": "pip",
+    "description": "Highlights for pip output",
+    "triggers": ["pip", "pip3", "pip2"],
+    "enabled": true,
+    "rules": [
+        {
+            "name": "Successfully Installed",
+            "pattern": "(Successfully installed)\\s+(.+)",
+            "colors": ["bold green", "cyan"],
+            "enabled": true,
+            "description": "Highlights successful installations"
+        },
+        {
+            "name": "Requirement Satisfied",
+            "pattern": "(Requirement already satisfied):\\s+(.+)",
+            "colors": ["cyan", null],
+            "enabled": true,
+            "description": "Highlights already satisfied requirements"
+        },
+        {
+            "name": "WARNING",
+            "pattern": "(WARNING:)\\s+(.+)",
+            "colors": ["bold yellow", "yellow"],
+            "enabled": true,
+            "description": "Highlights pip warnings"
+        },
+        {
+            "name": "ERROR",
+            "pattern": "(ERROR:)\\s+(.+)",
+            "colors": ["bold red", "red"],
+            "enabled": true,
+            "description": "Highlights pip errors"
+        },
+        {
+            "name": "Package Versions",
+            "pattern": "(\\S+?)-(\\d[\\d.]*)",
+            "colors": ["cyan", "yellow"],
+            "enabled": true,
+            "description": "Highlights package names with versions"
+        },
+        {
+            "name": "Downloading",
+            "pattern": "(Downloading)\\s+(\\S+)",
+            "colors": ["cyan", null],
+            "enabled": true,
+            "description": "Highlights downloading progress"
+        },
+        {
+            "name": "Collecting",
+            "pattern": "(Collecting)\\s+(\\S+)",
+            "colors": ["cyan", null],
+            "enabled": true,
+            "description": "Highlights package collection"
+        }
+    ]
+}

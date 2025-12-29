@@ -1,0 +1,170 @@
+{
+    "name": "dig",
+    "description": "Highlights for dig DNS lookup output",
+    "triggers": [
+        "dig"
+    ],
+    "enabled": true,
+    "rules": [
+        {
+            "name": "Title Line",
+            "pattern": "^(; <<>>)\\s+(DiG[^<]+)(<<>>)\\s+(\\S+)",
+            "colors": [
+                "yellow",
+                "cyan",
+                "yellow",
+                "bold magenta"
+            ],
+            "enabled": true,
+            "description": "Highlights DiG title line with version and queried domain"
+        },
+        {
+            "name": "Section Headers",
+            "pattern": "^;;\\s+(QUESTION|ANSWER|AUTHORITY|ADDITIONAL|OPT PSEUDOSECTION)\\s*(SECTION)?:?",
+            "colors": [
+                "bold magenta",
+                "bold magenta"
+            ],
+            "enabled": true,
+            "description": "Highlights section headers including OPT PSEUDOSECTION"
+        },
+        {
+            "name": "Comment Lines",
+            "pattern": "^(;;)\\s+(.+)$",
+            "colors": [
+                "yellow",
+                null
+            ],
+            "enabled": true,
+            "description": "Highlights comment lines starting with ;;"
+        },
+        {
+            "name": "Status NOERROR",
+            "pattern": "(status:)\\s*(NOERROR)",
+            "colors": [
+                null,
+                "bold green"
+            ],
+            "enabled": true,
+            "description": "Highlights successful query status"
+        },
+        {
+            "name": "Status Error",
+            "pattern": "(status:)\\s*(NXDOMAIN|SERVFAIL|REFUSED|FORMERR)",
+            "colors": [
+                null,
+                "bold red"
+            ],
+            "enabled": true,
+            "description": "Highlights error query status"
+        },
+        {
+            "name": "IPv4 Address",
+            "pattern": "(\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})",
+            "colors": [
+                "bold magenta"
+            ],
+            "enabled": true,
+            "description": "Highlights IPv4 addresses"
+        },
+        {
+            "name": "IPv6 Address",
+            "pattern": "((?:[0-9a-fA-F]{1,4})?::?[0-9a-fA-F:]+)",
+            "colors": [
+                "green"
+            ],
+            "enabled": true,
+            "description": "Highlights IPv6 addresses"
+        },
+        {
+            "name": "Domain Names",
+            "pattern": "([a-zA-Z0-9][-a-zA-Z0-9]*\\.)+[a-zA-Z]+\\.?",
+            "colors": [
+                "bright_magenta"
+            ],
+            "enabled": true,
+            "description": "Highlights domain names"
+        },
+        {
+            "name": "Record Types",
+            "pattern": "\\b(A|AAAA|CNAME|MX|NS|TXT|SOA|PTR|SRV|CAA|DNSKEY|DS|NSEC|RRSIG|OPT)\\b",
+            "colors": [
+                "cyan"
+            ],
+            "enabled": true,
+            "description": "Highlights DNS record types"
+        },
+        {
+            "name": "TTL Values",
+            "pattern": "\\s(\\d+)\\s+(IN)\\b",
+            "colors": [
+                "yellow",
+                null
+            ],
+            "enabled": true,
+            "description": "Highlights TTL and class"
+        },
+        {
+            "name": "Query Time",
+            "pattern": "(Query time:)\\s*(\\d+)\\s*(msec)",
+            "colors": [
+                null,
+                "bold yellow",
+                null
+            ],
+            "enabled": true,
+            "description": "Highlights query time"
+        },
+        {
+            "name": "Server",
+            "pattern": "(SERVER:)\\s*(\\S+)",
+            "colors": [
+                null,
+                "cyan"
+            ],
+            "enabled": true,
+            "description": "Highlights DNS server"
+        },
+        {
+            "name": "When",
+            "pattern": "(WHEN:)\\s*(.+)$",
+            "colors": [
+                null,
+                "magenta"
+            ],
+            "enabled": true,
+            "description": "Highlights query timestamp"
+        },
+        {
+            "name": "Flags",
+            "pattern": "(flags:)\\s*([^;]+)",
+            "colors": [
+                null,
+                "magenta"
+            ],
+            "enabled": true,
+            "description": "Highlights query flags"
+        },
+        {
+            "name": "MSG SIZE",
+            "pattern": "(MSG SIZE)\\s+(rcvd|sent):?\\s*(\\d+)",
+            "colors": [
+                null,
+                null,
+                "yellow"
+            ],
+            "enabled": true,
+            "description": "Highlights message size"
+        },
+        {
+            "name": "EDNS Options",
+            "pattern": "^(;)\\s+(EDNS:.+)$",
+            "colors": [
+                "yellow",
+                null
+            ],
+            "enabled": true,
+            "description": "Highlights EDNS options line"
+        }
+    ]
+}

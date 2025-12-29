@@ -1,0 +1,66 @@
+{
+  "name": "lsof",
+  "triggers": [
+    "lsof"
+  ],
+  "rules": [
+    {
+      "name": "Command and PID",
+      "pattern": "^(\\S+)\\s+(\\d+)\\s",
+      "colors": [
+        "bold cyan",
+        "cyan"
+      ],
+      "enabled": true,
+      "description": "Highlights command and process ID"
+    },
+    {
+      "name": "Root User",
+      "pattern": "\\b(root)\\b",
+      "colors": [
+        "bold red"
+      ],
+      "enabled": true,
+      "description": "Highlights root user"
+    },
+    {
+      "name": "File Types",
+      "pattern": "\\b(REG|DIR|CHR|BLK|FIFO|LINK|SOCK|unix|IPv4|IPv6)\\b",
+      "colors": [
+        "bold magenta"
+      ],
+      "enabled": true,
+      "description": "Highlights file types"
+    },
+    {
+      "name": "Network State",
+      "pattern": "\\((LISTEN|ESTABLISHED|CLOSE_WAIT|TIME_WAIT|SYN_SENT)\\)",
+      "colors": [
+        "green"
+      ],
+      "enabled": true,
+      "description": "Highlights network states"
+    },
+    {
+      "name": "Path",
+      "pattern": "\\s(/\\S+)",
+      "colors": [
+        "cyan"
+      ],
+      "enabled": true,
+      "description": "Highlights file paths"
+    },
+    {
+      "name": "Deleted Files",
+      "pattern": "(\\(deleted\\))",
+      "colors": [
+        "red"
+      ],
+      "enabled": true,
+      "description": "Highlights deleted files"
+    }
+  ],
+  "enabled": true,
+  "description": "Highlights for lsof (list open files) output",
+  "use_global_rules": false
+}

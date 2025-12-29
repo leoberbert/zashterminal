@@ -1,0 +1,85 @@
+{
+    "name": "sensors",
+    "description": "Highlights for sensors hardware monitoring output",
+    "triggers": ["sensors"],
+    "enabled": true,
+    "rules": [
+        {
+            "name": "Sensor Name",
+            "pattern": "^([a-z\\-0-9]+)$",
+            "colors": ["underline yellow"],
+            "enabled": true,
+            "description": "Highlights sensor chip name"
+        },
+        {
+            "name": "Adapter",
+            "pattern": "(Adapter:)(\\s.+)",
+            "colors": [null, "yellow"],
+            "enabled": true,
+            "description": "Highlights adapter name"
+        },
+        {
+            "name": "Data Label",
+            "pattern": "^([^:]+):",
+            "colors": ["bright_cyan"],
+            "enabled": true,
+            "description": "Highlights data labels"
+        },
+        {
+            "name": "Extra Info",
+            "pattern": "(\\([^)]+\\))",
+            "colors": ["magenta"],
+            "enabled": true,
+            "description": "Dims extra info in parentheses (high/crit values)"
+        },
+        {
+            "name": "Low Temperature (<60°C)",
+            "pattern": ":\\s+(\\+[2-5]\\d\\.\\d°C)",
+            "colors": ["green"],
+            "enabled": true,
+            "description": "Highlights normal temperatures"
+        },
+        {
+            "name": "High Temperature (60-79°C)",
+            "pattern": ":\\s+(\\+[67]\\d\\.\\d°C)",
+            "colors": ["bright_yellow"],
+            "enabled": true,
+            "description": "Highlights warm temperatures"
+        },
+        {
+            "name": "Critical Temperature (80+°C)",
+            "pattern": ":\\s+(\\+[89]\\d\\.\\d°C)",
+            "colors": ["bright_red"],
+            "enabled": true,
+            "description": "Highlights hot temperatures"
+        },
+        {
+            "name": "Very Critical Temperature (100+°C)",
+            "pattern": ":\\s+(\\+1\\d{2}\\.\\d°C)",
+            "colors": ["bold red"],
+            "enabled": true,
+            "description": "Highlights critical temperatures"
+        },
+        {
+            "name": "Fan Speed",
+            "pattern": "(\\d+) (RPM)",
+            "colors": ["cyan", "cyan"],
+            "enabled": true,
+            "description": "Highlights fan speeds"
+        },
+        {
+            "name": "Voltage",
+            "pattern": "(\\+?\\d+\\.\\d+) (V)",
+            "colors": ["yellow", "yellow"],
+            "enabled": true,
+            "description": "Highlights voltage readings"
+        },
+        {
+            "name": "Power",
+            "pattern": "(\\d+\\.\\d+) (W)",
+            "colors": ["magenta", "magenta"],
+            "enabled": true,
+            "description": "Highlights power readings"
+        }
+    ]
+}

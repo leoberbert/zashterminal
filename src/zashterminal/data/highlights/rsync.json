@@ -1,0 +1,72 @@
+{
+    "name": "rsync",
+    "description": "Highlights for rsync output",
+    "triggers": [
+        "rsync",
+        "scp",
+        "sftp"
+    ],
+    "enabled": true,
+    "rules": [
+        {
+            "name": "Sent/Received",
+            "pattern": "(sent|received)\\s+([\\d,]+)\\s+(bytes)",
+            "colors": [
+                "cyan",
+                "yellow",
+                null
+            ],
+            "enabled": true,
+            "description": "Highlights transfer statistics"
+        },
+        {
+            "name": "Speed",
+            "pattern": "([\\d.]+)\\s*([KMG]?B/s)",
+            "colors": [
+                "magenta",
+                "magenta"
+            ],
+            "enabled": true,
+            "description": "Highlights transfer speed"
+        },
+        {
+            "name": "Progress",
+            "pattern": "(\\d+)(%)\\b",
+            "colors": [
+                "green",
+                "green"
+            ],
+            "enabled": true,
+            "description": "Highlights progress percentage"
+        },
+        {
+            "name": "Error",
+            "pattern": "(rsync error:|failed:)",
+            "colors": [
+                "bold red"
+            ],
+            "enabled": true,
+            "description": "Highlights rsync errors"
+        },
+        {
+            "name": "Deleting",
+            "pattern": "(deleting)\\s+(\\S+)",
+            "colors": [
+                "yellow",
+                "yellow"
+            ],
+            "enabled": true,
+            "description": "Highlights deleted files"
+        },
+        {
+            "name": "Total Size",
+            "pattern": "(total size is)\\s+([\\d,]+)",
+            "colors": [
+                null,
+                "cyan"
+            ],
+            "enabled": true,
+            "description": "Highlights total size"
+        }
+    ]
+}

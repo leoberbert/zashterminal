@@ -1,0 +1,117 @@
+{
+    "name": "make",
+    "description": "Highlights for make and gcc/g++ compiler output",
+    "triggers": [
+        "make",
+        "gmake",
+        "ninja",
+        "cmake",
+        "gcc",
+        "g++",
+        "cc",
+        "c++",
+        "clang",
+        "clang++"
+    ],
+    "enabled": true,
+    "rules": [
+        {
+            "name": "Entering/Leaving Directory",
+            "pattern": "(make\\[\\d+\\]:)\\s+(Entering|Leaving)\\s+(directory)\\s+'([^']+)'",
+            "colors": [
+                null,
+                "cyan",
+                null,
+                "magenta"
+            ],
+            "enabled": true,
+            "description": "Highlights directory changes"
+        },
+        {
+            "name": "Compiling (CC/CXX)",
+            "pattern": "^\\s*(CC|CXX|LD|AR)\\s+(.+)",
+            "colors": [
+                "cyan",
+                null
+            ],
+            "enabled": true,
+            "description": "Highlights compilation steps"
+        },
+        {
+            "name": "Make Error",
+            "pattern": "(\\*\\*\\*)\\s+(.*)\\s+(Error)\\s+(\\d+)",
+            "colors": [
+                "red",
+                "red",
+                "bold red",
+                "red"
+            ],
+            "enabled": true,
+            "description": "Highlights make errors"
+        },
+        {
+            "name": "Compiler Error",
+            "pattern": "(:)\\s*(error)(:)",
+            "colors": [
+                null,
+                "bold red",
+                null
+            ],
+            "enabled": true,
+            "description": "Highlights compilation errors"
+        },
+        {
+            "name": "Compiler Warning",
+            "pattern": "(:)\\s*(warning)(:)",
+            "colors": [
+                null,
+                "bold yellow",
+                null
+            ],
+            "enabled": true,
+            "description": "Highlights compilation warnings"
+        },
+        {
+            "name": "Compiler Note",
+            "pattern": "(:)\\s*(note)(:)",
+            "colors": [
+                null,
+                "cyan",
+                null
+            ],
+            "enabled": true,
+            "description": "Highlights compiler notes"
+        },
+        {
+            "name": "File:Line:Col",
+            "pattern": "(\\S+?):(\\d+):(\\d+):",
+            "colors": [
+                "magenta",
+                "yellow",
+                "yellow"
+            ],
+            "enabled": true,
+            "description": "Highlights file locations"
+        },
+        {
+            "name": "In function",
+            "pattern": "(In function)\\s+['\\u2018]([\\w:~]+)['\\u2019]",
+            "colors": [
+                null,
+                "cyan"
+            ],
+            "enabled": true,
+            "description": "Highlights function context"
+        },
+        {
+            "name": "Nothing to do",
+            "pattern": "(Nothing to be done for)\\s+'([^']+)'",
+            "colors": [
+                "green",
+                null
+            ],
+            "enabled": true,
+            "description": "Highlights up-to-date targets"
+        }
+    ]
+}

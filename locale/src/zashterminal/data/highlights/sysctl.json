@@ -1,0 +1,43 @@
+{
+    "name": "sysctl",
+    "description": "Highlights for sysctl kernel parameters output",
+    "triggers": ["sysctl"],
+    "enabled": true,
+    "rules": [
+        {
+            "name": "Full Parameter Line",
+            "pattern": "^(\\w+)\\.(\\S+) = ?(.+)?$",
+            "colors": ["green", "cyan", "yellow"],
+            "enabled": true,
+            "description": "Highlights parameter category, key and value"
+        },
+        {
+            "name": "Subcategory",
+            "pattern": "\\w+\\.(\\S+(?=\\.))\\.",
+            "colors": ["magenta"],
+            "enabled": true,
+            "description": "Highlights subcategory in parameter path"
+        },
+        {
+            "name": "Permission Error",
+            "pattern": "sysctl: permission denied on key '([^']+)'",
+            "colors": ["red", "bold red"],
+            "enabled": true,
+            "description": "Highlights permission errors"
+        },
+        {
+            "name": "Boolean True",
+            "pattern": "= (1)$",
+            "colors": [null, "bold green"],
+            "enabled": true,
+            "description": "Highlights enabled boolean values"
+        },
+        {
+            "name": "Boolean False",
+            "pattern": "= (0)$",
+            "colors": [null, "bold yellow"],
+            "enabled": true,
+            "description": "Highlights disabled boolean values"
+        }
+    ]
+}

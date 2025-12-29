@@ -1,0 +1,109 @@
+{
+    "name": "gcc",
+    "description": "Highlights for gcc/g++ compiler output",
+    "triggers": [
+        "gcc",
+        "g++",
+        "clang",
+        "clang++",
+        "cc"
+    ],
+    "enabled": true,
+    "rules": [
+        {
+            "name": "Error",
+            "pattern": "(:\\s*)(error)(:\\s*)",
+            "colors": [
+                null,
+                "bold red",
+                null
+            ],
+            "enabled": true,
+            "description": "Highlights compilation errors"
+        },
+        {
+            "name": "Warning",
+            "pattern": "(:\\s*)(warning)(:\\s*)",
+            "colors": [
+                null,
+                "yellow",
+                null
+            ],
+            "enabled": true,
+            "description": "Highlights compilation warnings"
+        },
+        {
+            "name": "Note",
+            "pattern": "(:\\s*)(note)(:\\s*)",
+            "colors": [
+                null,
+                "cyan",
+                null
+            ],
+            "enabled": true,
+            "description": "Highlights compiler notes"
+        },
+        {
+            "name": "File Location",
+            "pattern": "(\\S+?):(\\d+):(\\d+):",
+            "colors": [
+                "magenta",
+                "cyan",
+                "cyan"
+            ],
+            "enabled": true,
+            "description": "Highlights file:line:column locations"
+        },
+        {
+            "name": "In Function",
+            "pattern": "(In function)\\s+['‘]([\\w:~<>,\\s*&]+)['’]",
+            "colors": [
+                null,
+                "yellow"
+            ],
+            "enabled": true,
+            "description": "Highlights function context"
+        },
+        {
+            "name": "In File Included",
+            "pattern": "(In file included from)\\s+(.+)",
+            "colors": [
+                null,
+                "magenta"
+            ],
+            "enabled": true,
+            "description": "Highlights include chain"
+        },
+        {
+            "name": "Undefined Reference",
+            "pattern": "(undefined reference to)\\s+[`'‘]([^'`’]+)[`'’]",
+            "colors": [
+                "red",
+                "bold yellow"
+            ],
+            "enabled": true,
+            "description": "Highlights undefined references"
+        },
+        {
+            "name": "Fatal Error",
+            "pattern": "(fatal error)(:\\s*)",
+            "colors": [
+                "bold red",
+                null
+            ],
+            "enabled": true,
+            "description": "Highlights fatal errors"
+        },
+        {
+            "name": "Caret Pointer",
+            "pattern": "(\\s*)(\\^)(~*)",
+            "colors": [
+                null,
+                "bold green",
+                "green"
+            ],
+            "enabled": true,
+            "description": "Highlights error position pointer"
+        }
+    ]
+}

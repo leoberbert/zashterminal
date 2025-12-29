@@ -1,0 +1,82 @@
+{
+    "name": "findmnt",
+    "description": "Highlights for findmnt mount listing output",
+    "triggers": [
+        "findmnt"
+    ],
+    "enabled": true,
+    "rules": [
+        {
+            "name": "Device Path",
+            "pattern": "(/dev/[\\w/-]+)",
+            "colors": [
+                "green"
+            ],
+            "enabled": true,
+            "description": "Highlights device paths"
+        },
+        {
+            "name": "Mount Target",
+            "pattern": "(?:─|^)(/[\\w/.-]*)",
+            "colors": [
+                "bold yellow"
+            ],
+            "enabled": true,
+            "description": "Highlights mount target paths"
+        },
+        {
+            "name": "Read-Write",
+            "pattern": "\\brw\\b",
+            "colors": [
+                "bold red"
+            ],
+            "enabled": true,
+            "description": "Highlights read-write mounts"
+        },
+        {
+            "name": "Read-Only",
+            "pattern": "\\bro\\b",
+            "colors": [
+                "bold green"
+            ],
+            "enabled": true,
+            "description": "Highlights read-only mounts"
+        },
+        {
+            "name": "Linux FS Types",
+            "pattern": "\\b(ext[234]|xfs|btrfs|nfs\\d?)\\b",
+            "colors": [
+                "cyan"
+            ],
+            "enabled": true,
+            "description": "Highlights Linux filesystem types"
+        },
+        {
+            "name": "Windows FS Types",
+            "pattern": "\\b(fat|vfat|ntfs|msdos|fuseblk)\\b",
+            "colors": [
+                "on_cyan white"
+            ],
+            "enabled": true,
+            "description": "Highlights Windows/FAT filesystem types"
+        },
+        {
+            "name": "Headers",
+            "pattern": "\\b(TARGET|SOURCE|FSTYPE|OPTIONS)\\b",
+            "colors": [
+                "bold magenta"
+            ],
+            "enabled": true,
+            "description": "Highlights column headers"
+        },
+        {
+            "name": "SWAP",
+            "pattern": "\\[(SWAP)\\]",
+            "colors": [
+                "bright_magenta"
+            ],
+            "enabled": true,
+            "description": "Highlights swap entries"
+        }
+    ]
+}

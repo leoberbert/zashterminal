@@ -1,0 +1,85 @@
+{
+    "name": "netstat",
+    "description": "Highlights for netstat network statistics output",
+    "triggers": ["netstat"],
+    "enabled": true,
+    "rules": [
+        {
+            "name": "Protocol",
+            "pattern": "^(tcp6?|udp6?|unix|raw)\\s",
+            "colors": ["bold blue"],
+            "enabled": true,
+            "description": "Highlights protocol types"
+        },
+        {
+            "name": "LISTEN",
+            "pattern": "\\b(LISTEN(?:ING)?)\\b",
+            "colors": ["bold blue"],
+            "enabled": true,
+            "description": "Highlights listening connections"
+        },
+        {
+            "name": "ESTABLISHED",
+            "pattern": "\\b(ESTABLISHED|CONNECTED)\\b",
+            "colors": ["bold yellow"],
+            "enabled": true,
+            "description": "Highlights established connections"
+        },
+        {
+            "name": "TIME_WAIT",
+            "pattern": "\\b(TIME_WAIT|WAIT)\\b",
+            "colors": ["bold red"],
+            "enabled": true,
+            "description": "Highlights time wait states"
+        },
+        {
+            "name": "CLOSE States",
+            "pattern": "\\b(CLOS(?:E(?:_WAIT)?|ING)|LAST_ACK)\\b",
+            "colors": ["red"],
+            "enabled": true,
+            "description": "Highlights closing states"
+        },
+        {
+            "name": "SYN States",
+            "pattern": "\\b(SYN_(?:SENT|RECV|RECEIVED))\\b",
+            "colors": ["bold red"],
+            "enabled": true,
+            "description": "Highlights SYN states"
+        },
+        {
+            "name": "FIN_WAIT",
+            "pattern": "\\b(FIN_WAIT\\d?)\\b",
+            "colors": ["red"],
+            "enabled": true,
+            "description": "Highlights FIN wait states"
+        },
+        {
+            "name": "Host Port",
+            "pattern": "(\\S+?):(\\d+|\\S+?)\\b",
+            "colors": ["bold green", "bold red"],
+            "enabled": true,
+            "description": "Highlights hostname:port combinations"
+        },
+        {
+            "name": "Wildcard",
+            "pattern": "(\\*):(\\d+|[\\w-]+)\\b",
+            "colors": ["blue", "bold yellow"],
+            "enabled": true,
+            "description": "Highlights wildcard listeners"
+        },
+        {
+            "name": "IPv4 Address",
+            "pattern": "(\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})",
+            "colors": ["bold magenta"],
+            "enabled": true,
+            "description": "Highlights IPv4 addresses"
+        },
+        {
+            "name": "Stream/Dgram",
+            "pattern": "\\b(STREAM|DGRAM)\\b",
+            "colors": ["bold blue"],
+            "enabled": true,
+            "description": "Highlights socket types"
+        }
+    ]
+}

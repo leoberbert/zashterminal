@@ -1,0 +1,62 @@
+{
+    "name": "mtr",
+    "description": "Highlights for mtr network diagnostic output",
+    "triggers": [
+        "mtr"
+    ],
+    "enabled": true,
+    "rules": [
+        {
+            "name": "IPv4 Address",
+            "pattern": "(\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})",
+            "colors": [
+                "bold magenta"
+            ],
+            "enabled": true,
+            "description": "Highlights IP addresses"
+        },
+        {
+            "name": "Statistics Line",
+            "pattern": "(\\d+\\.\\d%)\\s+(\\d+)\\s+(\\d+\\.\\d)\\s+(\\d+\\.\\d)\\s+(\\d+\\.\\d)\\s+(\\d+\\.\\d)\\s+(\\d+\\.\\d)$",
+            "colors": ["yellow", null, null, "blue", "green", "red", null],
+            "enabled": true,
+            "description": "Highlights statistics: Loss%, Snt, Last, Avg, Best, Worst, StDev"
+        },
+        {
+            "name": "Unknown Host",
+            "pattern": "(\\?\\?\\?)",
+            "colors": [
+                "red"
+            ],
+            "enabled": true,
+            "description": "Highlights unknown hosts"
+        },
+        {
+            "name": "Headers",
+            "pattern": "(Packets|Pings|Host|Loss%|Snt|Last|Avg|Best|Wrst|StDev)",
+            "colors": [
+                "bold green"
+            ],
+            "enabled": true,
+            "description": "Highlights column headers"
+        },
+        {
+            "name": "Hop Number",
+            "pattern": "^\\s*(\\d+)\\.",
+            "colors": [
+                "cyan"
+            ],
+            "enabled": true,
+            "description": "Highlights hop numbers"
+        },
+        {
+            "name": "High Loss",
+            "pattern": "([5-9]\\d\\.\\d%|100\\.0%)",
+            "colors": [
+                "bold red"
+            ],
+            "enabled": true,
+            "description": "Highlights high packet loss (50%+)"
+        }
+    ]
+}

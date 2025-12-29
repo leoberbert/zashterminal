@@ -1,0 +1,78 @@
+{
+    "name": "lsusb",
+    "description": "Highlights for lsusb USB device listing output",
+    "triggers": [
+        "lsusb"
+    ],
+    "enabled": true,
+    "rules": [
+        {
+            "name": "Bus and Device",
+            "pattern": "(Bus)\\s+(\\d{3})\\s+(Device)\\s+(\\d{3}):",
+            "colors": [
+                null,
+                "cyan",
+                null,
+                "cyan"
+            ],
+            "enabled": true,
+            "description": "Highlights bus and device numbers"
+        },
+        {
+            "name": "USB ID",
+            "pattern": "(ID)\\s+([0-9a-f]{4}):([0-9a-f]{4})",
+            "colors": [
+                null,
+                "magenta",
+                "magenta"
+            ],
+            "enabled": true,
+            "description": "Highlights USB vendor:product IDs"
+        },
+        {
+            "name": "Hub",
+            "pattern": "\\b(Hub)\\b",
+            "colors": [
+                "yellow"
+            ],
+            "enabled": true,
+            "description": "Highlights USB hubs"
+        },
+        {
+            "name": "Mass Storage",
+            "pattern": "(Mass Storage)",
+            "colors": [
+                "green"
+            ],
+            "enabled": true,
+            "description": "Highlights mass storage devices"
+        },
+        {
+            "name": "Keyboard/Mouse",
+            "pattern": "(Keyboard|Mouse)",
+            "colors": [
+                "cyan"
+            ],
+            "enabled": true,
+            "description": "Highlights input devices"
+        },
+        {
+            "name": "Audio",
+            "pattern": "(Audio|Sound)",
+            "colors": [
+                "blue"
+            ],
+            "enabled": true,
+            "description": "Highlights audio devices"
+        },
+        {
+            "name": "Webcam/Camera",
+            "pattern": "(Webcam|Camera|Video)",
+            "colors": [
+                "magenta"
+            ],
+            "enabled": true,
+            "description": "Highlights video/camera devices"
+        }
+    ]
+}

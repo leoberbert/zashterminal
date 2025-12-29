@@ -1,0 +1,220 @@
+/* zashterminal/data/styles/components.css
+ * Reusable component styles for Zashterminal
+ * Consolidated from inline CSS across multiple Python files
+ */
+
+/* ==========================================================================
+   Color Indicator Circles
+   Used in: highlight_dialog.py, command_manager_dialog.py
+   ========================================================================== */
+
+.color-indicator {
+    border-radius: 50%;
+    border: 1px solid alpha(currentColor, 0.3);
+    min-width: 16px;
+    min-height: 16px;
+}
+
+/* Rule color indicator in highlight rule lists */
+.rule-color-indicator {
+    border-radius: 50%;
+    border: 1px solid alpha(currentColor, 0.3);
+    min-width: 16px;
+    min-height: 16px;
+}
+
+/* Color preview box with dynamic background (set via code) */
+.color-preview {
+    border-radius: 50%;
+    min-width: 24px;
+    min-height: 24px;
+}
+
+/* ==========================================================================
+   Monospace Text Views
+   Used in: session_edit_dialog.py, highlight_dialog.py, command dialogs
+   ========================================================================== */
+
+/* Base monospace text view styling */
+.monospace-textview {
+    font-family: monospace;
+    font-size: 0.95em;
+}
+
+.monospace-textview text {
+    background-color: transparent;
+}
+
+/* Regex pattern text view */
+.regex-textview {
+    font-family: monospace;
+    font-size: 0.95em;
+    background-color: alpha(@view_bg_color, 0.5);
+    border-radius: 6px;
+    padding: 4px 6px;
+}
+
+.regex-textview text {
+    background-color: transparent;
+}
+
+/* ==========================================================================
+   Code/Command Containers
+   Used in: session_edit_dialog.py (startup commands), command dialogs
+   ========================================================================== */
+
+/* Modern rounded container for code/commands */
+.code-container {
+    background-color: alpha(@view_bg_color, 0.7);
+    border-radius: 12px;
+    border: 1px solid alpha(@borders, 0.3);
+    box-shadow: 0 1px 3px alpha(black, 0.1);
+}
+
+.code-container:focus-within {
+    border-color: @accent_bg_color;
+    box-shadow: 0 0 0 2px alpha(@accent_bg_color, 0.2);
+}
+
+/* Startup commands container (alias for code-container) */
+.startup-commands-container {
+    background-color: alpha(@view_bg_color, 0.7);
+    border-radius: 12px;
+    border: 1px solid alpha(@borders, 0.3);
+    box-shadow: 0 1px 3px alpha(black, 0.1);
+}
+
+.startup-commands-container:focus-within {
+    border-color: @accent_bg_color;
+    box-shadow: 0 0 0 2px alpha(@accent_bg_color, 0.2);
+}
+
+/* Text view inside code containers */
+.startup-commands-text {
+    background-color: transparent;
+    border-radius: 10px;
+    font-family: monospace;
+    font-size: 0.95em;
+}
+
+.startup-commands-text text {
+    background-color: transparent;
+}
+
+/* ==========================================================================
+   Tab Moving Visual Feedback
+   Moved from: tabs.py inline CSS
+   ========================================================================== */
+
+.tab-moving {
+    background-image: none;
+    background-color: @accent_bg_color;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    border: 2px dashed @theme_fg_color;
+    opacity: 0.85;
+}
+
+.tab-bar-move-mode {
+    background-color: alpha(@accent_bg_color, 0.15);
+    border-radius: 8px;
+    padding: 2px;
+}
+
+.tab-drop-target {
+    background-color: alpha(@theme_fg_color, 0.2);
+    border-radius: 6px;
+    box-shadow: inset 0 0 0 2px @accent_bg_color;
+}
+
+.tab-drop-left {
+    background-color: alpha(@theme_fg_color, 0.2);
+    border-radius: 6px;
+    box-shadow: inset 4px 0 0 0 @accent_bg_color;
+}
+
+.tab-drop-right {
+    background-color: alpha(@theme_fg_color, 0.2);
+    border-radius: 6px;
+    box-shadow: inset -4px 0 0 0 @accent_bg_color;
+}
+
+/* ==========================================================================
+   File Manager Styles
+   Moved from: filemanager/manager.py inline CSS
+   ========================================================================== */
+
+.transfer-progress-bar progressbar > trough {
+    background-color: @borders;
+    border-radius: 4px;
+    border-style: solid;
+    border-width: 1px;
+    border-color: alpha(@theme_fg_color, 0.1);
+}
+
+.transfer-progress-bar progressbar > progress {
+    background-image: none;
+    background-color: @accent_bg_color;
+    border-radius: 4px;
+}
+
+/* Hide search entry icon for compact layout */
+.search-entry-no-icon > image:first-child {
+    -gtk-icon-size: 1px;
+    min-width: 0px;
+    min-height: 0px;
+    margin: -1px;
+    padding: 0px;
+}
+
+/* ==========================================================================
+   Tooltip Design - GTK4 compatible
+   ========================================================================== */
+
+/* Tooltip fade animation */
+.tooltip-popover {
+    opacity: 0;
+    transition: opacity 180ms ease-out;
+}
+
+.tooltip-popover.visible {
+    opacity: 1;
+}
+
+/* Tooltip container styling - high contrast for readability */
+.tooltip-popover>contents {
+    border-radius: 8px;
+    padding: 2px;
+}
+/* ==========================================================================
+   Dialog Components
+   Shared styles for command dialogs, form dialogs, etc.
+   ========================================================================== */
+
+/* Command form dialog */
+.command-form-dialog .monospace {
+    font-family: "JetBrains Mono", "Fira Code", "Source Code Pro", monospace;
+}
+
+/* Command button in command manager */
+.command-button {
+    padding: 8px 12px;
+    border-radius: 8px;
+}
+
+/* ==========================================================================
+   Preference Row Helpers
+   Common patterns for preference dialogs
+   ========================================================================== */
+
+/* Scale row with marks */
+.scale-with-marks scale {
+    padding-top: 8px;
+    padding-bottom: 8px;
+}
+
+/* Color button in rows */
+.color-button-row colorbutton {
+    min-width: 32px;
+    min-height: 32px;
+}

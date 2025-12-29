@@ -1,0 +1,50 @@
+{
+    "name": "du",
+    "description": "Highlights for du (disk usage) command output",
+    "triggers": ["du", "ncdu", "dust"],
+    "enabled": true,
+    "rules": [
+        {
+            "name": "TB Sizes (Huge)",
+            "pattern": "^\\s*(\\d*[.,]?\\d)(T)i?\\s",
+            "colors": ["bold red", "bold red"],
+            "enabled": true,
+            "description": "Highlights sizes in terabytes (huge)"
+        },
+        {
+            "name": "GB Sizes (Large)",
+            "pattern": "^\\s*(\\d*[.,]?\\d)(G)i?\\s",
+            "colors": ["red", "red"],
+            "enabled": true,
+            "description": "Highlights sizes in gigabytes (large)"
+        },
+        {
+            "name": "MB Sizes (Medium)",
+            "pattern": "^\\s*(\\d*[.,]?\\d)(M)i?\\s",
+            "colors": ["yellow", "yellow"],
+            "enabled": true,
+            "description": "Highlights sizes in megabytes (medium)"
+        },
+        {
+            "name": "KB Sizes (Small)",
+            "pattern": "^\\s*(\\d*[.,]?\\d)(K)i?\\s",
+            "colors": ["green", "green"],
+            "enabled": true,
+            "description": "Highlights sizes in kilobytes (small)"
+        },
+        {
+            "name": "Total Line",
+            "pattern": "(.+)\\s+(total)$",
+            "colors": ["bold yellow", "bold yellow"],
+            "enabled": true,
+            "description": "Highlights total summary line"
+        },
+        {
+            "name": "Paths",
+            "pattern": "\\s+([\\.\\/]+)([\\w\\s\\-\\_\\.]+)(\\/.*)?$",
+            "colors": [null, "bold blue", "blue"],
+            "enabled": true,
+            "description": "Highlights file/directory paths"
+        }
+    ]
+}

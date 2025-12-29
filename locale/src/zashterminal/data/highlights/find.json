@@ -1,0 +1,29 @@
+{
+    "name": "find",
+    "description": "Highlights for find command output",
+    "triggers": [
+        "find"
+    ],
+    "enabled": true,
+    "rules": [
+        {
+            "name": "Directories",
+            "pattern": "^(.*/)?([^/]+/)$",
+            "colors": [
+                null,
+                "cyan"
+            ],
+            "enabled": true,
+            "description": "Highlights directory paths"
+        },
+        {
+            "name": "Permission Denied",
+            "pattern": "(Permission denied)",
+            "colors": [
+                "bold red"
+            ],
+            "enabled": true,
+            "description": "Highlights permission errors"
+        }
+    ]
+}

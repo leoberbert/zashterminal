@@ -1,0 +1,29 @@
+{
+    "name": "free",
+    "description": "Highlights for free (memory usage) output",
+    "triggers": ["free"],
+    "enabled": true,
+    "rules": [
+        {
+            "name": "Mem Row",
+            "pattern": "^(Mem:.*)",
+            "colors": ["cyan"],
+            "enabled": true,
+            "description": "Highlights Mem row label"
+        },
+        {
+            "name": "Swap Row",
+            "pattern": "^(Swap:.*)",
+            "colors": ["magenta"],
+            "enabled": true,
+            "description": "Highlights Swap row label"
+        },
+        {
+            "name": "Column Headers",
+            "pattern": "\\b(total|used|free|shared|buff/cache|available)\\b",
+            "colors": ["bold white"],
+            "enabled": true,
+            "description": "Highlights column headers"
+        }
+    ]
+}

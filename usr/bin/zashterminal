@@ -1,0 +1,74 @@
+#!/bin/sh
+
+# Search zashterminal folder
+for i in /usr/lib/python3.{25..6}/site-packages/zashterminal /usr/share/zashterminal; do
+    if [[ -e "$i" ]]; then
+        cd "$i"
+        break
+    fi
+done
+
+execute_zashterminal="python3 __init__.py"
+
+
+execute_with_memory_verification() {
+    # Changes the default memory allocator to reduce GTK4 memory leaks with verification
+    if [[ -e /usr/lib/libchildenv.so ]]; then
+        if [[ -e /usr/lib/libmimalloc.so ]]; then
+            LD_PRELOAD="libchildenv.so:libmimalloc.so" MIMALLOC_PURGE_DELAY=0 CHILD_ENV_RULES="LD_PRELOAD,MIMALLOC_PURGE_DELAY,CHILD_ENV_RULES" exec $execute_zashterminal "$@"
+        elif [[ -e /usr/lib/libjemalloc.so ]]; then
+            LD_PRELOAD="libchildenv.so:libjemalloc.so" MALLOC_CONF="narenas:1" CHILD_ENV_RULES="LD_PRELOAD,MALLOC_CONF,CHILD_ENV_RULES" exec $execute_zashterminal "$@"
+        elif [[ -e /usr/lib/libtcmalloc.so ]]; then
+            LD_PRELOAD="libchildenv.so:libtcmalloc.so" TCMALLOC_AGGRESSIVE_DECOMMIT=1 CHILD_ENV_RULES="LD_PRELOAD,TCMALLOC_AGGRESSIVE_DECOMMIT,CHILD_ENV_RULES" exec $execute_zashterminal "$@"
+        else
+            exec $execute_zashterminal "$@"
+        fi
+    else
+        exec $execute_zashterminal "$@"
+    fi
+}
+
+convert_to_ssh() {
+    local path="$*"
+
+    # Detects if it is KIO (sftp/fish)
+    if [[ $path =~ /(sftp|fish)/([^/]+)(/.*)? ]]; then
+        local protocol="${BASH_REMATCH[1]}"
+        local user_host_port="${BASH_REMATCH[2]}"
+        local kio_path="${BASH_REMATCH[3]}"
+
+        # Checks if there is a port in the KIO format
+        if [[ $user_host_port =~ ^([^@]+@[^:]+):([0-9]+)$ ]]; then
+            local user_host="${BASH_REMATCH[1]}"
+            local port="${BASH_REMATCH[2]}"
+            execute_with_memory_verification --ssh "$user_host:$port$kio_path"
+        else
+            execute_with_memory_verification --ssh "$user_host_port$kio_path"
+        fi
+
+    # Detects if it is GVFS (sftp:host=,port=,user=)
+    elif [[ $path =~ /gvfs/sftp:host=([^,]+),port=([^,]+),user=([^,/]+)/(.+) ]]; then
+        local host="${BASH_REMATCH[1]}"
+        local port="${BASH_REMATCH[2]}"
+        local user="${BASH_REMATCH[3]}"
+        local folder="${BASH_REMATCH[4]}"
+        execute_with_memory_verification --ssh "$user@$host:$port/$folder"
+
+    # Detects if it is GVFS without a port (sftp:host=,user=)
+    elif [[ $path =~ /gvfs/sftp:host=([^,]+),user=([^,/]+)/(.+) ]]; then
+        local host="${BASH_REMATCH[1]}"
+        local user="${BASH_REMATCH[2]}"
+        local folder="${BASH_REMATCH[3]}"
+        execute_with_memory_verification --ssh "$user@$host/$folder"
+
+    # If it is not any of the known formats, pass the parameters directly
+    else
+        execute_with_memory_verification "$@"
+    fi
+}
+
+if [[ "$1" = "--convert-to-ssh" ]]; then
+    convert_to_ssh "$*"
+else
+    execute_with_memory_verification "$@"
+fi

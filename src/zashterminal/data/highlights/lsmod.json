@@ -1,0 +1,58 @@
+{
+  "name": "lsmod",
+  "triggers": [
+    "lsmod"
+  ],
+  "rules": [
+    {
+      "name": "Video Modules",
+      "pattern": "^(\\S*drm\\S*|\\S*modeset\\$*|\\S*gpu\\$*|nvidia|nouveau|radeon|i915)",
+      "colors": [
+        "magenta"
+      ],
+      "enabled": true,
+      "description": "Highlights video driver modules"
+    },
+    {
+      "name": "Sound Modules",
+      "pattern": "^(snd\\S*|sof_\\S*|soundcore)",
+      "colors": [
+        "yellow"
+      ],
+      "enabled": true,
+      "description": "Highlights sound modules"
+    },
+    {
+      "name": "Network Modules",
+      "pattern": "^(\\S*wifi\\S*|ath\\S*|rtl\\S*|e1000|r8169|mt76)",
+      "colors": [
+        "cyan"
+      ],
+      "enabled": true,
+      "description": "Highlights network driver modules"
+    },
+    {
+      "name": "Module Entry",
+      "pattern": "^(\\S+)\\s+(\\d+)\\s+(\\d+)",
+      "colors": [
+        "bright_green",
+        "cyan",
+        "yellow",
+        "magenta"
+      ],
+      "enabled": true,
+      "description": "Highlights module name, size, and usage count"
+    },
+    {
+      "name": "Separator",
+      "pattern": "\\,",
+      "colors": [
+        "bold red"
+      ],
+      "enabled": true
+    }
+  ],
+  "enabled": true,
+  "description": "Highlights for lsmod kernel modules listing output",
+  "use_global_rules": false
+}

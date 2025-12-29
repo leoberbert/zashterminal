@@ -1,0 +1,74 @@
+{
+    "name": "dd",
+    "description": "Highlights for dd (disk dump) output",
+    "triggers": [
+        "dd"
+    ],
+    "enabled": true,
+    "rules": [
+        {
+            "name": "Records In/Out",
+            "pattern": "(\\d+)\\+(\\d+)\\s+(records)\\s+(in|out)",
+            "colors": [
+                "cyan",
+                "yellow",
+                null,
+                null
+            ],
+            "enabled": true,
+            "description": "Highlights record counts"
+        },
+        {
+            "name": "Bytes Transferred",
+            "pattern": "(\\d+(?:\\.\\d+)?)\\s*([KMGT]?i?B)\\s*(?:\\((\\d+(?:\\.\\d+)?)\\s*([KMGT]?B)\\))?",
+            "colors": [
+                "green",
+                "green",
+                "green",
+                "green"
+            ],
+            "enabled": true,
+            "description": "Highlights bytes transferred"
+        },
+        {
+            "name": "Transfer Speed",
+            "pattern": "(\\d+(?:\\.\\d+)?)\\s*([KMGT]?i?B/s)",
+            "colors": [
+                "magenta",
+                "magenta"
+            ],
+            "enabled": true,
+            "description": "Highlights transfer speed"
+        },
+        {
+            "name": "Time Elapsed",
+            "pattern": "(\\d+(?:\\.\\d+)?)\\s*(s(?:econds)?)",
+            "colors": [
+                "yellow",
+                "yellow"
+            ],
+            "enabled": true,
+            "description": "Highlights time elapsed"
+        },
+        {
+            "name": "Copied",
+            "pattern": "(copied)",
+            "colors": [
+                "green"
+            ],
+            "enabled": true,
+            "description": "Highlights copied status"
+        },
+        {
+            "name": "Truncated Records",
+            "pattern": "(\\d+)\\s+(truncated)\\s+(records?)",
+            "colors": [
+                "red",
+                "red",
+                "red"
+            ],
+            "enabled": true,
+            "description": "Highlights truncated records warning"
+        }
+    ]
+}

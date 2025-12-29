@@ -1,0 +1,65 @@
+{
+    "name": "dmesg",
+    "description": "Highlights for dmesg (kernel messages) output",
+    "triggers": [
+        "dmesg"
+    ],
+    "enabled": true,
+    "rules": [
+        {
+            "name": "Errors",
+            "pattern": "\\b(error|failed|failure)\\b",
+            "colors": [
+                "bold red"
+            ],
+            "enabled": true,
+            "description": "Highlights kernel error messages"
+        },
+        {
+            "name": "Warnings",
+            "pattern": "\\b(warning|warn)\\b",
+            "colors": [
+                "yellow"
+            ],
+            "enabled": true,
+            "description": "Highlights kernel warnings"
+        },
+        {
+            "name": "Device Names",
+            "pattern": "\\b(sd[a-z]\\d*|nvme\\d+n\\d+p?\\d*|loop\\d+|dm-\\d+)\\b",
+            "colors": [
+                "cyan"
+            ],
+            "enabled": true,
+            "description": "Highlights block device names"
+        },
+        {
+            "name": "Network Interfaces",
+            "pattern": "\\b(eth\\d+|enp\\d+s\\d+|wlan\\d+|wlp\\d+s\\d+)\\b",
+            "colors": [
+                "magenta"
+            ],
+            "enabled": true,
+            "description": "Highlights network interface names"
+        },
+        {
+            "name": "Memory Addresses",
+            "pattern": "\\b(0x[0-9a-fA-F]+)\\b",
+            "colors": [
+                "yellow"
+            ],
+            "enabled": true,
+            "description": "Highlights memory addresses"
+        },
+        {
+            "name": "USB Devices",
+            "pattern": "(usb)\\s+(\\d+-\\d+(?:\\.\\d+)?)",
+            "colors": [
+                "cyan",
+                "yellow"
+            ],
+            "enabled": true,
+            "description": "Highlights USB device identifiers"
+        }
+    ]
+}

@@ -1,0 +1,134 @@
+{
+    "name": "systemctl",
+    "description": "Highlights for systemctl command output",
+    "triggers": ["systemctl"],
+    "enabled": true,
+    "rules": [
+        {
+            "name": "Service Unit",
+            "pattern": "\\.service\\s",
+            "colors": ["bright_white"],
+            "enabled": true,
+            "description": "Highlights service units"
+        },
+        {
+            "name": "Mount Unit",
+            "pattern": "\\.mount\\s",
+            "colors": ["magenta"],
+            "enabled": true,
+            "description": "Highlights mount units"
+        },
+        {
+            "name": "Device Unit",
+            "pattern": "\\.device\\s",
+            "colors": ["blue"],
+            "enabled": true,
+            "description": "Highlights device units"
+        },
+        {
+            "name": "Socket Unit",
+            "pattern": "\\.socket\\s",
+            "colors": ["cyan"],
+            "enabled": true,
+            "description": "Highlights socket units"
+        },
+        {
+            "name": "Slice Unit",
+            "pattern": "\\.slice\\s",
+            "colors": ["red"],
+            "enabled": true,
+            "description": "Highlights slice units"
+        },
+        {
+            "name": "Path Unit",
+            "pattern": "\\.path\\s",
+            "colors": ["green"],
+            "enabled": true,
+            "description": "Highlights path units"
+        },
+        {
+            "name": "Target Unit",
+            "pattern": "\\.target\\s",
+            "colors": ["magenta"],
+            "enabled": true,
+            "description": "Highlights target units"
+        },
+        {
+            "name": "Timer Unit",
+            "pattern": "\\.timer\\s",
+            "colors": ["cyan"],
+            "enabled": true,
+            "description": "Highlights timer units"
+        },
+        {
+            "name": "Swap Unit",
+            "pattern": "\\.swap\\s",
+            "colors": ["bright_magenta"],
+            "enabled": true,
+            "description": "Highlights swap units"
+        },
+        {
+            "name": "Scope Unit",
+            "pattern": "\\.scope\\s",
+            "colors": ["yellow"],
+            "enabled": true,
+            "description": "Highlights scope units"
+        },
+        {
+            "name": "Loaded Status",
+            "pattern": "\\sloaded\\s",
+            "colors": ["cyan"],
+            "enabled": true,
+            "description": "Highlights loaded status"
+        },
+        {
+            "name": "Active State",
+            "pattern": "\\sactive\\s",
+            "colors": ["green"],
+            "enabled": true,
+            "description": "Highlights active state"
+        },
+        {
+            "name": "Running",
+            "pattern": "running",
+            "colors": ["bold green"],
+            "enabled": true,
+            "description": "Highlights running state"
+        },
+        {
+            "name": "Exited",
+            "pattern": "exited",
+            "colors": ["red"],
+            "enabled": true,
+            "description": "Highlights exited state"
+        },
+        {
+            "name": "Failed State",
+            "pattern": "\\bfailed\\b",
+            "colors": ["bold red"],
+            "enabled": true,
+            "description": "Highlights failed state"
+        },
+        {
+            "name": "Inactive State",
+            "pattern": "\\binactive\\b",
+            "colors": ["yellow"],
+            "enabled": true,
+            "description": "Highlights inactive state"
+        },
+        {
+            "name": "Enabled/Disabled",
+            "pattern": "\\b(enabled|disabled|static|masked|generated|indirect)\\b",
+            "colors": ["magenta"],
+            "enabled": true,
+            "description": "Highlights enable/disable states"
+        },
+        {
+            "name": "Waiting",
+            "pattern": "waiting",
+            "colors": ["yellow"],
+            "enabled": true,
+            "description": "Highlights waiting state"
+        }
+    ]
+}

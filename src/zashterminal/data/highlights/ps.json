@@ -1,0 +1,92 @@
+{
+    "name": "ps",
+    "description": "Highlights for ps command output",
+    "triggers": ["ps", "pgrep", "pidof"],
+    "enabled": true,
+    "rules": [
+        {
+            "name": "Header",
+            "pattern": "^[A-Z\\s%]*([A-Z]{3})[A-Z\\s%]*$",
+            "colors": ["underline white"],
+            "enabled": true,
+            "description": "Highlights column headers"
+        },
+        {
+            "name": "PID",
+            "pattern": "^\\s*(\\d+)",
+            "colors": ["bold magenta"],
+            "enabled": true,
+            "description": "Highlights process IDs"
+        },
+        {
+            "name": "Full Path",
+            "pattern": "(\\s|^)/[-\\w\\d.]+/[-\\w\\d./]+",
+            "colors": ["bold white"],
+            "enabled": true,
+            "description": "Highlights full command paths"
+        },
+        {
+            "name": "Root User",
+            "pattern": "\\broot\\b|\\bwheel\\b",
+            "colors": ["bold red"],
+            "enabled": true,
+            "description": "Highlights root processes"
+        },
+        {
+            "name": "Running State",
+            "pattern": "\\b([Rr][s+<l]*)\\b",
+            "colors": ["bold green"],
+            "enabled": true,
+            "description": "Highlights running process state"
+        },
+        {
+            "name": "Zombie State",
+            "pattern": "\\b([Zz][s+<l]*)\\b",
+            "colors": ["bold red"],
+            "enabled": true,
+            "description": "Highlights zombie process state"
+        },
+        {
+            "name": "PTS Terminal",
+            "pattern": "(\\s|^)pts/\\d+",
+            "colors": ["bright_yellow"],
+            "enabled": true,
+            "description": "Highlights pts terminals"
+        },
+        {
+            "name": "TTY Terminal",
+            "pattern": "(\\s|^)tty\\d+",
+            "colors": ["bright_cyan"],
+            "enabled": true,
+            "description": "Highlights tty terminals"
+        },
+        {
+            "name": "Short Option",
+            "pattern": "(?<=\\s)-[\\w\\d]+(?=\\s|$)",
+            "colors": ["yellow"],
+            "enabled": true,
+            "description": "Highlights short options"
+        },
+        {
+            "name": "Long Option",
+            "pattern": "(?<=\\s)--[-\\w\\d]+",
+            "colors": ["cyan"],
+            "enabled": true,
+            "description": "Highlights long options"
+        },
+        {
+            "name": "Bracket Info",
+            "pattern": "\\[[-\\w\\d:/]+\\]",
+            "colors": ["cyan"],
+            "enabled": true,
+            "description": "Highlights bracketed info"
+        },
+        {
+            "name": "CPU/MEM Usage High",
+            "pattern": "\\b([5-9]\\d\\.\\d|100\\.0)\\b",
+            "colors": ["bold red"],
+            "enabled": true,
+            "description": "Highlights high CPU/MEM usage (50%+)"
+        }
+    ]
+}

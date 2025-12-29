@@ -1,0 +1,85 @@
+{
+    "name": "traceroute",
+    "description": "Highlights for traceroute network path output",
+    "triggers": ["traceroute", "traceroute6", "tracepath"],
+    "enabled": true,
+    "rules": [
+        {
+            "name": "Hop Number",
+            "pattern": "^\\s*(\\d+)\\s",
+            "colors": ["cyan"],
+            "enabled": true,
+            "description": "Highlights hop numbers"
+        },
+        {
+            "name": "Hostname",
+            "pattern": "\\s(\\S+?)\\s",
+            "colors": ["bold white"],
+            "enabled": true,
+            "description": "Highlights hostnames"
+        },
+        {
+            "name": "IPv4 Address",
+            "pattern": "\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}",
+            "colors": ["bold magenta"],
+            "enabled": true,
+            "description": "Highlights IP addresses"
+        },
+        {
+            "name": "IPv6 Address",
+            "pattern": "(([0-9a-fA-F]{1,4})?::?[0-9a-fA-F]{1,4})+",
+            "colors": ["yellow"],
+            "enabled": true,
+            "description": "Highlights IPv6 addresses"
+        },
+        {
+            "name": "Response Time",
+            "pattern": "\\d+\\.?\\d*(?=\\s*ms)",
+            "colors": ["green"],
+            "enabled": true,
+            "description": "Highlights response times"
+        },
+        {
+            "name": "Time Unit",
+            "pattern": "\\bms\\b",
+            "colors": ["yellow"],
+            "enabled": true,
+            "description": "Highlights ms unit"
+        },
+        {
+            "name": "No Response",
+            "pattern": "\\*",
+            "colors": ["bold red"],
+            "enabled": true,
+            "description": "Highlights unreachable hops"
+        },
+        {
+            "name": "DUP",
+            "pattern": "\\bDUP\\b",
+            "colors": ["bold red"],
+            "enabled": true,
+            "description": "Highlights duplicate packets"
+        },
+        {
+            "name": "TTL Exceeded",
+            "pattern": "ttl=\\d+!",
+            "colors": ["cyan"],
+            "enabled": true,
+            "description": "Highlights TTL exceeded"
+        },
+        {
+            "name": "Host Unreachable",
+            "pattern": "\\s!([HNPSFXVC]|\\d+)",
+            "colors": ["bold red"],
+            "enabled": true,
+            "description": "Highlights unreachable codes"
+        },
+        {
+            "name": "Parentheses",
+            "pattern": "\\(|\\)",
+            "colors": ["yellow"],
+            "enabled": true,
+            "description": "Highlights parentheses"
+        }
+    ]
+}

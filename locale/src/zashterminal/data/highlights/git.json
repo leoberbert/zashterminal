@@ -1,0 +1,78 @@
+{
+    "name": "git",
+    "description": "Highlights for git command output",
+    "triggers": ["git", "hub", "gh"],
+    "enabled": true,
+    "rules": [
+        {
+            "name": "Added/New",
+            "pattern": "^\\s*(new file|added|create mode)(.*)$",
+            "colors": ["green", "bright_green"],
+            "enabled": true,
+            "description": "Highlights added files"
+        },
+        {
+            "name": "Diff Added Line",
+            "pattern": "^(\\+{3})\\s*(.*)$",
+            "colors": ["bold green", "green"],
+            "enabled": true,
+            "description": "Highlights diff added file header"
+        },
+        {
+            "name": "Deleted/Removed",
+            "pattern": "^\\s*(deleted|removed)(.*)$",
+            "colors": ["red", "bright_red"],
+            "enabled": true,
+            "description": "Highlights deleted files"
+        },
+        {
+            "name": "Diff Removed Line",
+            "pattern": "^(-{3})\\s*(.*)$",
+            "colors": ["bold red", "red"],
+            "enabled": true,
+            "description": "Highlights diff removed file header"
+        },
+        {
+            "name": "Modified",
+            "pattern": "^\\s*(modified):(.*)$",
+            "colors": ["yellow", "bright_yellow"],
+            "enabled": true,
+            "description": "Highlights modified files"
+        },
+        {
+            "name": "Branch Names",
+            "pattern": "\\b(main|master|develop|feature/[\\w/-]+|bugfix/[\\w/-]+|hotfix/[\\w/-]+|release/[\\w/-]+)\\b",
+            "colors": ["magenta"],
+            "enabled": true,
+            "description": "Highlights branch names"
+        },
+        {
+            "name": "Commit Hash",
+            "pattern": "\\b([0-9a-f]{7,40})\\b",
+            "colors": ["yellow"],
+            "enabled": true,
+            "description": "Highlights commit hashes"
+        },
+        {
+            "name": "Diff Header",
+            "pattern": "^(@@)(.+)(@@)",
+            "colors": ["cyan", "bright_cyan", "cyan"],
+            "enabled": true,
+            "description": "Highlights diff chunk headers"
+        },
+        {
+            "name": "Author",
+            "pattern": "^(Author:)\\s+(.+)$",
+            "colors": ["cyan", null],
+            "enabled": true,
+            "description": "Highlights commit author"
+        },
+        {
+            "name": "Date",
+            "pattern": "^(Date:)\\s+(.+)$",
+            "colors": ["cyan", null],
+            "enabled": true,
+            "description": "Highlights commit date"
+        }
+    ]
+}

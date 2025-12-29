@@ -1,0 +1,65 @@
+{
+    "name": "nc",
+    "description": "Highlights for nc/netcat network utility output",
+    "triggers": [
+        "nc",
+        "netcat",
+        "ncat"
+    ],
+    "enabled": true,
+    "rules": [
+        {
+            "name": "Connection Success",
+            "pattern": "(Connection to)\\s+(\\S+)\\s+(\\S+)\\s+port\\s+(\\[\\S+\\])\\s+(succeeded!)",
+            "colors": [
+                null,
+                "cyan",
+                null,
+                "magenta",
+                "bold green"
+            ],
+            "enabled": true,
+            "description": "Highlights successful connections"
+        },
+        {
+            "name": "Connection Refused",
+            "pattern": "(Connection refused|Connection timed out)",
+            "colors": [
+                "bold red"
+            ],
+            "enabled": true,
+            "description": "Highlights connection failures"
+        },
+        {
+            "name": "Open Port",
+            "pattern": "\\b(open)\\b",
+            "colors": [
+                "green"
+            ],
+            "enabled": true,
+            "description": "Highlights open ports"
+        },
+        {
+            "name": "Listening",
+            "pattern": "(Listening on)\\s+(\\S+)\\s+(\\d+)",
+            "colors": [
+                null,
+                "cyan",
+                "magenta"
+            ],
+            "enabled": true,
+            "description": "Highlights listening state"
+        },
+        {
+            "name": "Received Connection",
+            "pattern": "(Connection received on)\\s+(\\S+)\\s+(\\d+)",
+            "colors": [
+                "green",
+                "cyan",
+                "magenta"
+            ],
+            "enabled": true,
+            "description": "Highlights incoming connections"
+        }
+    ]
+}

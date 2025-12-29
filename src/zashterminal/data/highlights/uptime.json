@@ -1,0 +1,50 @@
+{
+    "name": "uptime",
+    "description": "Highlights for uptime command output",
+    "triggers": ["uptime", "w"],
+    "enabled": true,
+    "rules": [
+        {
+            "name": "Uptime Days",
+            "pattern": "(up)\\s+(\\d+)\\s+(days?)",
+            "colors": ["green", "bold green", "green"],
+            "enabled": true,
+            "description": "Highlights uptime in days"
+        },
+        {
+            "name": "Uptime Hours",
+            "pattern": "(up)\\s+(\\d+:\\d+|\\d+\\s+min)",
+            "colors": ["green", "bold green"],
+            "enabled": true,
+            "description": "Highlights uptime duration"
+        },
+        {
+            "name": "Users",
+            "pattern": "(\\d+)\\s+(users?)",
+            "colors": ["bold yellow", "yellow"],
+            "enabled": true,
+            "description": "Highlights user count"
+        },
+        {
+            "name": "Load Average Values",
+            "pattern": "load average:\\s*([\\d.,]+),\\s*([\\d.,]+),\\s*([\\d.,]+)",
+            "colors": ["bright_cyan", "cyan", "dark cyan"],
+            "enabled": true,
+            "description": "Highlights 1, 5, 15 minute load averages"
+        },
+        {
+            "name": "High Load (>4.0)",
+            "pattern": "load average:\\s*([4-9]\\d*[.,]\\d+|\\d{2,}[.,]\\d+)",
+            "colors": [null, "red"],
+            "enabled": true,
+            "description": "Highlights high load average"
+        },
+        {
+            "name": "W Command Header",
+            "pattern": "^USER.*",
+            "colors": ["yellow"],
+            "enabled": true,
+            "description": "Highlights w command header"
+        }
+    ]
+}

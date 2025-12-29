@@ -1,0 +1,120 @@
+{
+  "name": "curl",
+  "triggers": [
+    "curl",
+    "wget",
+    "wget2",
+    "httpie",
+    "http"
+  ],
+  "rules": [
+    {
+      "name": "HTTP Status 2xx",
+      "pattern": "(HTTP/[\\d.]+)\\s+(2\\d{2})\\s*(\\w*)",
+      "colors": [
+        "bold green",
+        "bold green",
+        "green"
+      ],
+      "enabled": true,
+      "description": "Highlights successful HTTP status codes"
+    },
+    {
+      "name": "HTTP Status 3xx",
+      "pattern": "(HTTP/[\\d.]+)\\s+(3\\d{2})\\s*(\\w*)",
+      "colors": [
+        "bold yellow",
+        "bold yellow",
+        "yellow"
+      ],
+      "enabled": true,
+      "description": "Highlights redirect HTTP status codes"
+    },
+    {
+      "name": "HTTP Status 4xx",
+      "pattern": "(HTTP/[\\d.]+)\\s+(4\\d{2})\\s*(\\w*)",
+      "colors": [
+        "bold red",
+        "bold red",
+        "red"
+      ],
+      "enabled": true,
+      "description": "Highlights client error HTTP status codes"
+    },
+    {
+      "name": "HTTP Status 5xx",
+      "pattern": "(HTTP/[\\d.]+)\\s+(5\\d{2})\\s*(\\w*)",
+      "colors": [
+        "bold cyan",
+        "bold red",
+        "red"
+      ],
+      "enabled": true,
+      "description": "Highlights server error HTTP status codes"
+    },
+    {
+      "name": "Cache-Control Header",
+      "pattern": ".*cache[^:].*(.hit.)",
+      "colors": [
+        "bold green"
+      ],
+      "enabled": true,
+      "description": "Highlights Cache-Control header with cache directives"
+    },
+    {
+      "name": "Cache",
+      "pattern": "(?:^|\\x1b\\[[0-9;]*m)(\\D*Cache\\D*)(?:\\x1b\\[[0-9;]*m)?(:)\\s+(.+)$",
+      "colors": [
+        "bold yellow",
+        "blue",
+        "cyan"
+      ],
+      "enabled": true,
+      "description": "Highlights CDN/Cloudflare specific headers"
+    },
+    {
+      "name": "Generic Header (fallback)",
+      "pattern": "(?:^|\\x1b\\[[0-9;]*m)([A-Za-z][A-Za-z0-9-]*)(?:\\x1b\\[[0-9;]*m)?(:)\\s+(.+)$",
+      "colors": [
+        "bold magenta",
+        null,
+        "bright_white"
+      ],
+      "enabled": true,
+      "description": "Highlights generic HTTP header names with bright white values"
+    },
+    {
+      "name": "Progress",
+      "pattern": "(\\d+(?:\\.\\d+)?)(%)\\b",
+      "colors": [
+        "green",
+        "green"
+      ],
+      "enabled": true,
+      "description": "Highlights progress percentages"
+    },
+    {
+      "name": "Speed",
+      "pattern": "(\\d+(?:\\.\\d+)?)\\s*([KMG]?B/s)",
+      "colors": [
+        "cyan",
+        "cyan"
+      ],
+      "enabled": true,
+      "description": "Highlights transfer speed"
+    },
+    {
+      "name": "200 OK",
+      "pattern": "\\b(200)\\s+(OK)\\b",
+      "colors": [
+        "bold green",
+        "green"
+      ],
+      "enabled": true,
+      "description": "Highlights successful wget response"
+    }
+  ],
+  "enabled": true,
+  "description": "Highlights for curl output including HTTP headers and status codes",
+  "use_global_rules": false
+}

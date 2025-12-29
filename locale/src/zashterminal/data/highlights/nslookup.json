@@ -1,0 +1,57 @@
+{
+    "name": "nslookup",
+    "description": "Highlights for nslookup DNS lookup output",
+    "triggers": ["nslookup"],
+    "enabled": true,
+    "rules": [
+        {
+            "name": "Server",
+            "pattern": "^(Server:)\\s*(\\S+)",
+            "colors": ["magenta", "cyan"],
+            "enabled": true,
+            "description": "Highlights DNS server line"
+        },
+        {
+            "name": "Address",
+            "pattern": "^(Address:)\\s*(\\S+)",
+            "colors": ["magenta", "cyan"],
+            "enabled": true,
+            "description": "Highlights address lines"
+        },
+        {
+            "name": "Name",
+            "pattern": "^(Name:)\\s*(\\S+)",
+            "colors": ["magenta", "green"],
+            "enabled": true,
+            "description": "Highlights name lines"
+        },
+        {
+            "name": "Non-authoritative",
+            "pattern": "(Non-authoritative answer:)",
+            "colors": ["yellow"],
+            "enabled": true,
+            "description": "Highlights non-authoritative answers"
+        },
+        {
+            "name": "Can't Find Error",
+            "pattern": "(\\*\\*\\*.+can't find.+)",
+            "colors": ["red"],
+            "enabled": true,
+            "description": "Highlights lookup errors"
+        },
+        {
+            "name": "SERVFAIL",
+            "pattern": "\\b(SERVFAIL|NXDOMAIN|REFUSED)\\b",
+            "colors": ["bold red"],
+            "enabled": true,
+            "description": "Highlights error responses"
+        },
+        {
+            "name": "Aliases",
+            "pattern": "^(Aliases:)\\s*(\\S+)",
+            "colors": ["magenta", "yellow"],
+            "enabled": true,
+            "description": "Highlights alias entries"
+        }
+    ]
+}

@@ -1,0 +1,132 @@
+{
+    "name": "nmap",
+    "description": "Highlights for nmap network scanner output",
+    "triggers": [
+        "nmap"
+    ],
+    "enabled": true,
+    "rules": [
+        {
+            "name": "Scan Report Header",
+            "pattern": "(Nmap scan report for)\\s+(\\S+)\\s*(\\(([^)]+)\\))?",
+            "colors": [
+                null,
+                "bold green",
+                null,
+                "bold magenta"
+            ],
+            "enabled": true,
+            "description": "Highlights scan report header"
+        },
+        {
+            "name": "Host Up",
+            "pattern": "(Host is)\\s+(up)",
+            "colors": [
+                null,
+                "bold green"
+            ],
+            "enabled": true,
+            "description": "Highlights host up status"
+        },
+        {
+            "name": "Host Down",
+            "pattern": "(Host is)\\s+(down)",
+            "colors": [
+                null,
+                "bold red"
+            ],
+            "enabled": true,
+            "description": "Highlights host down status"
+        },
+        {
+            "name": "Open Port",
+            "pattern": "^(\\d+)/(tcp|udp)\\s+(open)\\s+(\\S+)",
+            "colors": [
+                "bold green",
+                "magenta",
+                "bold green",
+                "bold yellow"
+            ],
+            "enabled": true,
+            "description": "Highlights open ports"
+        },
+        {
+            "name": "Closed Port",
+            "pattern": "^(\\d+)/(tcp|udp)\\s+(closed)\\s+(\\S+)",
+            "colors": [
+                "red",
+                "magenta",
+                "red",
+                null
+            ],
+            "enabled": true,
+            "description": "Highlights closed ports"
+        },
+        {
+            "name": "Filtered Port",
+            "pattern": "^(\\d+)/(tcp|udp)\\s+(filtered)\\s+(\\S+)",
+            "colors": [
+                "yellow",
+                "magenta",
+                "yellow",
+                null
+            ],
+            "enabled": true,
+            "description": "Highlights filtered ports"
+        },
+        {
+            "name": "Not Shown",
+            "pattern": "(Not shown:)\\s+(\\d+)\\s+(closed|filtered)\\s+(ports?)",
+            "colors": [
+                null,
+                "bright_red",
+                "red",
+                null
+            ],
+            "enabled": true,
+            "description": "Highlights hidden ports summary"
+        },
+        {
+            "name": "Failed to Resolve",
+            "pattern": "(Failed to resolve)\\s+\"([^\"]+)\"",
+            "colors": [
+                "red",
+                "bold red"
+            ],
+            "enabled": true,
+            "description": "Highlights DNS resolution failures"
+        },
+        {
+            "name": "Column Headers",
+            "pattern": "^(PORT\\s+STATE\\s+SERVICE|HOP\\s+RTT\\s+ADDRESS)",
+            "colors": [
+                "bold white"
+            ],
+            "enabled": true,
+            "description": "Highlights table headers"
+        },
+        {
+            "name": "Network Distance",
+            "pattern": "(Network Distance:)\\s+(\\d+)\\s+(hops?)",
+            "colors": [
+                null,
+                "bold green",
+                null
+            ],
+            "enabled": true,
+            "description": "Highlights network distance"
+        },
+        {
+            "name": "Traceroute",
+            "pattern": "^(\\d+)\\s+(\\d+\\.\\d+)\\s*(ms)\\s+(\\d+\\.\\d+\\.\\d+\\.\\d+)",
+            "colors": [
+                "cyan",
+                "green",
+                null,
+                "magenta"
+            ],
+            "enabled": true,
+            "description": "Highlights traceroute hops"
+        }
+    ]
+}

@@ -1,0 +1,71 @@
+{
+    "name": "mount",
+    "description": "Highlights for mount command output",
+    "triggers": [
+        "mount"
+    ],
+    "enabled": true,
+    "rules": [
+        {
+            "name": "Full Mount Line",
+            "pattern": "^(\\S+)\\s+(on)\\s+(\\S+)\\s+(type)\\s+(\\S+)\\s+\\(([^)]+)\\)",
+            "colors": [
+                "green",
+                null,
+                "yellow",
+                null,
+                "blue",
+                "magenta"
+            ],
+            "enabled": true,
+            "description": "Highlights full mount line structure"
+        },
+        {
+            "name": "Device Path",
+            "pattern": "^(/[^\\s]+)",
+            "colors": [
+                "bold green"
+            ],
+            "enabled": true,
+            "description": "Highlights source device"
+        },
+        {
+            "name": "Mount Point",
+            "pattern": "(?<=on\\s)(/[^\\s]+)",
+            "colors": [
+                "underline yellow"
+            ],
+            "enabled": true,
+            "description": "Highlights mount point"
+        },
+        {
+            "name": "Read-Write",
+            "pattern": "(?<=\\()rw",
+            "colors": [
+                "bold red"
+            ],
+            "enabled": true,
+            "description": "Highlights read-write mount"
+        },
+        {
+            "name": "Read-Only",
+            "pattern": "(?<=\\()ro",
+            "colors": [
+                "bold green"
+            ],
+            "enabled": true,
+            "description": "Highlights read-only mount"
+        },
+
+        {
+            "name": "FS Types",
+            "pattern": "type\\s+(ext[234]|xfs|btrfs|ntfs|vfat|fuseblk|nfs\\d?|cifs|overlay)",
+            "colors": [
+                null,
+                "cyan"
+            ],
+            "enabled": true,
+            "description": "Highlights common filesystem types"
+        }
+    ]
+}

@@ -1,0 +1,113 @@
+{
+    "name": "ls",
+    "description": "Highlights for ls file listing output",
+    "triggers": ["ls", "ll", "la", "l"],
+    "enabled": true,
+    "rules": [
+        {
+            "name": "File Type Directory",
+            "pattern": "^d(?=[-r][-w][-xsStT])",
+            "colors": ["bold white"],
+            "enabled": true,
+            "description": "Highlights directory file type"
+        },
+        {
+            "name": "File Type Link",
+            "pattern": "^l(?=[-r][-w][-xsStT])",
+            "colors": ["bold cyan"],
+            "enabled": true,
+            "description": "Highlights symbolic link file type"
+        },
+        {
+            "name": "File Type Block/Char",
+            "pattern": "^[bc](?=[-r][-w][-xsStT])",
+            "colors": ["bold yellow"],
+            "enabled": true,
+            "description": "Highlights block/character device file type"
+        },
+        {
+            "name": "Owner Permissions",
+            "pattern": "(?<=[-dlbcps])(-|r)(-|w)(-|[xsStT])",
+            "colors": ["bright_green", "bright_green", "bright_green"],
+            "enabled": true,
+            "description": "Highlights owner permissions"
+        },
+        {
+            "name": "Group Permissions",
+            "pattern": "(?<=[-dlbcps][-r][-w][-xsStT])(-|r)(-|w)(-|[xsStT])",
+            "colors": ["yellow", "yellow", "yellow"],
+            "enabled": true,
+            "description": "Highlights group permissions"
+        },
+        {
+            "name": "Other Permissions",
+            "pattern": "(?<=[-dlbcps][-r][-w][-xsStT][-r][-w][-xsStT])(-|r)(-|w)(-|[xsStT])",
+            "colors": ["bright_red", "bright_red", "bright_red"],
+            "enabled": true,
+            "description": "Highlights other permissions"
+        },
+        {
+            "name": "SUID/SGID/Sticky",
+            "pattern": "[-dlbcps][-r][-w]([sStT])[-r][-w]([sStT])[-r][-w]([sStT])",
+            "colors": [null, "bold green", "bold yellow", "bold red"],
+            "enabled": true,
+            "description": "Highlights special permission bits"
+        },
+        {
+            "name": "ACL Indicator",
+            "pattern": "^\\S{10}(\\+)",
+            "colors": [null, "on_cyan bold white"],
+            "enabled": true,
+            "description": "Highlights ACL indicator"
+        },
+        {
+            "name": "Root Owner",
+            "pattern": "\\s(root|wheel)(?=\\s)",
+            "colors": ["bold white on_red"],
+            "enabled": true,
+            "description": "Highlights root ownership"
+        },
+        {
+            "name": "Device Numbers",
+            "pattern": "\\s(\\d+),\\s*(\\d+)\\s",
+            "colors": [null, "bright_yellow", "yellow"],
+            "enabled": true,
+            "description": "Highlights device major,minor numbers"
+        },
+        {
+            "name": "Size KB",
+            "pattern": "\\s(\\d{4,6}|\\d+(?:[,.]?\\d+)?K)(?=\\s[A-Z][a-z]{2}\\s)",
+            "colors": ["green"],
+            "enabled": true,
+            "description": "Highlights KB-sized files"
+        },
+        {
+            "name": "Size MB",
+            "pattern": "\\s(\\d{7,8}|\\d+(?:[,.]?\\d+)?M)(?=\\s[A-Z][a-z]{2}\\s)",
+            "colors": ["yellow"],
+            "enabled": true,
+            "description": "Highlights MB-sized files"
+        },
+        {
+            "name": "Size GB+",
+            "pattern": "\\s(\\d{9,}|\\d+(?:[,.]?\\d+)?[GT])(?=\\s[A-Z][a-z]{2}\\s)",
+            "colors": ["bold red"],
+            "enabled": true,
+            "description": "Highlights GB+ sized files"
+        },
+        {
+            "name": "Date Time",
+            "pattern": "([A-Z][a-z]{2})\\s([ 1-3]?\\d)\\s(?:(\\d{1,2}):(\\d{2})|\\s*(\\d{4}))",
+            "colors": ["cyan", "cyan", "cyan", "cyan", "bold magenta"],
+            "enabled": true,
+            "description": "Highlights date and time"
+        },
+        {
+            "name": "SELinux Context",
+            "pattern": "(\\w+_u):(\\w+_r):(\\w+_t):(\\w\\d)",
+            "colors": ["green", "yellow", "cyan", "magenta"],
+            "enabled": true,
+            "description": "Highlights SELinux context"
+        }
+    ]
+}
