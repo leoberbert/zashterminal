@@ -22,26 +22,16 @@ ensure_tools() {
   fi
 
   . /etc/os-release
-  PKG_INSTALL=""
-
   case "${ID_LIKE:-$ID}" in
     *debian*|*ubuntu*) PKG_INSTALL="sudo apt update && sudo apt install -y podman distrobox" ;;
     *fedora*|*rhel*|*centos*) PKG_INSTALL="sudo dnf install -y podman distrobox" ;;
     *suse*) PKG_INSTALL="sudo zypper install -y podman distrobox" ;;
     *arch*) PKG_INSTALL="sudo pacman -Syu --needed --noconfirm podman distrobox" ;;
-    *)
-      echo "Could not detect the distro to install podman/distrobox."
-      exit 1
-      ;;
+    *) echo "Distro not supported for auto-install."; exit 1 ;;
   esac
 
-  log "Installing podman and distrobox..."
+  log "Installing tools..."
   eval "$PKG_INSTALL"
-
-  if ! command -v distrobox >/dev/null 2>&1; then
-    log "distrobox not found in repo. Installing from upstream script..."
-    curl -fsSL https://raw.githubusercontent.com/89luca89/distrobox/main/install | sudo sh
-  fi
 }
 
 create_container() {
@@ -55,16 +45,13 @@ create_container() {
 
 cleanup_container() {
   log "Cleaning up..."
-  # Tenta deletar usando o ID completo
-  distrobox-export --app "$DESKTOP_ID" --delete 2>/dev/null || true
-  distrobox rm --force --name "$CONTAINER_NAME" 2>/dev/null || true
+  distrobox enter "$CONTAINER_NAME" -- distrobox-export --app "$DESKTOP_ID" --delete >/dev/null 2>&1 || true
+  distrobox rm --force "$CONTAINER_NAME" >/dev/null 2>&1 || true
 }
 
 install_in_container() {
   log "Installing $PACKAGE_NAME from AUR..."
   HOST_LANG="${LANG:-en_US.UTF-8}"
-  
-  # Passamos as variáveis para dentro do heredoc
   distrobox enter "$CONTAINER_NAME" -- env LANG_HOST="$HOST_LANG" DESKTOP_ID="$DESKTOP_ID" bash <<'INBOX'
 set -euo pipefail
 
@@ -84,7 +71,7 @@ fi
 yay -S --noconfirm zashterminal
 
 echo "Exporting application..."
-# O segredo está em usar o nome exato do .desktop sem a extensão
+# Exporta usando o ID completo do desktop
 distrobox-export --app "$DESKTOP_ID"
 INBOX
 }
@@ -96,22 +83,26 @@ ensure_tools
 success=0
 for attempt in 1 2 3; do
   log "Attempt $attempt/3"
+  
+  if distrobox ls | grep -q "$CONTAINER_NAME"; then
+      cleanup_container
+  fi
+
   create_container
   if install_in_container; then
     success=1
     break
   else
-    log "Attempt $attempt failed; retrying..."
+    log "Attempt $attempt failed."
     cleanup_container
   fi
 done
 
 if [ "$success" -eq 1 ]; then
-  log "Success! Update your host desktop database..."
+  log "Success! Refreshing desktop database..."
   update-desktop-database ~/.local/share/applications 2>/dev/null || true
-  log "Done."
+  log "Done. You can now open Zash Terminal from your menu."
 else
-  log "Installation failed."
-  cleanup_container
+  log "Installation failed after 3 attempts."
   exit 1
 fi
