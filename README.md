@@ -1,11 +1,11 @@
-# Zashterm
+# Zashterminal
 
 <p align="center">
   <a href="https://github.com/leoberbert/zashterm/releases"><img src="https://img.shields.io/github/v/release/leoberbert/zashterm?display_name=tag&sort=semver" alt="Latest Release"/></a>
   <a href="https://github.com/leoberbert/zashterm/blob/main/LICENSE"><img src="https://img.shields.io/github/license/leoberbert/zashterm" alt="License"/></a>
 </p>
 
-**Zashterm** is a modern, intuitive, and innovative terminal built with GTK4 and Adwaita. While it offers advanced features appreciated by developers and system administrators, it also stands out for making the command-line environment more accessible, helping those who are just beginning to learn how to use the terminal. Its simplified session management, built-in file manager, automatic color highlighting for improved readability, and a variety of other features bring convenience to users of all skill levels on any Linux distribution.
+**Zashterminal** is a modern, intuitive, and innovative terminal built with GTK4 and Adwaita. While it offers advanced features appreciated by developers and system administrators, it also stands out for making the command-line environment more accessible, helping those who are just beginning to learn how to use the terminal. Its simplified session management, built-in file manager, automatic color highlighting for improved readability, and a variety of other features bring convenience to users of all skill levels on any Linux distribution.
 
 ## Screenshots
 
@@ -22,7 +22,7 @@
 <img width="1457" height="699" alt="image" src="https://github.com/user-attachments/assets/ce5f1ebd-2527-4834-b5ca-cbf1c086efc6" />
 
 
-Zashterm creates a bridge between your shell and Large Language Models (LLMs), offering an **optional** and fully **non-intrusive** AI experience. The assistant only processes the content that **you explicitly select and choose to send**, ensuring full control over your privacy.
+Zashterminal creates a bridge between your shell and Large Language Models (LLMs), offering an **optional** and fully **non-intrusive** AI experience. The assistant only processes the content that **you explicitly select and choose to send**, ensuring full control over your privacy.
 * **Multi-Provider Support**: Native integration with **Groq**, **Google Gemini**, **OpenRouter**, and **Local LLMs** (Ollama/LM Studio).
 * **Context Aware**: The AI understands your OS and distribution context to provide accurate and relevant commands.
 * **Chat Panel**: A dedicated side panel for persistent conversations, command suggestions, and "Click-to-Run" code snippets.
@@ -59,7 +59,7 @@ Zashterm creates a bridge between your shell and Large Language Models (LLMs), o
 
 
 ## Dependencies
-To build and run Zashterm, you will need:
+To build and run Zashterminal, you will need:
 
 -   **Python 3.9+**
 -   **GTK4** and **Adwaita 1.0+** (`libadwaita`)

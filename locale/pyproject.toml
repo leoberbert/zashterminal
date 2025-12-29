@@ -35,3 +35,14 @@ build-backend = "uv_build"
 
 [tool.setuptools.packages.find]
 include = ["zashterminal"]
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.package-data]
+zashterminal = ["**/*"]
+
+[tool.setuptools.data-files]
+"share/applications" = ["usr/share/applications/org.leoberbert.zashterminal.desktop"]
+"share/icons/hicolor/scalable/apps" = ["usr/share/icons/hicolor/scalable/apps/zashterminal.svg"]
+"share/pixmaps" = ["usr/share/icons/hicolor/scalable/apps/zashterminal.svg"]

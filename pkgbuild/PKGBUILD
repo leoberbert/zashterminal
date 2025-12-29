@@ -18,6 +18,8 @@ depends=(
     'rsync'
     'vte4'
     'gobject-introspection'
+    'hicolor-icon-theme'
+    'desktop-file-utils'
     'python-regex' # Optional, improved syntax highlighting performance'
     'python-pygments' # Optional, enhanced syntax highlighting in AI chat'
 )
@@ -53,6 +55,7 @@ package() {
 
     # Install files
     cp -a usr/share "${pkgdir}/usr/share"
+    install -Dm644 usr/share/icons/hicolor/scalable/apps/zashterminal.svg "${pkgdir}/usr/share/pixmaps/zashterminal.svg"
 
     # Install license file if present
     if [ -f "LICENSE" ]; then
@@ -63,4 +66,13 @@ package() {
     if [ -f "README.md" ]; then
         install -Dm644 README.md "${pkgdir}/usr/share/doc/${pkgname}/README.md"
     fi
+}
+
+post_install() {
+    update-desktop-database -q 2>/dev/null || true
+    gtk-update-icon-cache -q -t -f /usr/share/icons/hicolor 2>/dev/null || true
+}
+
+post_upgrade() {
+    post_install
 }
