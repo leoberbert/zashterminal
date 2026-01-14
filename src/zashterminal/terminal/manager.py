@@ -697,6 +697,7 @@ class TerminalManager:
                 hostname=hostname, path=path, display_path=display_path
             )
             self._update_title(terminal, osc7_info)
+            self._run_pending_execute_command(terminal)
         except Exception as e:
             self.logger.error(f"Directory URI change handling failed: {e}")
 
@@ -2023,18 +2024,64 @@ class TerminalManager:
                 and user_data.get("execute_command")
                 and pid > 0
             ):
-                GLib.timeout_add(
-                    100,
-                    lambda: self._execute_command_in_terminal(
-                        terminal,
-                        user_data["execute_command"],
-                        user_data.get("close_after_execute", False),
-                    )
-                    or False,
+                self._schedule_execute_command(
+                    terminal,
+                    user_data["execute_command"],
+                    user_data.get("close_after_execute", False),
                 )
 
         except Exception as e:
             self.logger.error(f"Spawn callback failed: {e}")
+
+    def _schedule_execute_command(
+        self, terminal: Vte.Terminal, command: str, close_after_execute: bool
+    ) -> None:
+        if not terminal or not command:
+            return
+        if getattr(terminal, "_execute_command_ran", False):
+            return
+
+        terminal._pending_execute_command = (command, close_after_execute)
+
+        if terminal.get_current_directory_uri():
+            GLib.idle_add(self._run_pending_execute_command, terminal)
+            return
+
+        if getattr(terminal, "_execute_command_timer_id", None):
+            return
+
+        terminal._execute_command_timer_id = GLib.timeout_add(
+            500, lambda: self._run_pending_execute_command(terminal)
+        )
+
+    def _run_pending_execute_command(self, terminal: Vte.Terminal) -> bool:
+        if getattr(terminal, "_execute_command_ran", False):
+            return False
+
+        pending = getattr(terminal, "_pending_execute_command", None)
+        if not pending:
+            return False
+
+        command, close_after_execute = pending
+        self._execute_command_in_terminal(
+            terminal,
+            command,
+            close_after_execute,
+        )
+        terminal._execute_command_ran = True
+        try:
+            delattr(terminal, "_pending_execute_command")
+        except Exception:
+            pass
+
+        timer_id = getattr(terminal, "_execute_command_timer_id", None)
+        if timer_id:
+            try:
+                GLib.source_remove(timer_id)
+            except Exception:
+                pass
+            terminal._execute_command_timer_id = None
+        return False
 
     def _monitor_connection_status(
         self, terminal: Vte.Terminal, terminal_id: int, pid: int
@@ -2973,14 +3020,13 @@ class TerminalManager:
 
             uri = uri.strip()
 
-            if "@" in uri and not uri.startswith((
-                "http://",
-                "https://",
-                "ftp://",
-                "mailto:",
-            )):
-                if "." in uri.split("@")[-1]:
-                    uri = f"mailto:{uri}"
+            # Check if it looks like an email without mailto: prefix
+            if (
+                "@" in uri
+                and not uri.startswith(("http://", "https://", "ftp://", "mailto:"))
+                and "." in uri.split("@")[-1]
+            ):
+                uri = f"mailto:{uri}"
 
             try:
                 parsed = urlparse(uri)
