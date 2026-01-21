@@ -278,7 +278,7 @@ class SidebarManager:
     def _update_sidebar_button_icon(self) -> None:
         auto_hide = self.settings_manager.get("auto_hide_sidebar", False)
         if auto_hide:
-            set_button_icon(self.toggle_sidebar_button, "pin-symbolic")
+            set_button_icon(self.toggle_sidebar_button, "computer-symbolic")
             get_tooltip_helper().add_tooltip(
                 self.toggle_sidebar_button, _("Show Sessions")
             )
