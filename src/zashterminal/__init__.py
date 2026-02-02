@@ -10,6 +10,17 @@ import sys
 if "GSK_RENDERER" not in os.environ:
     os.environ["GSK_RENDERER"] = "gl"
 
+_desktop = os.environ.get("XDG_CURRENT_DESKTOP", "")
+_desktop_upper = _desktop.upper()
+
+# Fix for KDE Plasma (dead keys) on Wayland
+if "KDE" in _desktop_upper or "PLASMA" in _desktop_upper:
+    os.environ.setdefault("GTK_IM_MODULE", "gtk-im-context-simple")
+
+# Fix for Hyprland (dead keys/accents issue)
+if "HYPRLAND" in _desktop_upper:
+    os.environ.setdefault("GTK_IM_MODULE", "gtk-im-context-simple")
+
 if __package__ is None:
     import pathlib
 
