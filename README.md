@@ -9,17 +9,20 @@
 
 ## Screenshots
 
-<img width="1457" height="699" alt="image" src="https://github.com/user-attachments/assets/080448b1-4fdd-44ba-8c70-6d70fb2651e5" />
+<img width="1457" height="699" alt="image" src="https://github.com/user-attachments/assets/4c264548-909e-4edb-95be-a5dc6a6756bb" />
 
-<img width="1457" height="699" alt="image" src="https://github.com/user-attachments/assets/d79d710d-f60f-455e-a167-bb0527367264" />
+<img width="1457" height="699" alt="image" src="https://github.com/user-attachments/assets/6aba3c63-a181-4e3c-8870-d58ceae11daa" />
 
-<img width="1457" height="699" alt="image" src="https://github.com/user-attachments/assets/7c91e96b-114b-4da3-9c92-aae9f4a943fe" />
+<img width="1457" height="699" alt="image" src="https://github.com/user-attachments/assets/46e41739-7c28-47d7-b4ba-26e9320b0061" />
+
 
 ## Key Features
 
 ### 🤖 AI Assistant Integration
 
-<img width="1457" height="699" alt="image" src="https://github.com/user-attachments/assets/ce5f1ebd-2527-4834-b5ca-cbf1c086efc6" />
+<img width="1457" height="699" alt="image" src="https://github.com/user-attachments/assets/762fa599-a266-41c3-83c2-f28fe825f0f6" />
+
+<img width="1457" height="699" alt="image" src="https://github.com/user-attachments/assets/4dd9482b-420d-4170-878d-e9a652493ec9" />
 
 
 Zashterminal creates a bridge between your shell and Large Language Models (LLMs), offering an **optional** and fully **non-intrusive** AI experience. The assistant only processes the content that **you explicitly select and choose to send**, ensuring full control over your privacy.
@@ -31,20 +34,20 @@ Zashterminal creates a bridge between your shell and Large Language Models (LLMs
 
 ### 📂 Advanced File Manager & Remote Editing
 
-<img width="823" height="1162" alt="image" src="https://github.com/user-attachments/assets/a4e560fd-8558-4188-a906-ffcb51581d1c" />
+<img width="1457" height="699" alt="image" src="https://github.com/user-attachments/assets/a40bd623-eb31-4a8b-9fe2-e327d8b7de0c" />
 
 
 -   **Integrated Side Panel**: Browse local and remote file systems without leaving the terminal.
 -   **Remote Editing**: Click to edit remote files (SSH/SFTP) in your favorite local editor. Zashterm watches the file and automatically uploads changes on save.
 -   **Drag & Drop Transfer**: Upload files to remote servers simply by dragging them into the terminal window over (SFTP/Rsync)
 -   **Transfer Manager**: Track uploads and downloads with a detailed progress manager and history.
-<img width="1386" height="944" alt="image" src="https://github.com/user-attachments/assets/6766d022-c6ef-48ae-9f98-963e6165c5a0" />
+<img width="1355" height="675" alt="image" src="https://github.com/user-attachments/assets/f340ac07-3408-488c-a4a8-d26ac1b7cdab" />
 
 
 
 ### ⚡ Productivity Tools
 
-<img width="1453" height="692" alt="image" src="https://github.com/user-attachments/assets/6a0347ea-7b79-465c-abc7-ce77b91f5225" />
+<img width="1457" height="699" alt="image" src="https://github.com/user-attachments/assets/97aae8ed-6466-46b9-b7e4-ca1256f425ff" />
 
 
 -   **Input Broadcasting**: Type commands in one terminal and execute them simultaneously across multiple selected tabs/panes.
