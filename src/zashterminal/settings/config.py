@@ -32,7 +32,7 @@ class AppConstants:
 
     APP_ID = "org.leoberbert.zashterminal"
     APP_TITLE = "Terminal Zash"
-    APP_VERSION = "0.1.5"
+    APP_VERSION = "0.1.8"
     DEVELOPER_NAME = "Leonardo Berbert"
     DEVELOPER_TEAM = ["Leonardo Berbert"]
     COPYRIGHT = "© 2025 Leonardo Berbert"
