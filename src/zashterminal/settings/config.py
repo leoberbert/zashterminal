@@ -8,6 +8,7 @@ from typing import Any, Dict, List
 
 # Note: GTK/Pango imports are done lazily in functions that need them
 # to avoid slow startup when only ConfigPaths is needed
+#
 
 try:
     from ..utils.exceptions import ConfigError, ErrorSeverity
