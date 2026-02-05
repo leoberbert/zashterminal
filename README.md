@@ -1,8 +1,16 @@
 # Zashterminal
 
 <p align="center">
-  <a href="https://github.com/leoberbert/zashterm/releases"><img src="https://img.shields.io/github/v/release/leoberbert/zashterm?display_name=tag&sort=semver" alt="Latest Release"/></a>
-  <a href="https://github.com/leoberbert/zashterm/blob/main/LICENSE"><img src="https://img.shields.io/github/license/leoberbert/zashterm" alt="License"/></a>
+  <img src="https://github.com/leoberbert/zashterminal/blob/main/usr/share/icons/hicolor/scalable/apps/zashterminal.svg" alt="Logo Zashterminal" width="128" height="128">
+</p>
+
+<p align="center">
+  <strong>The Ultimate Terminal for Infrastructure and Systems Management</strong>
+</p>
+<p align="center">
+  <a href="https://github.com/leoberbert/zashterminal/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-GPL--3.0-green.svg" alt="Licença"/></a>
+  <a href="https://www.gtk.org/"><img src="https://img.shields.io/badge/GTK-4.0+-orange.svg" alt="Versão GTK"/></a>
+  <a href="https://gnome.pages.gitlab.gnome.org/libadwaita/"><img src="https://img.shields.io/badge/libadwaita-1.0+-purple.svg" alt="Versão libadwaita"/></a>
 </p>
 
 **Zashterminal** is a modern, intuitive, and innovative terminal built with GTK4 and Adwaita. While it offers advanced features appreciated by developers and system administrators, it also stands out for making the command-line environment more accessible, helping those who are just beginning to learn how to use the terminal. Its simplified session management, built-in file manager, automatic color highlighting for improved readability, and a variety of other features bring convenience to users of all skill levels on any Linux distribution.
