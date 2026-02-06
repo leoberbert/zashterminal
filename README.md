@@ -5,15 +5,23 @@
 </p>
 
 <p align="center">
-  <strong>The Ultimate Terminal for Infrastructure and Systems Management</strong>
+  <strong>A modern terminal for developers, infrastructure, and system administration</strong>
 </p>
 <p align="center">
   <a href="https://github.com/leoberbert/zashterminal/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-GPL--3.0-green.svg" alt="Licença"/></a>
   <a href="https://www.gtk.org/"><img src="https://img.shields.io/badge/GTK-4.0+-orange.svg" alt="Versão GTK"/></a>
   <a href="https://gnome.pages.gitlab.gnome.org/libadwaita/"><img src="https://img.shields.io/badge/libadwaita-1.0+-purple.svg" alt="Versão libadwaita"/></a>
+  <a href="https://ko-fi.com/leoberbert"><img src="https://img.shields.io/badge/Support-Ko--fi-ff5f5f.svg" alt="Support on Ko-fi"/></a>
 </p>
 
-**Zashterminal** is a modern, intuitive, and innovative terminal built with GTK4 and Adwaita. While it offers advanced features appreciated by developers and system administrators, it also stands out for making the command-line environment more accessible, helping those who are just beginning to learn how to use the terminal. Its simplified session management, built-in file manager, automatic color highlighting for improved readability, and a variety of other features bring convenience to users of all skill levels on any Linux distribution.
+**Zashterminal** is a modern, intuitive, and innovative terminal built with GTK4 and Adwaita. It blends powerful features for developers and system administrators with a welcoming experience for newcomers. Simplified session management, an integrated file manager, automatic color highlighting, and workflow-focused tools make the command line more productive on any Linux distribution.
+
+## Why Zashterminal
+
+- **Focused on real workflows**: Manage SSH/SFTP sessions, panes, and layouts without leaving the terminal.
+- **Accessible by design**: Clear UI, smart defaults, and discoverable actions help beginners get started faster.
+- **Optional AI assistance**: Only the text you explicitly select is sent, keeping control and privacy in your hands.
+- **Built on modern Linux UI**: GTK4 + libadwaita for a native, responsive desktop experience.
 
 ## Screenshots
 
@@ -162,10 +170,21 @@ Contributions are welcome\!
 
 This project is licensed under the GNU GPL v3 (or later) - see the [LICENSE](LICENSE) file for details.
 
+## Support the Project
+
+If you enjoy Zashterminal and it improves your workflow, a contribution helps cover development time and ongoing costs. Any support is appreciated and goes directly into making the project better:
+
+- Ko-fi: https://ko-fi.com/leoberbert
+
+## Contact
+
+- Email: leo4berbert@gmail.com
+- LinkedIn: https://linkedin.com/in/leoberbert
+
 ## Acknowledgments
 
   - Developers of **GNOME**, **GTK**, **VTE**, and **Pygments**.
 
-<!-- end list -->
+---
 
-```
+Made with code, coffee, and curiosity through long nights of lines of code, by Leonardo Berbert.
