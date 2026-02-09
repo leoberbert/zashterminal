@@ -6,7 +6,7 @@ gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
 from gi.repository import Adw, Gio, Gtk
 
-from ..helpers import accelerator_to_label, is_valid_url
+from ..helpers import accelerator_to_label, is_valid_url, safe_popover_popdown
 from ..settings.config import DefaultSettings
 from ..settings.manager import SettingsManager
 from ..utils.icons import icon_button
@@ -207,7 +207,7 @@ class MainApplicationMenu:
                     shortcut_label.set_text(accelerator_to_label(accels[0]))
                     box.append(shortcut_label)
                 if item["action"] in actions_that_close_menu:
-                    button.connect("clicked", lambda b, p=popover: p.popdown())
+                    button.connect("clicked", lambda b, p=popover: safe_popover_popdown(p))
                 main_box.append(button)
 
         return popover, font_sizer_widget
