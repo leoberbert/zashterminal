@@ -3,7 +3,7 @@
 from typing import Set
 from urllib.parse import urlparse
 
-from gi.repository import Gtk
+from gi.repository import GLib, Gtk
 
 from .utils.logger import get_logger
 from .utils.security import InputSanitizer
@@ -152,3 +152,28 @@ def create_themed_popover_menu(menu_model, parent_widget=None):
         popover.set_parent(parent_widget)
 
     return popover
+
+
+def safe_popover_popdown(popover: Gtk.Popover) -> None:
+    """Safely pop down a popover on the next main-loop iteration.
+
+    This avoids re-entrancy issues that can crash GTK when popovers are
+    closed while being unmapped (e.g. rapid menu clicking on some setups).
+    """
+    if popover is None:
+        return
+
+    def _do_popdown() -> bool:
+        try:
+            # Guard against destroyed/unparented widgets
+            if not popover.get_parent():
+                return False
+            if not popover.get_visible():
+                return False
+            popover.popdown()
+        except Exception:
+            # Ignore failures to avoid crashing the app
+            pass
+        return False
+
+    GLib.idle_add(_do_popdown)
