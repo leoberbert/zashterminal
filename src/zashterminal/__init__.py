@@ -3,11 +3,45 @@ import os
 import signal
 import sys
 
-# Renderer selection: prefer the NGL renderer when not explicitly set.
-# This avoids GL renderer issues seen on some AMD/VM/GNOME setups.
-# This must be set BEFORE importing GTK/GLib.
-if "GSK_RENDERER" not in os.environ:
-    os.environ["GSK_RENDERER"] = "ngl"
+def apply_renderer_fix():
+    """
+    Selects the best GSK_RENDERER based on the desktop environment and hardware.
+    This prevents crashes on GNOME/VMs while avoiding lag on KDE+Nvidia.
+    """
+    # If the user has already manually set a renderer, do not override it.
+    if "GSK_RENDERER" in os.environ:
+        return
+
+    desktop = os.environ.get("XDG_CURRENT_DESKTOP", "").upper()
+    
+    # Check if the NVIDIA proprietary driver is loaded.
+    is_nvidia = os.path.exists("/sys/module/nvidia")
+
+    # Detect if running inside a Virtual Machine.
+    is_vm = False
+    try:
+        with open("/proc/cpuinfo", "r") as f:
+            if "hypervisor" in f.read().lower():
+                is_vm = True
+    except Exception:
+        pass
+
+    # DECISION LOGIC:
+    # 1. KDE/Plasma + NVIDIA: 'ngl' causes context menu lag/flicker.
+    #    We leave it unset to let GTK choose the stable default (usually 'gl' or 'vulkan').
+    if ("KDE" in desktop or "PLASMA" in desktop) and is_nvidia:
+        return 
+
+    # 2. GNOME or Virtual Machines: 'ngl' is often required for stability in GTK4.
+    if is_vm or "GNOME" in desktop:
+        os.environ["GSK_RENDERER"] = "ngl"
+    
+    # 3. Default case (AMD/Intel): 'ngl' is generally the most compatible and modern path.
+    else:
+        os.environ["GSK_RENDERER"] = "ngl"
+
+# The renderer selection MUST be set BEFORE importing GTK/GLib.
+apply_renderer_fix()
 
 _desktop = os.environ.get("XDG_CURRENT_DESKTOP", "")
 _desktop_upper = _desktop.upper()
@@ -171,7 +205,6 @@ def main() -> int:
     parser.add_argument(
         "--convert-to-ssh", help=_("Convert KIO/GVFS URI path to SSH format")
     )
-    # NOVO: Adicionado o argumento --new-window
     parser.add_argument(
         "--new-window", action="store_true", help=_("Force opening a new window")
     )
