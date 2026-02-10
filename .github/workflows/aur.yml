@@ -24,10 +24,13 @@ jobs:
           from pathlib import Path
 
           text = Path("src/zashterminal/settings/config.py").read_text(encoding="utf-8")
-          m = re.search(r'APP_VERSION\\s*=\\s*\"([^\"]+)\"', text)
-          if not m:
-            raise SystemExit("APP_VERSION not found in src/zashterminal/settings/config.py")
-          print(m.group(1))
+          for line in text.splitlines():
+            if "APP_VERSION" in line and "AppConstants" not in line:
+              m = re.search(r'APP_VERSION\\s*=\\s*[\"\\\']([^\"\\\']+)[\"\\\']', line)
+              if m:
+                print(m.group(1))
+                raise SystemExit(0)
+          raise SystemExit("APP_VERSION not found in src/zashterminal/settings/config.py")
           PY
           )
           echo "pkgver=$PKGVER" >> $GITHUB_OUTPUT
