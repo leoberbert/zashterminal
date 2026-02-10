@@ -46,8 +46,8 @@ jobs:
 
       - name: Generate .SRCINFO
         run: |
-          docker run --rm -v "$PWD:/repo" -w /repo archlinux:base-devel \
-            bash -c "useradd -m builder && chown -R builder:builder /repo && su -s /bin/bash builder -c 'makepkg --printsrcinfo > .SRCINFO'"
+          docker run --rm -u "$(id -u):$(id -g)" -v "$PWD:/repo" -w /repo archlinux:base-devel \
+            bash -c "makepkg --printsrcinfo > .SRCINFO"
 
       - name: Start ssh-agent
         uses: webfactory/ssh-agent@v0.9.0
