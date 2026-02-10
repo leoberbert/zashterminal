@@ -19,20 +19,24 @@ jobs:
       - name: Determine version from app config
         id: version
         run: |
-          PKGVER=$(python - <<'PY'
+          # Usando Python para extrair a versão de forma robusta
+          PKGVER=$(python3 -c "
           import re
-          from pathlib import Path
+          import os
 
-          text = Path("src/zashterminal/settings/config.py").read_text(encoding="utf-8")
-          for line in text.splitlines():
-            if "APP_VERSION" in line and "AppConstants" not in line:
-              m = re.search(r'APP_VERSION\\s*=\\s*[\"\\\']([^\"\\\']+)[\"\\\']', line)
-              if m:
-                print(m.group(1))
-                raise SystemExit(0)
-          raise SystemExit("APP_VERSION not found in src/zashterminal/settings/config.py")
-          PY
-          )
+          target = 'src/zashterminal/settings/config.py'
+          if not os.path.exists(target):
+              import sys; sys.exit(f'Erro: Arquivo {target} nao encontrado na raiz')
+
+          with open(target, 'r', encoding='utf-8') as f:
+              content = f.read()
+              # Regex simplificada que aceita aspas simples ou duplas
+              match = re.search(r'APP_VERSION\\s*=\\s*[\\\"\\']([^\\\"\\']+)[\\\"\\']', content)
+              if match:
+                  print(match.group(1))
+              else:
+                  import sys; sys.exit('Erro: Variavel APP_VERSION nao encontrada dentro do arquivo')
+          ")
           echo "pkgver=$PKGVER" >> $GITHUB_OUTPUT
           echo "pkgver=$PKGVER" >> $GITHUB_OUTPUT
 
