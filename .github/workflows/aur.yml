@@ -16,16 +16,21 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Determine version from tag
+      - name: Determine version from app config
         id: version
         run: |
-          TAG=$(git describe --tags --abbrev=0)
-          case "$TAG" in
-            v*) ;;
-            *) echo "Invalid tag format (expected v*): $TAG" >&2; exit 1 ;;
-          esac
-          PKGVER=${TAG#v}
-          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          PKGVER=$(python - <<'PY'
+          import re
+          from pathlib import Path
+
+          text = Path("src/zashterminal/settings/config.py").read_text(encoding="utf-8")
+          m = re.search(r'APP_VERSION\\s*=\\s*\"([^\"]+)\"', text)
+          if not m:
+            raise SystemExit("APP_VERSION not found in src/zashterminal/settings/config.py")
+          print(m.group(1))
+          PY
+          )
+          echo "pkgver=$PKGVER" >> $GITHUB_OUTPUT
           echo "pkgver=$PKGVER" >> $GITHUB_OUTPUT
 
       - name: Update PKGBUILD pkgver
@@ -59,5 +64,5 @@ jobs:
             exit 0
           fi
           git add PKGBUILD .SRCINFO
-          git commit -m "Update to ${{ steps.version.outputs.tag }}"
+          git commit -m "Update to ${{ steps.version.outputs.pkgver }}"
           git push
