@@ -1,0 +1,68 @@
+name: Publish AUR
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  aur:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Determine version from app config
+        id: version
+        run: |
+          PKGVER=$(python - <<'PY'
+          import re
+          from pathlib import Path
+
+          text = Path("src/zashterminal/settings/config.py").read_text(encoding="utf-8")
+          m = re.search(r'APP_VERSION\\s*=\\s*\"([^\"]+)\"', text)
+          if not m:
+            raise SystemExit("APP_VERSION not found in src/zashterminal/settings/config.py")
+          print(m.group(1))
+          PY
+          )
+          echo "pkgver=$PKGVER" >> $GITHUB_OUTPUT
+          echo "pkgver=$PKGVER" >> $GITHUB_OUTPUT
+
+      - name: Update PKGBUILD pkgver
+        run: |
+          sed -i "s/^pkgver=.*/pkgver=${{ steps.version.outputs.pkgver }}/" PKGBUILD
+
+      - name: Generate .SRCINFO
+        run: |
+          docker run --rm -v "$PWD:/repo" -w /repo archlinux:base-devel \
+            bash -c "makepkg --printsrcinfo > .SRCINFO"
+
+      - name: Start ssh-agent
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.AUR_SSH_KEY }}
+
+      - name: Add AUR host key
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -t ed25519 aur.archlinux.org >> ~/.ssh/known_hosts
+
+      - name: Publish to AUR
+        run: |
+          git clone ssh://aur@aur.archlinux.org/zashterminal.git aur-repo
+          cp PKGBUILD .SRCINFO aur-repo/
+          cd aur-repo
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          if git diff --quiet; then
+            echo "No changes to publish."
+            exit 0
+          fi
+          git add PKGBUILD .SRCINFO
+          git commit -m "Update to ${{ steps.version.outputs.pkgver }}"
+          git push
