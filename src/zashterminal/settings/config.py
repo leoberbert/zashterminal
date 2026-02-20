@@ -185,7 +185,7 @@ class DefaultSettings:
         return {
             # General Appearance
             "gtk_theme": "terminal",
-            "color_scheme": 1,
+            "color_scheme": 0,
             "transparency": 16,
             "headerbar_transparency": 12,
             "font": DefaultSettings.get_available_default_font(),
@@ -364,31 +364,6 @@ class ColorSchemes:
                     "#ad7fa8",
                     "#34e2e2",
                     "#eeeeec",
-                ],
-            },
-            "biglinux": {
-                "name": "BigLinux",
-                "foreground": "#e6e6e6",
-                "background": "#0a0a0a",
-                "headerbar_background": "#1c1c1c",  # MODIFIED
-                "cursor": "#e6e6e6",
-                "palette": [
-                    "#444444",
-                    "#ed4545",
-                    "#11d164",
-                    "#f6ca5a",
-                    "#5c7aff",
-                    "#d26cc9",
-                    "#39acf3",
-                    "#dcdfe4",
-                    "#7f8888",
-                    "#f56b66",
-                    "#4ef384",
-                    "#ffeda2",
-                    "#85a6ff",
-                    "#f48bea",
-                    "#6dccff",
-                    "#ffffff",
                 ],
             },
             "light": {
@@ -674,7 +649,6 @@ class ColorSchemeMap:
 
     SCHEME_ORDER = [
         "system_default",
-        "biglinux",
         "light",
         "dark",
         "solarized_light",

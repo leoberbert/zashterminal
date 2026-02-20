@@ -30,7 +30,7 @@ class FileItem(GObject.GObject):
                 r"(?P<owner>[\w\d._-]+)\s+"
                 r"(?P<group>[\w\d._-]+)\s+"
                 r"(?P<size>\d+)\s+"
-                r"(?P<datetime>\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}\.\d+\s+[+-]\d{4})\s+"
+                r"(?P<datetime>\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?(?:\s+[+-]\d{4})?)\s+"
                 r"(?P<name>.+?)(?: -> (?P<link_target>.+))?$"
             )
         return cls._LS_RE
@@ -164,20 +164,30 @@ class FileItem(GObject.GObject):
         - Single pass through data with minimal string operations
         """
         try:
-            # Fast path using str.split
-            parts = line.split(maxsplit=8)
-            if len(parts) < 9:
+            # Fast path supporting both:
+            # - GNU --full-time: ... YYYY-MM-DD HH:MM:SS.NNNNNNNNN +0000 name
+            # - --time-style=long-iso: ... YYYY-MM-DD HH:MM name
+            parts = line.split()
+            if len(parts) < 8:
                 # Fallback to regex for edge cases
                 return cls._from_ls_line_regex(line)
 
-            perms, links, owner, group, size, date_ymd, time_hms, time_zone, name = (
-                parts
-            )
+            perms, links, owner, group, size, date_ymd, time_hms = parts[:7]
+            remaining = parts[7:]
+            if not remaining:
+                return cls._from_ls_line_regex(line)
+
+            # Optional timezone token (e.g. +0000)
+            if re.fullmatch(r"[+-]\d{4}", remaining[0]):
+                remaining = remaining[1:]
+            if not remaining:
+                return cls._from_ls_line_regex(line)
+            name = " ".join(remaining)
 
             # Performance: Use fromisoformat (24x faster than strptime)
             # Convert "2024-01-15 10:30:00.123456789" to "2024-01-15T10:30:00"
             try:
-                time_part = time_hms.split(".")[0]  # Remove nanoseconds
+                time_part = time_hms.split(".")[0]  # Remove fractional seconds if present
                 date_obj = datetime.fromisoformat(f"{date_ymd}T{time_part}")
             except ValueError:
                 date_obj = datetime.now()

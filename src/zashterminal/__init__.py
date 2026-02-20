@@ -34,7 +34,7 @@ def apply_renderer_fix():
 
     # 2. GNOME or Virtual Machines: 'ngl' is often required for stability in GTK4.
     if is_vm or "GNOME" in desktop:
-        os.environ["GSK_RENDERER"] = "gl"
+        os.environ["GSK_RENDERER"] = "ngl"
     
     # 3. Default case (AMD/Intel): 'ngl' is generally the most compatible and modern path.
     else:
