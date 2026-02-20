@@ -19,17 +19,21 @@ class FileItem(GObject.GObject):
 
     # Lazy-loaded regex for fallback parsing (rarely used)
     _LS_RE = None
+    _ANSI_CSI_RE = re.compile(r"\x1b\[[0-?]*[ -/]*[@-~]")
+    _ANSI_OSC_RE = re.compile(r"\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)")
+    _DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+    _TIME_RE = re.compile(r"^\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?$")
 
     @classmethod
     def _get_ls_regex(cls):
         """Lazy load regex pattern - only compiled when needed."""
         if cls._LS_RE is None:
             cls._LS_RE = re.compile(
-                r"^(?P<perms>[-dlpscb?][rwxSsTt-]{9})(?:[.+@])?\s+"
-                r"(?P<links>\d+)\s+"
-                r"(?P<owner>[\w\d._-]+)\s+"
-                r"(?P<group>[\w\d._-]+)\s+"
-                r"(?P<size>\d+)\s+"
+                r"^(?P<perms>[.\-dlpscb?][rwxSsTt-]{9})(?:[.+@])?\s+"
+                r"(?P<links>\d+|-)\s+"
+                r"(?P<owner>[^\s]+)\s+"
+                r"(?P<group>[^\s]+)\s+"
+                r"(?P<size>\d+|-)\s+"
                 r"(?P<datetime>\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?(?:\s+[+-]\d{4})?)\s+"
                 r"(?P<name>.+?)(?: -> (?P<link_target>.+))?$"
             )
@@ -164,18 +168,69 @@ class FileItem(GObject.GObject):
         - Single pass through data with minimal string operations
         """
         try:
-            # Fast path supporting both:
-            # - GNU --full-time: ... YYYY-MM-DD HH:MM:SS.NNNNNNNNN +0000 name
-            # - --time-style=long-iso: ... YYYY-MM-DD HH:MM name
+            # Defensive cleanup for terminals/tools that still emit ANSI/OSC escapes.
+            clean_line = cls._ANSI_OSC_RE.sub("", line)
+            clean_line = cls._ANSI_CSI_RE.sub("", clean_line)
+            line = clean_line.strip()
+
+            # Fast path supporting GNU ls and eza long output:
+            # - GNU ls: perms links owner group size YYYY-MM-DD HH:MM name
+            # - eza:    perms links size owner group YYYY-MM-DD HH:MM name
             parts = line.split()
-            if len(parts) < 8:
+            if len(parts) < 6:
                 # Fallback to regex for edge cases
                 return cls._from_ls_line_regex(line)
 
-            perms, links, owner, group, size, date_ymd, time_hms = parts[:7]
-            remaining = parts[7:]
+            raw_perms = parts[0]
+            # eza uses "." prefix for regular files (e.g. ".rw-r--r--")
+            perms = f"-{raw_perms[1:]}" if raw_perms.startswith(".") else raw_perms
+            links = parts[1]
+
+            # Find the first YYYY-MM-DD + HH:MM token pair. This is the most
+            # stable anchor across ls/eza variants and optional columns.
+            date_idx = -1
+            for i in range(1, len(parts) - 1):
+                if cls._DATE_RE.fullmatch(parts[i]) and cls._TIME_RE.fullmatch(
+                    parts[i + 1]
+                ):
+                    date_idx = i
+                    break
+            if date_idx == -1:
+                return cls._from_ls_line_regex(line)
+
+            meta = parts[2:date_idx]
+            date_ymd = parts[date_idx]
+            time_hms = parts[date_idx + 1]
+            remaining = parts[date_idx + 2 :]
             if not remaining:
                 return cls._from_ls_line_regex(line)
+
+            owner = "unknown"
+            group = "unknown"
+            size_token = "0"
+            # Common layouts:
+            # - ls:  owner group size
+            # - eza: size owner group
+            # - eza (smart-group): size owner
+            if len(meta) >= 3:
+                if meta[0] == "-" or meta[0].isdigit():
+                    size_token, owner, group = meta[0], meta[1], meta[2]
+                elif meta[2] == "-" or meta[2].isdigit():
+                    owner, group, size_token = meta[0], meta[1], meta[2]
+                else:
+                    owner, group = meta[0], meta[1]
+            elif len(meta) == 2:
+                if meta[0] == "-" or meta[0].isdigit():
+                    size_token, owner = meta[0], meta[1]
+                    group = owner
+                elif meta[1] == "-" or meta[1].isdigit():
+                    owner, size_token = meta[0], meta[1]
+                    group = owner
+                else:
+                    owner, group = meta[0], meta[1]
+            elif len(meta) == 1:
+                owner = meta[0]
+                group = owner
 
             # Optional timezone token (e.g. +0000)
             if re.fullmatch(r"[+-]\d{4}", remaining[0]):
@@ -200,11 +255,14 @@ class FileItem(GObject.GObject):
             # Remove file type indicators added by --classify
             if name and name[-1] in "/@=*|>":
                 name = name[:-1]
+            # Some eza versions quote names with spaces unless --no-quotes is set.
+            if len(name) >= 2 and name[0] == name[-1] and name[0] in ("'", '"'):
+                name = name[1:-1]
 
             return cls(
                 name=name,
                 perms=perms,
-                size=int(size),
+                size=int(size_token) if size_token.isdigit() else 0,
                 date=date_obj,
                 owner=owner,
                 group=group,
@@ -231,13 +289,19 @@ class FileItem(GObject.GObject):
             date_obj = datetime.now()
         name = data["name"]
         name = name.rstrip("/@=*|>")
+        if len(name) >= 2 and name[0] == name[-1] and name[0] in ("'", '"'):
+            name = name[1:-1]
+        perms = data["perms"]
+        if perms.startswith("."):
+            perms = f"-{perms[1:]}"
+        size_token = data["size"]
         return cls(
             name=name,
-            perms=data["perms"],
-            size=int(data["size"]),
+            perms=perms,
+            size=int(size_token) if size_token.isdigit() else 0,
             date=date_obj,
             owner=data["owner"],
             group=data["group"],
-            is_link=data["perms"].startswith("l"),
+            is_link=perms.startswith("l"),
             link_target=data.get("link_target", ""),
         )
