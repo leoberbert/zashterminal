@@ -11,7 +11,7 @@ import gi
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
 gi.require_version("Vte", "3.91")
-from gi.repository import Adw, Gdk, Gtk, Pango, Vte
+from gi.repository import Adw, Gdk, GLib, Gtk, Pango, Vte
 
 from ..utils.exceptions import ConfigValidationError
 from ..utils.logger import get_logger, log_error_with_context
@@ -131,6 +131,7 @@ class SettingsValidator:
 
 class SettingsManager:
     """Enhanced settings manager with comprehensive functionality."""
+    _LOG_AREA = "zashterminal.settings"
 
     def __init__(self, settings_file: Optional[Path] = None):
         self.logger = get_logger("zashterminal.settings.manager")
@@ -146,9 +147,8 @@ class SettingsManager:
         self._lock = threading.RLock()
         self._change_listeners: List[Callable[[str, Any, Any], None]] = []
         self.custom_schemes: Dict[str, Any] = {}
-        # Performance optimization: Cache for compiled CSS themes
-        # Key: (bg_color, fg_color, header_bg_color, transparency, luminance)
-        # Value: (css_string, provider)
+        self._app_css_provider = Gtk.CssProvider()
+        self._provider_attached = False
         self._theme_css_cache: Dict[tuple, tuple] = {}
         self._initialize()
         self.logger.info("Settings manager initialized")
@@ -170,6 +170,10 @@ class SettingsManager:
             self._settings = self._defaults.copy()
             self.custom_schemes = {}
             self._dirty = True
+        try:
+            GLib.idle_add(self._update_app_theme_css)
+        except Exception as e:
+            self.logger.error(f"Failed to apply initial theme: {e}")
 
     def _load_custom_schemes(self) -> Dict[str, Any]:
         if not self.custom_schemes_file.exists():
@@ -415,6 +419,8 @@ class SettingsManager:
                     logger.set_log_to_file_enabled(value)
 
                 self._notify_change_listeners(key, old_value, value)
+                if self._is_theme_setting(key):
+                    GLib.idle_add(self._update_app_theme_css)
                 if save_immediately:
                     self.save_settings()
             except Exception as e:
@@ -462,6 +468,21 @@ class SettingsManager:
     def add_change_listener(self, listener: Callable[[str, Any, Any], None]):
         if listener not in self._change_listeners:
             self._change_listeners.append(listener)
+
+    def remove_change_listener(self, listener: Callable[[str, Any, Any], None]):
+        if listener in self._change_listeners:
+            self._change_listeners.remove(listener)
+
+    def _is_theme_setting(self, key: str) -> bool:
+        theme_keys = {
+            "gtk_theme",
+            "color_scheme",
+            "transparency",
+            "headerbar_transparency",
+            "font",
+            "cursor_shape",
+        }
+        return key in theme_keys or key.startswith("custom_schemes")
 
     def get_all_schemes(self) -> Dict[str, Any]:
         """Merges built-in schemes with custom schemes."""
@@ -1969,6 +1990,59 @@ class SettingsManager:
 
         except Exception as e:
             self.logger.warning(f"Error during CSS provider cleanup: {e}")
+
+    # ------------------------------------------------------------------
+    # Theme handling aligned with ashyterm: single provider + ThemeEngine.
+    # Keep zashterminal public API names used by window/dialog modules.
+    # ------------------------------------------------------------------
+    def _update_app_theme_css(self, window=None) -> None:
+        try:
+            display = Gdk.Display.get_default()
+            if not display:
+                return
+
+            if not self._provider_attached:
+                Gtk.StyleContext.add_provider_for_display(
+                    display, self._app_css_provider, Gtk.STYLE_PROVIDER_PRIORITY_USER
+                )
+                self._provider_attached = True
+
+            from ..utils.theme_engine import ThemeEngine
+
+            scheme = self.get_color_scheme_data()
+            gtk_theme = self.get("gtk_theme")
+            transparency = self.get("headerbar_transparency", 0)
+
+            params = ThemeEngine.get_theme_params(scheme, transparency)
+            full_css = ThemeEngine.generate_app_css(params, gtk_theme)
+            self._app_css_provider.load_from_data(full_css.encode("utf-8"))
+
+            if window:
+                window.queue_draw()
+        except Exception as e:
+            self.logger.error(f"Failed to update application theme CSS: {e}")
+            log_error_with_context(e, "theme update", self._LOG_AREA)
+
+    def apply_headerbar_transparency(self, headerbar) -> None:
+        # Kept for compatibility with existing zashterminal callers.
+        self._update_app_theme_css()
+        if headerbar:
+            headerbar.queue_draw()
+
+    def apply_gtk_terminal_theme(self, window) -> None:
+        # Kept for compatibility with existing zashterminal callers.
+        self._update_app_theme_css(window)
+
+    def remove_gtk_terminal_theme(self, window) -> None:
+        try:
+            if hasattr(window, "_terminal_theme_provider"):
+                Gtk.StyleContext.remove_provider_for_display(
+                    Gdk.Display.get_default(), window._terminal_theme_provider
+                )
+                delattr(window, "_terminal_theme_provider")
+            GLib.idle_add(self._update_app_theme_css, window)
+        except Exception as e:
+            self.logger.warning(f"Failed to remove GTK terminal theme: {e}")
 
 
 _settings_manager: Optional[SettingsManager] = None

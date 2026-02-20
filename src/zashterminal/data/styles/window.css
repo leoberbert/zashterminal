@@ -1,5 +1,5 @@
 /* zashterminal/data/styles/window.css
- * Main window styles for Zashterminal
+ * Main window styles for Ashy Terminal
  */
 
 /* Theme selector checkbuttons */
@@ -129,18 +129,16 @@ popover.menu separator {
 
 /* Sidebar toolbar view */
 .sidebar-toolbar-view {
-    background: @sidebar_bg_color;
-    border-right: 1px solid var(--border-color, @borders);
-    border-left: 1px solid var(--border-color, @borders);
+    /* Background and borders removed for dynamic theming inheritance */
     min-width: 350px;
 }
 
 .sidebar-toolbar-view button {
     min-width: 32px;
-        min-height: 32px;
-        padding: 6px;
-        margin: 2px;
-        border-radius: 6px;
+    min-height: 32px;
+    padding: 6px;
+    margin: 2px;
+    border-radius: 6px;
     transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
     border: none;
     background: transparent;
@@ -170,43 +168,38 @@ popover.menu separator {
 /* Sidebar search */
 .sidebar-search {
     padding: 8px 12px 12px 12px;
-        background: @window_bg_color;
-    }
-    
-    .sidebar-search entry {
-        border-radius: 6px;
+    /* background: @window_bg_color; removed */
 }
 
-/* Sidebar session tree */
-.sidebar-session-tree {
-    background: @window_bg_color;
+.sidebar-search entry {
+    border-radius: 6px;
 }
 
 .sidebar-session-tree viewport {
-    background: @window_bg_color;
+    background: transparent;
 }
 
 .sidebar-session-tree listview {
-    background: @window_bg_color;
+    background: transparent;
 }
+
 .sidebar-session-tree row {
     padding: 4px 12px;
     margin: 1px 8px;
     border-radius: 4px;
     transition: background-color 150ms ease;
-    background: @window_bg_color;
 }
 
 .sidebar-session-tree row:hover {
-    background-color: color-mix(in srgb, currentColor 10%, @window_bg_color);
+    background-color: alpha(currentColor, 0.08);
 }
 
 .sidebar-session-tree row:selected {
-    background-color: color-mix(in srgb, currentColor 15%, @window_bg_color);
+    background-color: alpha(currentColor, 0.12);
 }
 
 .sidebar-session-tree row:selected:hover {
-    background-color: color-mix(in srgb, currentColor 18%, @window_bg_color);
+    background-color: alpha(currentColor, 0.15);
 }
 
 /* Sidebar toggle button styling - hover only, no active background */
@@ -218,12 +211,12 @@ popover.menu separator {
 /* Sidebar container - simple box layout */
 .sidebar-container {
     min-width: 350px;
-    background: @window_bg_color;
+    background: var(--bg-color);
 }
 
 /* Sidebar toolbar */
 .sidebar-toolbar {
-    background: @window_bg_color;
+    background: var(--bg-color);
     padding-top: 2px;
 }
 
@@ -255,23 +248,8 @@ popover.menu separator {
 }
 
 /* Sidebar popover specific styles */
-popover.sidebar-popover>contents {
-    background: @window_bg_color;
-}
+/* Sidebar popover specific styles - Removed redundant overrides */
 
-popover.sidebar-popover .sidebar-container {
-    background: @window_bg_color;
-}
-
-popover.sidebar-popover .sidebar-toolbar {
-    background: @window_bg_color;
-    padding-top: 2px;
-}
-
-popover.sidebar-popover .sidebar-search {
-    padding: 8px 12px 12px 12px;
-    background: @window_bg_color;
-}
 /* Flipped icon utility */
 .flipped-icon {
     transform: scaleX(-1);
@@ -288,10 +266,6 @@ window.zashterminal-dialog actionbar>revealer>box {
     background-color: @headerbar_bg_color;
 }
 
-/* Inline context menu styles */
-.inline-context-menu {
-    background: @window_bg_color;
-}
 
 .inline-context-menu .title-3 {
     font-size: 1em;
@@ -322,6 +296,7 @@ window.zashterminal-dialog actionbar>revealer>box {
 .inline-context-menu button.destructive-action:active {
     background-color: alpha(@destructive_color, 0.12);
 }
+
 /* Command toolbar styles */
 .command-toolbar {
     background: @headerbar_bg_color;
