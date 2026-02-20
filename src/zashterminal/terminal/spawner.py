@@ -1012,16 +1012,14 @@ class ProcessSpawner:
                 cmd[insertion_index:insertion_index] = ["-L", forward_spec]
 
         if command_type == "ssh":
-            osc7_setup = (
-                f"{OSC7_HOST_DETECTION_SNIPPET} "
-                'export PROMPT_COMMAND=\'printf "\\033]7;file://%s%s\\007" "$ZASHTERMINAL_OSC7_HOST" "$PWD"\''
-            )
+            # Keep remote bootstrap shell-agnostic.
+            # The previous PROMPT_COMMAND injection uses POSIX assignment/export
+            # and breaks when the remote login shell is fish.
             shell_exec = 'exec "$SHELL" -l'
 
             remote_parts = []
             if initial_command:
                 remote_parts.append(initial_command)
-            remote_parts.append(osc7_setup)
             remote_parts.append(shell_exec)
 
             full_remote_command = "; ".join(remote_parts)

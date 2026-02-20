@@ -636,7 +636,7 @@ class HighlightManager(GObject.GObject):
 
         try:
             # Get current scheme index
-            scheme_index = self._settings_manager.get("color_scheme", 1)
+            scheme_index = self._settings_manager.get("color_scheme", 0)
             scheme_order = ColorSchemeMap.SCHEME_ORDER
 
             if 0 <= scheme_index < len(scheme_order):

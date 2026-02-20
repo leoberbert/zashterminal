@@ -1183,7 +1183,7 @@ class FileManager(GObject.Object):
         return [
             "sh",
             "-c",
-            f"{fd_cmd} -i {hidden_flag} -0 --color=never {safe_search_term} {safe_base_path} | xargs -0 ls -ld --full-time --classify 2>/dev/null",
+            f"{fd_cmd} -i {hidden_flag} -0 --color=never {safe_search_term} {safe_base_path} | xargs -0 ls -ld --time-style=long-iso --classify 2>/dev/null",
         ]
 
     def _build_find_command(
@@ -1208,7 +1208,7 @@ class FileManager(GObject.Object):
                 "-exec",
                 "ls",
                 "-ld",
-                "--full-time",
+                "--time-style=long-iso",
                 "--classify",
                 "{}",
                 "+",
@@ -1227,7 +1227,7 @@ class FileManager(GObject.Object):
                 "-exec",
                 "ls",
                 "-ld",
-                "--full-time",
+                "--time-style=long-iso",
                 "--classify",
                 "{}",
                 "+",
@@ -1682,12 +1682,27 @@ class FileManager(GObject.Object):
                 return
 
             path_for_ls = requested_path
+            # Some remote sessions may provide literal $HOME paths.
+            # Normalize to relative path to avoid literal "$HOME" lookup failures.
+            if self._is_remote_session() and path_for_ls.startswith("$HOME"):
+                suffix = path_for_ls[len("$HOME") :]
+                path_for_ls = f".{suffix}" if suffix else "."
             if not path_for_ls.endswith("/"):
                 path_for_ls += "/"
 
-            command = ["ls", "-la", "--classify", "--full-time", path_for_ls]
+            command = ["ls", "-la", "--classify", "--time-style=long-iso", path_for_ls]
             # Use shorter timeout (8s) for file listing to avoid long UI freezes
             success, output = operations.execute_command_on_session(command, timeout=8)
+
+            # Fallback for environments where --time-style is unsupported.
+            if (
+                not success
+                and "unknown argument --time-style" in output.lower()
+            ):
+                fallback_command = ["ls", "-la", "--classify", path_for_ls]
+                success, output = operations.execute_command_on_session(
+                    fallback_command, timeout=8
+                )
 
             if not success:
                 # Check if this is a connection timeout
