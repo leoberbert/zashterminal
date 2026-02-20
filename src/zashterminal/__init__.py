@@ -1,59 +1,6 @@
 import argparse
-import os
 import signal
 import sys
-
-def apply_renderer_fix():
-    """
-    Selects the best GSK_RENDERER based on the desktop environment and hardware.
-    This prevents crashes on GNOME/VMs while avoiding lag on KDE+Nvidia.
-    """
-    # If the user has already manually set a renderer, do not override it.
-    if "GSK_RENDERER" in os.environ:
-        return
-
-    desktop = os.environ.get("XDG_CURRENT_DESKTOP", "").upper()
-    
-    # Check if the NVIDIA proprietary driver is loaded.
-    is_nvidia = os.path.exists("/sys/module/nvidia")
-
-    # Detect if running inside a Virtual Machine.
-    is_vm = False
-    try:
-        with open("/proc/cpuinfo", "r") as f:
-            if "hypervisor" in f.read().lower():
-                is_vm = True
-    except Exception:
-        pass
-
-    # DECISION LOGIC:
-    # 1. KDE/Plasma + NVIDIA: 'ngl' causes context menu lag/flicker.
-    #    We leave it unset to let GTK choose the stable default (usually 'gl' or 'vulkan').
-    if ("KDE" in desktop or "PLASMA" in desktop) and is_nvidia:
-        return 
-
-    # 2. GNOME or Virtual Machines: 'ngl' is often required for stability in GTK4.
-    if is_vm or "GNOME" in desktop:
-        #os.environ["GSK_RENDERER"] = "ngl"
-        exit
-    
-    # 3. Default case (AMD/Intel): 'ngl' is generally the most compatible and modern path.
-    else:
-        os.environ["GSK_RENDERER"] = "ngl"
-
-# The renderer selection MUST be set BEFORE importing GTK/GLib.
-apply_renderer_fix()
-
-_desktop = os.environ.get("XDG_CURRENT_DESKTOP", "")
-_desktop_upper = _desktop.upper()
-
-# Fix for KDE Plasma (dead keys) on Wayland
-if "KDE" in _desktop_upper or "PLASMA" in _desktop_upper:
-    os.environ.setdefault("GTK_IM_MODULE", "gtk-im-context-simple")
-
-# Fix for Hyprland (dead keys/accents issue)
-if "HYPRLAND" in _desktop_upper:
-    os.environ.setdefault("GTK_IM_MODULE", "gtk-im-context-simple")
 
 if __package__ is None:
     import pathlib
@@ -112,6 +59,15 @@ def setup_signal_handlers():
 
 def main() -> int:
     """Main entry point for the application."""
+    # Ensure accent/diacritics work on Wayland without IBUS/FCITX.
+    # Must run before any GTK import.
+    try:
+        from .utils.platform import ensure_wayland_input_method
+
+        ensure_wayland_input_method()
+    except Exception:
+        pass
+
     logger_mod = _get_logger_funcs()
     _ = _get_translation()
 
@@ -119,7 +75,7 @@ def main() -> int:
     pre_parser = argparse.ArgumentParser(add_help=False)
     pre_parser.add_argument("--debug", "-d", action="store_true")
     pre_parser.add_argument("--log-level")
-    pre_args, remaining_argv = pre_parser.parse_known_args()
+    pre_args, _unused_args = pre_parser.parse_known_args()
 
     # Apply pre-launch log settings if provided
     if pre_args.debug:
