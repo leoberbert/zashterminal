@@ -1704,6 +1704,29 @@ class FileManager(GObject.Object):
                     fallback_command, timeout=8
                 )
 
+            # Fallback for systems where ls is backed by eza or incompatible implementation.
+            # Use explicit eza flags that produce stable, parseable long output.
+            if not success:
+                eza_command = [
+                    "eza",
+                    "-la",
+                    "--long",
+                    "--classify=always",
+                    "--no-quotes",
+                    "--color=never",
+                    "--icons=never",
+                    "--time-style=long-iso",
+                    "--bytes",
+                    "--group",
+                    "--links",
+                    path_for_ls,
+                ]
+                eza_success, eza_output = operations.execute_command_on_session(
+                    eza_command, timeout=8
+                )
+                if eza_success:
+                    success, output = eza_success, eza_output
+
             if not success:
                 # Check if this is a connection timeout
                 is_timeout = (
@@ -1755,7 +1778,10 @@ class FileManager(GObject.Object):
                 )
                 return
 
-            lines = output.strip().split("\n")[1:]  # Skip total line
+            lines = output.strip().split("\n")
+            # GNU ls includes a leading "total N" header; eza does not.
+            if lines and lines[0].startswith("total "):
+                lines = lines[1:]
             directories = []
             files = []
             parent_item = None
