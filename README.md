@@ -93,13 +93,23 @@ To build and run Zashterminal, you will need:
 
 ## Installation (works on any distro)
 
-Arch/Manjaro (AUR):
+### Arch/Manjaro
+
+AUR (recommended on Arch-based systems):
 ```bash
-yay -S zashterminal        # ou
+yay -S zashterminal        # or
 paru -S zashterminal
 ```
 
-Debian/Ubuntu/Fedora/openSUSE/etc. via Distrobox installer:
+Local installer (same flow used on other distros, system-wide with venv):
+```bash
+curl -fsSL https://raw.githubusercontent.com/leoberbert/zashterminal/refs/heads/main/install.sh | bash
+```
+
+### Debian / Ubuntu / Fedora / openSUSE / others
+
+The installer detects the distro, installs the required system packages, and installs Zashterminal system-wide using a virtual environment in `/opt/zashterminal/venv`.
+
 ```bash
 # Quick install (no clone required)
 curl -fsSL https://raw.githubusercontent.com/leoberbert/zashterminal/refs/heads/main/install.sh | bash
