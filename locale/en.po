@@ -7458,7 +7458,12 @@ msgid "List Orphans"
 msgstr "List Orphans"
 
 #
-# File: src/zashterminal/data/command_manager_models.py, line: 568
+# File: src/zashterminal/data/command_manager_models.py, line: 567
+msgid "Remove Orphans"
+msgstr "Remove Orphans"
+
+#
+# File: src/zashterminal/data/command_manager_models.py, line: 569
 msgid "Package manager action to perform"
 msgstr "Package manager action to perform"
 

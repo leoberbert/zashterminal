@@ -144,11 +144,11 @@ install_system_dependencies() {
         python3-gobject python3-cairo
       )
       python_runtime_packages=(
-        python3-requests python3-psutil python3-regex python3-pygments
+        python3-requests python3-psutil python3-pygments
         python3-cryptography
       )
       optional_python_packages=(
-        python3-py7zr python3-setproctitle
+        python3-regex python3-py7zr python3-setproctitle
       )
       ;;
     suse)
@@ -346,7 +346,7 @@ post_install_notes() {
 }
 
 main() {
-  log "Starting system-wide installation for ${PACKAGE_NAME} (no distrobox, with venv)"
+  log "Starting system-wide installation for ${PACKAGE_NAME}"
   detect_system
   resolve_install_mode
 

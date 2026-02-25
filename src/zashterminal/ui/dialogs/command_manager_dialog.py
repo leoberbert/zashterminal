@@ -608,6 +608,9 @@ class CommandFormDialog(Adw.Window):
         action = values.get("action", "-S").strip()
         package = values.get("package", "").strip()
 
+        if action == "__remove_orphans__":
+            return "sudo pacman -Rns $(pacman -Qdtq)"
+
         # Actions that don't require a package name
         no_pkg_actions = ["-Syu", "-Syyu", "-Sc", "-Scc", "-Q", "-Qe", "-Qdt"]
 

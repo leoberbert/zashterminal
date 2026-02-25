@@ -564,6 +564,7 @@ def get_builtin_commands() -> List[CommandButton]:
                         ("-Q", _("List Installed")),
                         ("-Qe", _("List Explicitly Installed")),
                         ("-Qdt", _("List Orphans")),
+                        ("__remove_orphans__", _("Remove Orphans")),
                     ],
                     tooltip=_("Package manager action to perform"),
                     template_key="action",
@@ -942,4 +943,3 @@ class CommandButtonManager:
 def get_command_button_manager() -> CommandButtonManager:
     """Get the singleton CommandButtonManager instance."""
     return CommandButtonManager()
-

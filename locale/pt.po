@@ -6945,7 +6945,12 @@ msgstr "Lista de Instalações Explícitas"
 msgid "List Orphans"
 msgstr "Listar órfãos"
 # 
-# File: src/zashterminal/data/command_manager_models.py, line: 568
+# File: src/zashterminal/data/command_manager_models.py, line: 567
+#: NEEDS WORK
+msgid "Remove Orphans"
+msgstr "Remover órfãos"
+# 
+# File: src/zashterminal/data/command_manager_models.py, line: 569
 #: NEEDS WORK
 msgid "Package manager action to perform"
 msgstr "Ação do gerenciador de pacotes a ser executada"
