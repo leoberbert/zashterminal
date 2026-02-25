@@ -1101,13 +1101,6 @@ class SessionEditDialog(BaseDialog):
         self._mark_changed()
 
     def _on_type_changed(self, combo_row, param) -> None:
-        if (
-            combo_row.get_selected() == 1
-            and self.is_new_item
-            and self.auth_combo.get_selected() == 0
-            and not self.key_path_entry.get_text().strip()
-        ):
-            self.key_path_entry.set_text(f"{get_ssh_directory()}/id_rsa")
         self._update_ssh_visibility()
         self._update_local_visibility()
         self._mark_changed()
@@ -1130,8 +1123,6 @@ class SessionEditDialog(BaseDialog):
         ) if 1 <= port <= 65535 else spin_row.add_css_class("error")
 
     def _on_auth_changed(self, combo_row, param) -> None:
-        if combo_row.get_selected() == 0 and not self.key_path_entry.get_text().strip():
-            self.key_path_entry.set_text(f"{get_ssh_directory()}/id_rsa")
         self._update_auth_visibility()
         self._mark_changed()
 
@@ -1420,6 +1411,8 @@ class SessionEditDialog(BaseDialog):
             or not self.user_entry.get_text().strip()
         ):
             return None
+        if self.auth_combo.get_selected() == 0 and not self.key_path_entry.get_text().strip():
+            return None
         return SessionItem(
             name="Test Connection",
             session_type="ssh",
@@ -1698,7 +1691,13 @@ class SessionEditDialog(BaseDialog):
                 valid = False
         if self.auth_combo.get_selected() == 0:
             key_path = self.key_path_entry.get_text().strip()
-            if key_path:
+            if not key_path:
+                self.key_path_entry.add_css_class("error")
+                self._validation_errors.append(
+                    _("Please select an SSH key file when using SSH key authentication.")
+                )
+                valid = False
+            else:
                 try:
                     validate_ssh_key_file(key_path)
                     self.key_path_entry.remove_css_class("error")

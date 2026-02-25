@@ -5095,6 +5095,11 @@ msgstr ""
 "Erros de configuração do SSH:  \n"
 "{}"
 # 
+# File: src/zashterminal/ui/dialogs/session_edit_dialog.py
+#: NEEDS WORK
+msgid "Please select an SSH key file when using SSH key authentication."
+msgstr "Selecione um arquivo de chave SSH ao usar autenticação por chave SSH."
+# 
 # File: usr/share/zashterminal/ui/dialogs.py, line: 1056
 #: NEEDS WORK
 msgid "Edit Folder"

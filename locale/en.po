@@ -5558,6 +5558,11 @@ msgstr ""
 "{}"
 
 #
+# File: src/zashterminal/ui/dialogs/session_edit_dialog.py
+msgid "Please select an SSH key file when using SSH key authentication."
+msgstr "Please select an SSH key file when using SSH key authentication."
+
+#
 # File: src/zashterminal/ui/dialogs/folder_edit_dialog.py, line: 27
 msgid "Edit Folder"
 msgstr "Edit Folder"
