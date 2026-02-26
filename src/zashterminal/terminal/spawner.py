@@ -1,6 +1,7 @@
 # zashterminal/terminal/spawner.py
 
 import fcntl
+import hashlib
 import os
 import shlex
 import shutil
@@ -198,6 +199,7 @@ class ProcessSpawner:
         shell = Vte.get_user_shell()
         shell_basename = os.path.basename(shell)
         temp_dir_path: Optional[str] = None
+        use_login_shell = self.settings_manager.get("use_login_shell", False)
 
         env = self.environment_manager.get_terminal_environment()
         # OSC7 integration for CWD tracking.
@@ -238,21 +240,109 @@ class ProcessSpawner:
                 if temp_dir_path:
                     shutil.rmtree(temp_dir_path, ignore_errors=True)
                 temp_dir_path = None
-        else:  # Bash and other compatible shells
-            # Don't inject PROMPT_COMMAND for bash to avoid conflicts with
-            # bash extensions like ble.sh. The VTE terminal already detects
-            # OSC7 sequences natively via the current-directory-uri signal.
-            # Users with ble.sh or similar already have OSC7 configured.
+        elif shell_basename == "bash":
+            try:
+                # Use a temporary rcfile so OSC7 setup runs after user shell startup,
+                # avoiding PROMPT_COMMAND being overwritten by shell customizations.
+                temp_dir_path = tempfile.mkdtemp(prefix="zashterminal_bash_")
+                bash_init_path = os.path.join(temp_dir_path, ".zashterminal_bashrc")
+                login_bootstrap = ""
+                if use_login_shell:
+                    login_bootstrap = (
+                        'if [ -f /etc/profile ]; then . /etc/profile; fi\n'
+                        'if [ -f "$HOME/.bash_profile" ]; then . "$HOME/.bash_profile"; '
+                        'elif [ -f "$HOME/.bash_login" ]; then . "$HOME/.bash_login"; '
+                        'elif [ -f "$HOME/.profile" ]; then . "$HOME/.profile"; fi\n'
+                    )
+                else:
+                    login_bootstrap = 'if [ -f "$HOME/.bashrc" ]; then . "$HOME/.bashrc"; fi\n'
+
+                bashrc_content = (
+                    login_bootstrap
+                    +
+                    f'_zashterminal_update_cwd() {{ {osc7_command}; }}\n'
+                    '_zashterminal_wrap_cd_builtin() {\n'
+                    '  local __zash_status=0\n'
+                    '  "$@" || __zash_status=$?\n'
+                    '  if [ $__zash_status -eq 0 ]; then\n'
+                    '    _zashterminal_update_cwd\n'
+                    '  fi\n'
+                    '  return $__zash_status\n'
+                    '}\n'
+                    'cd() { _zashterminal_wrap_cd_builtin builtin cd "$@"; }\n'
+                    'pushd() { _zashterminal_wrap_cd_builtin builtin pushd "$@"; }\n'
+                    'popd() { _zashterminal_wrap_cd_builtin builtin popd "$@"; }\n'
+                    "declare -a __zashterminal_original_prompt_commands=()\n"
+                    'if declare -p PROMPT_COMMAND >/dev/null 2>&1; then\n'
+                    '  if declare -p PROMPT_COMMAND 2>/dev/null | grep -q "declare -a"; then\n'
+                    '    __zashterminal_original_prompt_commands=("${PROMPT_COMMAND[@]}")\n'
+                    '  elif [ -n "${PROMPT_COMMAND:-}" ]; then\n'
+                    '    __zashterminal_original_prompt_commands=("${PROMPT_COMMAND}")\n'
+                    "  fi\n"
+                    "fi\n"
+                    '__zashterminal_prompt_wrapper() {\n'
+                    '  _zashterminal_update_cwd\n'
+                    '  local __zash_pc\n'
+                    '  for __zash_pc in "${__zashterminal_original_prompt_commands[@]}"; do\n'
+                    '    if [ "${__zash_pc}" != "__zashterminal_prompt_wrapper" ] && [ -n "${__zash_pc}" ]; then\n'
+                    '      eval "${__zash_pc}"\n'
+                    '    fi\n'
+                    '  done\n'
+                    '  if declare -p PROMPT_COMMAND >/dev/null 2>&1 && declare -p PROMPT_COMMAND 2>/dev/null | grep -q "declare -a"; then\n'
+                    '    if [ "${#PROMPT_COMMAND[@]}" -ne 1 ] || [ "${PROMPT_COMMAND[0]}" != "__zashterminal_prompt_wrapper" ]; then\n'
+                    '      __zashterminal_original_prompt_commands=()\n'
+                    '      for __zash_pc in "${PROMPT_COMMAND[@]}"; do\n'
+                    '        if [ "${__zash_pc}" != "__zashterminal_prompt_wrapper" ] && [ -n "${__zash_pc}" ]; then\n'
+                    '          __zashterminal_original_prompt_commands+=("${__zash_pc}")\n'
+                    '        fi\n'
+                    '      done\n'
+                    '      PROMPT_COMMAND="__zashterminal_prompt_wrapper"\n'
+                    '    fi\n'
+                    '  elif [ "${PROMPT_COMMAND:-}" != "__zashterminal_prompt_wrapper" ]; then\n'
+                    '    if [ -n "${PROMPT_COMMAND:-}" ]; then\n'
+                    '      __zashterminal_original_prompt_commands=("${PROMPT_COMMAND}")\n'
+                    '    else\n'
+                    '      __zashterminal_original_prompt_commands=()\n'
+                    '    fi\n'
+                    '    PROMPT_COMMAND="__zashterminal_prompt_wrapper"\n'
+                    '  fi\n'
+                    '}\n'
+                    'PROMPT_COMMAND="__zashterminal_prompt_wrapper"\n'
+                    '_zashterminal_update_cwd\n'
+                )
+                with open(bash_init_path, "w", encoding="utf-8") as f:
+                    f.write(bashrc_content)
+                env["ZASHTERMINAL_BASH_INIT"] = bash_init_path
+                self.logger.info(
+                    f"Using temporary bash init for OSC7 integration: {bash_init_path}"
+                )
+            except Exception as e:
+                self.logger.error(f"Failed to set up bash OSC7 integration: {e}")
+                if temp_dir_path:
+                    shutil.rmtree(temp_dir_path, ignore_errors=True)
+                temp_dir_path = None
+        else:  # Other shells
             self.logger.info(
-                "Bash detected - using native shell behavior for OSC7."
+                "Non-bash shell detected - relying on native shell behavior for OSC7."
             )
 
         # Build command based on login shell preference
-        if self.settings_manager.get("use_login_shell", False):
-            cmd = [shell, "-l"]
-            self.logger.info(f"Spawning '{shell} -l' as a login shell.")
+        if use_login_shell:
+            if shell_basename == "bash" and temp_dir_path:
+                # Use a controlled rcfile and simulate login startup within it.
+                cmd = [shell, "--rcfile", env["ZASHTERMINAL_BASH_INIT"], "-i"]
+                self.logger.info(
+                    f"Spawning '{shell} --rcfile ... -i' with login bootstrap."
+                )
+            else:
+                cmd = [shell, "-l"]
+                self.logger.info(f"Spawning '{shell} -l' as a login shell.")
         else:
-            cmd = [shell]
+            if shell_basename == "bash" and temp_dir_path:
+                cmd = [shell, "--rcfile", env["ZASHTERMINAL_BASH_INIT"], "-i"]
+                self.logger.info(f"Spawning '{shell} --rcfile ... -i'.")
+            else:
+                cmd = [shell]
 
 
         return cmd, env, temp_dir_path
@@ -261,9 +351,15 @@ class ProcessSpawner:
         user = session.user or os.getlogin()
         port = session.port or 22
         self.platform_info.cache_dir.mkdir(parents=True, exist_ok=True)
-        return str(
-            self.platform_info.cache_dir / f"ssh_control_{session.host}_{port}_{user}"
-        )
+        # Unix domain socket paths are short (~108 bytes on Linux). Long host/user
+        # values (common with gateway usernames like user@host) can exceed the limit
+        # and break ControlMaster with "path too long for Unix domain socket".
+        raw = f"{session.host}|{port}|{user}"
+        digest = hashlib.sha256(raw.encode("utf-8")).hexdigest()[:16]
+        # Keep the socket filename very short because OpenSSH may append a
+        # temporary suffix during ControlMaster setup (e.g. ".XXXX...").
+        filename = f"cm_{digest}"
+        return str(self.platform_info.cache_dir / filename)
 
     def spawn_local_terminal(
         self,
@@ -1012,15 +1108,26 @@ class ProcessSpawner:
                 cmd[insertion_index:insertion_index] = ["-L", forward_spec]
 
         if command_type == "ssh":
-            # Keep remote bootstrap shell-agnostic.
-            # The previous PROMPT_COMMAND injection uses POSIX assignment/export
-            # and breaks when the remote login shell is fish.
-            shell_exec = 'exec "$SHELL" -l'
+            # Restore OSC7 emission for remote CWD tracking (used by the built-in
+            # file manager via VTE's current-directory-uri). We skip fish because
+            # the PROMPT_COMMAND pattern is bash-specific and can break fish login.
+            osc7_prompt_command = (
+                f"{OSC7_HOST_DETECTION_SNIPPET} "
+                'printf "\\033]7;file://%s%s\\007" "$ZASHTERMINAL_OSC7_HOST" "$PWD"'
+            )
+            shell_bootstrap = (
+                'if [ -n "$SHELL" ] && echo "$SHELL" | grep -qi "fish"; then '
+                'exec "$SHELL" -l; '
+                "else "
+                f'export PROMPT_COMMAND={shlex.quote(osc7_prompt_command)}; '
+                'exec "$SHELL" -l; '
+                "fi"
+            )
 
             remote_parts = []
             if initial_command:
                 remote_parts.append(initial_command)
-            remote_parts.append(shell_exec)
+            remote_parts.append(shell_bootstrap)
 
             full_remote_command = "; ".join(remote_parts)
 
@@ -1033,7 +1140,14 @@ class ProcessSpawner:
         # password being visible in process list (ps aux)
         sshpass_env: Optional[Dict[str, str]] = None
         if session.uses_password_auth() and session.auth_value:
-            if has_command("sshpass"):
+            if command_type == "ssh":
+                # Interactive SSH sessions (especially with keyboard-interactive
+                # gateways like Balabit) must not use sshpass, or the password can
+                # be consumed by the wrong prompt. Let VTE/manual helper handle it.
+                self.logger.info(
+                    "Skipping sshpass for interactive SSH session to preserve keyboard-interactive prompts"
+                )
+            elif has_command("sshpass"):
                 cmd = ["sshpass", "-e"] + cmd
                 sshpass_env = {"SSHPASS": session.auth_value}
             else:
