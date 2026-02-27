@@ -1,6 +1,7 @@
 # zashterminal/utils/crypto.py
 
-from typing import Dict, Optional
+import os
+from typing import Dict, Optional, Tuple
 
 import gi
 
@@ -16,6 +17,21 @@ SECRET_SCHEMA = Secret.Schema.new(
     Secret.SchemaFlags.NONE,
     {"session_name": Secret.SchemaAttributeType.STRING},
 )
+SECURECRT_V2_PREFIX = "02:"
+
+
+def _get_securecrt_v2_crypto_backend() -> Tuple[Optional[object], Optional[object]]:
+    """
+    Lazy import for Cryptodome primitives used by SecureCRT Password V2 format.
+    Returns (AES, SHA256) when available, (None, None) otherwise.
+    """
+    try:
+        from Cryptodome.Cipher import AES
+        from Cryptodome.Hash import SHA256
+
+        return AES, SHA256
+    except Exception:
+        return None, None
 
 
 def is_encryption_available() -> bool:
@@ -25,6 +41,90 @@ def is_encryption_available() -> bool:
         return True
     except (ImportError, ValueError):
         return False
+
+
+def is_session_password_encryption_available() -> bool:
+    """Checks whether SecureCRT V2-compatible encryption backend is available."""
+    aes, sha256 = _get_securecrt_v2_crypto_backend()
+    return aes is not None and sha256 is not None
+
+
+def is_securecrt_v2_password(value: str) -> bool:
+    """Returns True when value matches the `02:<hex>` SecureCRT V2 prefix."""
+    return bool(value and value.startswith(SECURECRT_V2_PREFIX))
+
+
+def encrypt_session_password(password: str, config_passphrase: str = "") -> str:
+    """
+    Encrypt plaintext password in a SecureCRT Password V2-compatible payload.
+    Result format: `02:<hex>`.
+    """
+    aes, sha256 = _get_securecrt_v2_crypto_backend()
+    if aes is None or sha256 is None:
+        raise ZashterminalError(
+            "SecureCRT V2 encryption backend is not available (missing pycryptodomex)."
+        )
+
+    plain_bytes = password.encode("utf-8")
+    if len(plain_bytes) > 0xFFFFFFFF:
+        raise ZashterminalError("Password is too long for SecureCRT V2 format.")
+
+    payload = (
+        len(plain_bytes).to_bytes(4, "little")
+        + plain_bytes
+        + sha256.new(plain_bytes).digest()
+    )
+    block_size = aes.block_size
+    padding_len = block_size - (len(payload) % block_size)
+    padded = payload + os.urandom(padding_len)
+
+    key = sha256.new(config_passphrase.encode("utf-8")).digest()
+    cipher = aes.new(key, aes.MODE_CBC, iv=b"\x00" * block_size)
+    encrypted_hex = cipher.encrypt(padded).hex()
+    return f"{SECURECRT_V2_PREFIX}{encrypted_hex}"
+
+
+def decrypt_session_password(value: str, config_passphrase: str = "") -> str:
+    """
+    Decrypt a SecureCRT Password V2-compatible value.
+    Accepts either `<hex>` or `02:<hex>`.
+    """
+    aes, sha256 = _get_securecrt_v2_crypto_backend()
+    if aes is None or sha256 is None:
+        raise ZashterminalError(
+            "SecureCRT V2 decryption backend is not available (missing pycryptodomex)."
+        )
+
+    cipher_hex = value[len(SECURECRT_V2_PREFIX) :] if is_securecrt_v2_password(value) else value
+    if not cipher_hex:
+        return ""
+
+    try:
+        ciphered_bytes = bytes.fromhex(cipher_hex)
+    except ValueError as e:
+        raise ZashterminalError("Invalid encrypted password format.") from e
+
+    block_size = aes.block_size
+    if len(ciphered_bytes) == 0 or len(ciphered_bytes) % block_size != 0:
+        raise ZashterminalError("Invalid encrypted password length.")
+
+    key = sha256.new(config_passphrase.encode("utf-8")).digest()
+    cipher = aes.new(key, aes.MODE_CBC, iv=b"\x00" * block_size)
+    padded_plain = cipher.decrypt(ciphered_bytes)
+
+    plain_len = int.from_bytes(padded_plain[0:4], "little")
+    plain_bytes = padded_plain[4 : 4 + plain_len]
+    digest = padded_plain[4 + plain_len : 4 + plain_len + sha256.digest_size]
+
+    if len(plain_bytes) != plain_len or len(digest) != sha256.digest_size:
+        raise ZashterminalError("Invalid encrypted password payload.")
+    if sha256.new(plain_bytes).digest() != digest:
+        raise ZashterminalError("Encrypted password integrity check failed.")
+
+    try:
+        return plain_bytes.decode("utf-8")
+    except UnicodeDecodeError as e:
+        raise ZashterminalError("Invalid decrypted password encoding.") from e
 
 
 def store_password(session_name: str, password: str) -> bool:

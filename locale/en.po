@@ -6327,6 +6327,11 @@ msgid "Send Command"
 msgstr "Send Command"
 
 #
+# File: src/zashterminal/ui/dialogs/command_manager_dialog.py, line: 2865
+msgid "All Sessions"
+msgstr "All Sessions"
+
+#
 # #-#-#-#-#  zashterminal.pot (zashterminal)  #-#-#-#-#
 #
 # File: src/zashterminal/ui/dialogs/command_manager_dialog.py, line: 2891
@@ -9070,3 +9075,52 @@ msgstr "Error Deleting Layout"
 # File: src/zashterminal/state/window_state.py, line: 280
 msgid "Error Moving Layout"
 msgstr "Error Moving Layout"
+
+#
+# File: src/zashterminal/terminal/manager.py, line: 1425
+msgid "Gateway Authentication"
+msgstr "Gateway Authentication"
+
+#
+# File: src/zashterminal/terminal/manager.py, line: 1456
+msgid ""
+"This SSH gateway requested keyboard-interactive authentication. Enter the "
+"gateway user and password to send them to the terminal session. If your "
+"gateway expects blank values, leave the fields empty and click Send."
+msgstr ""
+"This SSH gateway requested keyboard-interactive authentication. Enter the "
+"gateway user and password to send them to the terminal session. If your "
+"gateway expects blank values, leave the fields empty and click Send."
+
+#
+# File: src/zashterminal/terminal/manager.py, line: 1477
+msgid "Gateway User"
+msgstr "Gateway User"
+
+#
+# File: src/zashterminal/terminal/manager.py, line: 1488
+msgid "Gateway Password"
+msgstr "Gateway Password"
+
+#
+# File: src/zashterminal/terminal/manager.py, line: 1515
+msgid ""
+"Some gateways hide the prompt text, so the terminal can appear stuck until "
+"the credentials are sent."
+msgstr ""
+"Some gateways hide the prompt text, so the terminal can appear stuck until "
+"the credentials are sent."
+
+#
+# File: src/zashterminal/terminal/manager.py, line: 1579
+msgid "Server Password"
+msgstr "Server Password"
+
+#
+# File: src/zashterminal/terminal/manager.py, line: 1608
+msgid ""
+"The target server password is not saved for this session. Enter it to "
+"continue this SSH login."
+msgstr ""
+"The target server password is not saved for this session. Enter it to "
+"continue this SSH login."

@@ -14,7 +14,7 @@ license = "GPL-3.0-or-later"
 license-files = ["LICENSE"]
 readme = "README.md"
 requires-python = ">=3.8"
-dependencies = ["PyGObject", "pycairo", "setproctitle", "requests", "psutil", "regex; extra == 'performance'", "Pygments; extra == 'syntax-highlighting'", "py7zr; extra == 'backup'"]
+dependencies = ["PyGObject", "pycairo", "setproctitle", "requests", "psutil", "pycryptodomex", "regex; extra == 'performance'", "Pygments; extra == 'syntax-highlighting'", "py7zr; extra == 'backup'"]
 
 [project.gui-scripts]
 zashterminal = "zashterminal:main"

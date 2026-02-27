@@ -49,6 +49,9 @@ class SessionEditDialog(BaseDialog):
             if not self.is_new_item
             else session_item
         )
+        if self.is_new_item:
+            # New sessions default to password authentication.
+            self.editing_session.auth_type = "password"
         self.original_session = session_item if not self.is_new_item else None
         self.folder_paths_map: dict[str, str] = {}
         self.post_login_expander: Optional[Adw.ExpanderRow] = None
@@ -634,7 +637,7 @@ class SessionEditDialog(BaseDialog):
         # Password - using Adw.PasswordEntryRow
         password_value = (
             self.editing_session.auth_value
-            if self.editing_session.uses_password_auth()
+            if (not self.is_new_item and self.editing_session.uses_password_auth())
             else ""
         )
         self.password_row = Adw.PasswordEntryRow(
@@ -646,21 +649,6 @@ class SessionEditDialog(BaseDialog):
         # Keep reference with old name for compatibility
         self.password_entry = self.password_row
         self.password_box = self.password_row  # Keep reference for visibility control
-
-        # Add keyring info
-        from ...utils.crypto import is_encryption_available
-
-        if not is_encryption_available():
-            keyring_row = Adw.ActionRow(
-                title=_("Password Storage"),
-                subtitle=_(
-                    "System keyring not available - password will be stored in plain text"
-                ),
-            )
-            keyring_row.add_prefix(
-                Gtk.Image.new_from_icon_name("dialog-warning-symbolic")
-            )
-            ssh_group.add(keyring_row)
 
         self.ssh_box = ssh_group
         parent.add(ssh_group)

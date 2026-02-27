@@ -180,9 +180,7 @@ msgstr "O arquivo de armazenamento '{}' está corrompido."
 #: NEEDS WORK
 #, python-brace-format
 msgid ": {}"
-msgstr ""
-"Chave: {}  \n"
-"String para traduzir: {}"
+msgstr ": {}"
 # 
 # File: usr/share/zashterminal/utils/exceptions.py, line: 259
 #: NEEDS WORK
@@ -5829,6 +5827,11 @@ msgstr "Escolha as abas que devem executar este comando:"
 msgid "Send Command"
 msgstr "Enviar Comando"
 # 
+# File: src/zashterminal/ui/dialogs/command_manager_dialog.py, line: 2865
+#: NEEDS WORK
+msgid "All Sessions"
+msgstr "Todas as Sessões"
+# 
 # File: usr/share/zashterminal/window.py, line: 857
 #: NEEDS WORK
 msgid "Terminal"
@@ -8558,3 +8561,45 @@ msgstr "Erro ao Deletar Layout"
 #: NEEDS WORK
 msgid "Error Moving Layout"
 msgstr "Erro ao Mover Layout"
+
+# 
+# File: src/zashterminal/terminal/manager.py, line: 1425
+#: NEEDS WORK
+msgid "Gateway Authentication"
+msgstr "Autenticação do Gateway"
+
+# 
+# File: src/zashterminal/terminal/manager.py, line: 1456
+#: NEEDS WORK
+msgid "This SSH gateway requested keyboard-interactive authentication. Enter the gateway user and password to send them to the terminal session. If your gateway expects blank values, leave the fields empty and click Send."
+msgstr "Este gateway SSH solicitou autenticação interativa por teclado. Digite o usuário e a senha do gateway para enviá-los para a sessão do terminal. Se o seu gateway esperar valores em branco, deixe os campos vazios e clique em Enviar."
+
+# 
+# File: src/zashterminal/terminal/manager.py, line: 1477
+#: NEEDS WORK
+msgid "Gateway User"
+msgstr "Usuário do Gateway"
+
+# 
+# File: src/zashterminal/terminal/manager.py, line: 1488
+#: NEEDS WORK
+msgid "Gateway Password"
+msgstr "Senha do Gateway"
+
+# 
+# File: src/zashterminal/terminal/manager.py, line: 1515
+#: NEEDS WORK
+msgid "Some gateways hide the prompt text, so the terminal can appear stuck until the credentials are sent."
+msgstr "Alguns gateways ocultam o texto do prompt, então o terminal pode parecer travado até que as credenciais sejam enviadas."
+
+# 
+# File: src/zashterminal/terminal/manager.py, line: 1579
+#: NEEDS WORK
+msgid "Server Password"
+msgstr "Senha do Servidor"
+
+# 
+# File: src/zashterminal/terminal/manager.py, line: 1608
+#: NEEDS WORK
+msgid "The target server password is not saved for this session. Enter it to continue this SSH login."
+msgstr "A senha do servidor de destino não está salva para esta sessão. Digite-a para continuar este login SSH."

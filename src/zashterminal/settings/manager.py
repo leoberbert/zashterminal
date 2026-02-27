@@ -2114,7 +2114,7 @@ class SettingsManager:
             self.logger.warning(f"Error during CSS provider cleanup: {e}")
 
     # ------------------------------------------------------------------
-    # Theme handling aligned with ashyterm: single provider + ThemeEngine.
+    # Theme handling aligned with zashterminal: single provider + ThemeEngine.
     # Keep zashterminal public API names used by window/dialog modules.
     # ------------------------------------------------------------------
     def _update_app_theme_css(self, window=None) -> None:
