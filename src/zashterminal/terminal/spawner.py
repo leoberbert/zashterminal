@@ -1144,7 +1144,8 @@ class ProcessSpawner:
                 # Only skip sshpass for known keyboard-interactive gateway flows.
                 # For regular SSH sessions, use sshpass so saved passwords are applied.
                 is_gateway_flow = bool(
-                    initial_command and "balabit" in initial_command.lower()
+                    (initial_command and "balabit" in initial_command.lower()) or
+                    ("balabit" in session.host.lower())
                 )
                 if is_gateway_flow:
                     self.logger.info(
@@ -1624,3 +1625,4 @@ def cleanup_spawner() -> None:
     # Reset checker instance
     with _checker_lock:
         _checker_instance = None
+

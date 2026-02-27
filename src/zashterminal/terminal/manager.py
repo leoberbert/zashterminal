@@ -1276,13 +1276,6 @@ class TerminalManager:
         self, terminal: Vte.Terminal, terminal_id: int
     ) -> None:
         """Detect Balabit keyboard-interactive banner and offer a credential dialog."""
-        # If we have a pending sequence, try to advance it based on visible prompts.
-        if terminal_id in self._balabit_gateway_pending_auth:
-            self._advance_balabit_gateway_auth_sequence(terminal, terminal_id)
-
-        if terminal_id in self._balabit_gateway_prompt_shown:
-            return
-
         info = self.registry.get_terminal_info(terminal_id)
         if not info or info.get("type") != "ssh":
             return
@@ -1303,14 +1296,56 @@ class TerminalManager:
             if not result or not result[0]:
                 return
             text_lower = result[0].lower()
+            recent_lines = [
+                line.strip().lower() for line in result[0].splitlines() if line.strip()
+            ]
+            last_prompt_line = recent_lines[-1] if recent_lines else ""
         except Exception:
             return
 
-        if (
-            "gateway authentication and authorization" not in text_lower
-            or "please specify the requested information" not in text_lower
-        ):
+        # If we have a pending sequence, try to advance it based on visible prompts.
+        if terminal_id in self._balabit_gateway_pending_auth:
+            self._advance_balabit_gateway_auth_sequence(terminal, terminal_id)
+
+        # Require the banner to be visible and the terminal to currently look like
+        # it is waiting for gateway interactive input. This avoids re-triggering
+        # from stale banner text left in scrollback after successful login.
+        has_gateway_banner = (
+            "gateway authentication and authorization" in text_lower
+            and "please specify the requested information" in text_lower
+        )
+
+        # If banner reappears after a submitted attempt, consider the previous
+        # auth sequence stale and re-open dialog (e.g. wrong password/OTP).
+        if has_gateway_banner and terminal_id in self._balabit_gateway_prompt_submitted:
+            if (
+                "please specify the requested information" in last_prompt_line
+                or "gateway authentication and authorization" in last_prompt_line
+            ):
+                self._balabit_gateway_pending_auth.pop(terminal_id, None)
+                self._balabit_gateway_prompt_shown.discard(terminal_id)
+                self._balabit_gateway_prompt_submitted.discard(terminal_id)
+
+        looks_like_gateway_prompt = (
+            "please specify the requested information" in last_prompt_line
+            or "gateway user" in last_prompt_line
+            or "gateway username" in last_prompt_line
+            or "gateway password:" in last_prompt_line
+        )
+        if not has_gateway_banner or not looks_like_gateway_prompt:
             return
+
+        if terminal_id in self._balabit_gateway_prompt_shown:
+            # Allow showing the dialog again when a previous submission is done and
+            # the gateway has returned to the auth banner (e.g. wrong password/retry).
+            if (
+                terminal_id in self._balabit_gateway_prompt_submitted
+                and terminal_id not in self._balabit_gateway_pending_auth
+            ):
+                self._balabit_gateway_prompt_shown.discard(terminal_id)
+                self._balabit_gateway_prompt_submitted.discard(terminal_id)
+            else:
+                return
 
         self._balabit_gateway_prompt_shown.add(terminal_id)
         GLib.idle_add(self._show_balabit_gateway_auth_dialog, terminal, terminal_id)
@@ -1344,7 +1379,16 @@ class TerminalManager:
             last_prompt_line = recent_lines[-1] if recent_lines else ""
         except Exception:
             return
-
+        # Step 1: Gateway username prompt
+        if (
+            pending.get("gateway_username_pending")
+            and "gateway username:" in last_prompt_line
+        ):
+            self._send_text_to_terminal(
+                terminal, pending.get("gateway_username", ""), terminal_id, "gateway_username"
+            )
+            pending["gateway_username_pending"] = ""
+            return
         # Step 2: Gateway password prompt
         if (
             pending.get("gateway_password_pending")
@@ -1388,6 +1432,70 @@ class TerminalManager:
         # Cleanup once all deferred steps are done.
         if not pending.get("gateway_password_pending") and not pending.get("target_password_pending"):
             self._balabit_gateway_pending_auth.pop(terminal_id, None)
+
+    def _retry_balabit_gateway_auth_sequence(
+        self, terminal: Vte.Terminal, terminal_id: int
+    ) -> bool:
+        """Periodically retry gateway auth progression for prompts that are not rendered reliably."""
+        pending = self._balabit_gateway_pending_auth.get(terminal_id)
+        if not pending:
+            return False
+
+        self._advance_balabit_gateway_auth_sequence(terminal, terminal_id)
+        pending = self._balabit_gateway_pending_auth.get(terminal_id)
+        if not pending:
+            return False
+
+        retries_left = int(pending.get("gateway_retry_left", "0") or "0")
+        if retries_left <= 0:
+            if pending.get("gateway_password_pending"):
+                self.logger.warning(
+                    f"Gateway password prompt not detected for terminal {terminal_id}; sending fallback input."
+                )
+                self._send_text_to_terminal(
+                    terminal,
+                    pending.get("gateway_password", ""),
+                    terminal_id,
+                    "gateway_password_fallback",
+                )
+                pending["gateway_password_pending"] = ""
+
+            if (
+                not pending.get("gateway_password_pending")
+                and not pending.get("target_password_pending")
+            ):
+                self._balabit_gateway_pending_auth.pop(terminal_id, None)
+            return False
+
+        pending["gateway_retry_left"] = str(retries_left - 1)
+        return True
+
+    def _fallback_send_gateway_password(
+        self, terminal: Vte.Terminal, terminal_id: int
+    ) -> bool:
+        """
+        Fallback for gateways that never render a visible password prompt.
+
+        If the gateway password is still pending shortly after username submission,
+        send it proactively once.
+        """
+        pending = self._balabit_gateway_pending_auth.get(terminal_id)
+        if not pending:
+            return False
+        if pending.get("gateway_password_pending"):
+            self.logger.info(
+                f"Gateway password prompt not visible for terminal {terminal_id}; sending proactive fallback."
+            )
+            self._send_text_to_terminal(
+                terminal,
+                pending.get("gateway_password", ""),
+                terminal_id,
+                "gateway_password_proactive_fallback",
+            )
+            pending["gateway_password_pending"] = ""
+            if not pending.get("target_password_pending"):
+                self._balabit_gateway_pending_auth.pop(terminal_id, None)
+        return False
 
     def _send_text_to_terminal(
         self, terminal: Vte.Terminal, value: str, terminal_id: int, label: str
@@ -1525,35 +1633,40 @@ class TerminalManager:
         content.append(hint)
 
         def on_response(dlg: Gtk.Dialog, response_id: int) -> None:
-            try:
-                if response_id == Gtk.ResponseType.OK:
-                    gateway_user = user_entry.get_text().replace("\r", "")
-                    gateway_password = password_entry.get_text().replace("\r", "")
-                    target_password = ""
-                    if (
-                        session
-                        and hasattr(session, "uses_password_auth")
-                        and session.uses_password_auth()
-                    ):
-                        try:
-                            target_password = (session.auth_value or "").replace("\r", "")
-                        except Exception:
+                    try:
+                        if response_id == Gtk.ResponseType.OK:
+                            gateway_user = user_entry.get_text().replace("\r", "")
+                            gateway_password = password_entry.get_text().replace("\r", "")
                             target_password = ""
+                            if (
+                                session
+                                and hasattr(session, "uses_password_auth")
+                                and session.uses_password_auth()
+                            ):
+                                try:
+                                    target_password = (session.auth_value or "").replace("\r", "")
+                                except Exception:
+                                    target_password = ""
 
-                    # Send ONLY the first response immediately (gateway username).
-                    # The remaining values are sent when their prompts appear.
-                    self._send_text_to_terminal(
-                        terminal, gateway_user, terminal_id, "gateway_username"
-                    )
-                    self._balabit_gateway_pending_auth[terminal_id] = {
-                        "gateway_password": gateway_password,
-                        "gateway_password_pending": "1",
-                        "target_password": target_password,
-                        "target_password_pending": "1" if target_password else "",
-                    }
-                    self._balabit_gateway_prompt_submitted.add(terminal_id)
-            finally:
-                dlg.destroy()
+                            # Modificação: Não envia nada cegamente. Apenas coloca na fila.
+                            self._balabit_gateway_pending_auth[terminal_id] = {
+                                "gateway_username": gateway_user,
+                                "gateway_username_pending": "1", # Nova flag adicionada
+                                "gateway_password": gateway_password,
+                                "gateway_password_pending": "1",
+                                "target_password": target_password,
+                                "target_password_pending": "1" if target_password else "",
+                                "gateway_retry_left": "25",
+                            }
+                            self._balabit_gateway_prompt_submitted.add(terminal_id)
+                            
+                            # Chama o avanço. Se o prompt já estiver na tela, ele envia.
+                            self._advance_balabit_gateway_auth_sequence(terminal, terminal_id)
+                            
+                            # IMPORTANTE: Remova os GLib.timeout_add do _fallback_send_gateway_password 
+                            # e do _retry_balabit_gateway_auth_sequence daqui, pois eles estragam o fluxo do MFA.
+                    finally:
+                        dlg.destroy()
 
         dialog.connect("response", on_response)
         dialog.present()
@@ -3453,3 +3566,4 @@ class TerminalManager:
         except Exception as e:
             self.logger.error(f"Failed to open hyperlink '{uri}': {e}")
             return False
+
