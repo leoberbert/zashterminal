@@ -174,12 +174,17 @@ class MainApplicationMenu:
             },
             {"label": _("AI Assistant"), "action": "win.configure-ai"},
             {"label": _("Keyboard Shortcuts"), "action": "win.shortcuts"},
+            {
+                "label": _("Import SecureCRT Sessions"),
+                "action": "win.import-securecrt-sessions",
+            },
             {"label": _("About"), "action": "app.about"},
             "---",
             {"label": _("Quit"), "action": "app.quit"},
         ]
         actions_that_close_menu = {
             "win.new-window",
+            "win.import-securecrt-sessions",
             "win.preferences",
             "win.highlight-settings",
             "win.configure-ai",

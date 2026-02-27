@@ -1141,12 +1141,22 @@ class ProcessSpawner:
         sshpass_env: Optional[Dict[str, str]] = None
         if session.uses_password_auth() and session.auth_value:
             if command_type == "ssh":
-                # Interactive SSH sessions (especially with keyboard-interactive
-                # gateways like Balabit) must not use sshpass, or the password can
-                # be consumed by the wrong prompt. Let VTE/manual helper handle it.
-                self.logger.info(
-                    "Skipping sshpass for interactive SSH session to preserve keyboard-interactive prompts"
+                # Only skip sshpass for known keyboard-interactive gateway flows.
+                # For regular SSH sessions, use sshpass so saved passwords are applied.
+                is_gateway_flow = bool(
+                    initial_command and "balabit" in initial_command.lower()
                 )
+                if is_gateway_flow:
+                    self.logger.info(
+                        "Skipping sshpass for Balabit keyboard-interactive flow"
+                    )
+                elif has_command("sshpass"):
+                    cmd = ["sshpass", "-e"] + cmd
+                    sshpass_env = {"SSHPASS": session.auth_value}
+                else:
+                    self.logger.warning(
+                        "sshpass not available for password authentication"
+                    )
             elif has_command("sshpass"):
                 cmd = ["sshpass", "-e"] + cmd
                 sshpass_env = {"SSHPASS": session.auth_value}

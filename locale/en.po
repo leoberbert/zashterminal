@@ -6327,6 +6327,11 @@ msgid "Send Command"
 msgstr "Send Command"
 
 #
+# File: src/zashterminal/ui/dialogs/command_manager_dialog.py, line: 2865
+msgid "All Sessions"
+msgstr "All Sessions"
+
+#
 # #-#-#-#-#  zashterminal.pot (zashterminal)  #-#-#-#-#
 #
 # File: src/zashterminal/ui/dialogs/command_manager_dialog.py, line: 2891
@@ -9070,3 +9075,133 @@ msgstr "Error Deleting Layout"
 # File: src/zashterminal/state/window_state.py, line: 280
 msgid "Error Moving Layout"
 msgstr "Error Moving Layout"
+
+#
+# File: src/zashterminal/terminal/manager.py, line: 1425
+msgid "Gateway Authentication"
+msgstr "Gateway Authentication"
+
+#
+# File: src/zashterminal/terminal/manager.py, line: 1456
+msgid ""
+"This SSH gateway requested keyboard-interactive authentication. Enter the "
+"gateway user and password to send them to the terminal session. If your "
+"gateway expects blank values, leave the fields empty and click Send."
+msgstr ""
+"This SSH gateway requested keyboard-interactive authentication. Enter the "
+"gateway user and password to send them to the terminal session. If your "
+"gateway expects blank values, leave the fields empty and click Send."
+
+#
+# File: src/zashterminal/terminal/manager.py, line: 1477
+msgid "Gateway User"
+msgstr "Gateway User"
+
+#
+# File: src/zashterminal/terminal/manager.py, line: 1488
+msgid "Gateway Password"
+msgstr "Gateway Password"
+
+#
+# File: src/zashterminal/terminal/manager.py, line: 1515
+msgid ""
+"Some gateways hide the prompt text, so the terminal can appear stuck until "
+"the credentials are sent."
+msgstr ""
+"Some gateways hide the prompt text, so the terminal can appear stuck until "
+"the credentials are sent."
+
+#
+# File: src/zashterminal/terminal/manager.py, line: 1579
+msgid "Server Password"
+msgstr "Server Password"
+
+#
+# File: src/zashterminal/terminal/manager.py, line: 1608
+msgid ""
+"The target server password is not saved for this session. Enter it to "
+"continue this SSH login."
+msgstr ""
+"The target server password is not saved for this session. Enter it to "
+"continue this SSH login."
+
+#
+# File: src/zashterminal/ui/menus.py, line: 163
+msgid "Import SecureCRT Sessions"
+msgstr "Import SecureCRT Sessions"
+
+#
+# File: src/zashterminal/ui/actions.py, line: 413
+msgid "Select SecureCRT Sessions Folder"
+msgstr "Select SecureCRT Sessions Folder"
+
+#
+# File: src/zashterminal/ui/actions.py, line: 448
+#, python-brace-format
+msgid "SecureCRT import finished with {count} warning(s)."
+msgstr "SecureCRT import finished with {count} warning(s)."
+
+#
+# File: src/zashterminal/ui/actions.py, line: 461
+#, python-brace-format
+msgid "Failed to select SecureCRT folder: {error}"
+msgstr "Failed to select SecureCRT folder: {error}"
+
+#
+# File: src/zashterminal/ui/actions.py, line: 469
+#, python-brace-format
+msgid "Failed to import SecureCRT sessions: {error}"
+msgstr "Failed to import SecureCRT sessions: {error}"
+
+#
+# File: src/zashterminal/sessions/operations.py, line: 430
+#, python-brace-format
+msgid "SecureCRT sessions folder not found at {path}"
+msgstr "SecureCRT sessions folder not found at {path}"
+
+#
+# File: src/zashterminal/sessions/operations.py, line: 481
+#, python-brace-format
+msgid "Could not read directory {path}: {error}"
+msgstr "Could not read directory {path}: {error}"
+
+#
+# File: src/zashterminal/sessions/operations.py, line: 507
+#, python-brace-format
+msgid "Listed SecureCRT session '{name}' was not found under {path}."
+msgstr "Listed SecureCRT session '{name}' was not found under {path}."
+
+#
+# File: src/zashterminal/sessions/operations.py, line: 531
+#, python-brace-format
+msgid "Skipped '{name}': missing Hostname field."
+msgstr "Skipped '{name}': missing Hostname field."
+
+#
+# File: src/zashterminal/sessions/operations.py, line: 559
+#, python-brace-format
+msgid "Skipped '{name}': invalid session data."
+msgstr "Skipped '{name}': invalid session data."
+
+#
+# File: src/zashterminal/sessions/operations.py, line: 576
+#, python-brace-format
+msgid "Listed SecureCRT folder '{name}' was not found under {path}."
+msgstr "Listed SecureCRT folder '{name}' was not found under {path}."
+
+#
+# File: src/zashterminal/sessions/operations.py, line: 582
+#, python-brace-format
+msgid "No SecureCRT sessions were imported from {path}."
+msgstr "No SecureCRT sessions were imported from {path}."
+
+#
+# File: src/zashterminal/sessions/operations.py, line: 588
+msgid "Failed to save imported SecureCRT sessions."
+msgstr "Failed to save imported SecureCRT sessions."
+
+#
+# File: src/zashterminal/sessions/operations.py, line: 595
+#, python-brace-format
+msgid "Imported {sessions} SecureCRT session(s) and {folders} folder(s) from {path}."
+msgstr "Imported {sessions} SecureCRT session(s) and {folders} folder(s) from {path}."

@@ -1,6 +1,7 @@
 # zashterminal/ui/actions.py
 
 import os
+from pathlib import Path
 from typing import TYPE_CHECKING, List, Optional, Union
 from urllib.parse import unquote, urlparse
 
@@ -67,6 +68,7 @@ class WindowActions:
             "toggle-search": self.toggle_search,
             "toggle-broadcast": self.toggle_broadcast,
             "show-command-manager": self.show_command_manager,
+            "import-securecrt-sessions": self.import_securecrt_sessions,
             "preferences": self.preferences,
             "shortcuts": self.shortcuts,
             "new-window": self.new_window,
@@ -417,6 +419,82 @@ class WindowActions:
             lambda d, f: self.window.terminal_manager.apply_settings_to_all_terminals(),
         )
         dialog.present()
+
+    def import_securecrt_sessions(self, *_args):
+        self._hide_tooltip()
+        chooser = Gtk.FileChooserDialog(
+            title=_("Select SecureCRT Sessions Folder"),
+            transient_for=self.window,
+            modal=True,
+            action=Gtk.FileChooserAction.SELECT_FOLDER,
+        )
+        chooser.add_css_class("zashterminal-dialog")
+        chooser.add_button(_("Cancel"), Gtk.ResponseType.CANCEL)
+        chooser.add_button(_("Select"), Gtk.ResponseType.ACCEPT)
+        chooser.set_default_response(Gtk.ResponseType.ACCEPT)
+        try:
+            chooser.set_current_folder(Gio.File.new_for_path(str(Path.home())))
+        except Exception:
+            pass
+        chooser.connect("response", self._on_securecrt_sessions_folder_selected)
+        chooser.present()
+
+    def _on_securecrt_sessions_folder_selected(self, dialog, response_id):
+        try:
+            if response_id != Gtk.ResponseType.ACCEPT:
+                return
+
+            folder = dialog.get_file()
+            if not folder:
+                return
+            folder_path = folder.get_path()
+            if not folder_path:
+                return
+
+            import_result = (
+                self.window.session_operations.import_sessions_from_securecrt_directory(
+                    folder_path
+                )
+            )
+            if import_result.success:
+                self.window.refresh_tree()
+                self.window.toast_overlay.add_toast(
+                    Adw.Toast(title=import_result.message)
+                )
+                if import_result.warnings:
+                    self.logger.warning(
+                        f"SecureCRT import completed with {len(import_result.warnings)} warning(s)."
+                    )
+                    for warning in import_result.warnings:
+                        self.logger.warning(warning)
+                    self.window.toast_overlay.add_toast(
+                        Adw.Toast(
+                            title=_(
+                                "SecureCRT import finished with {count} warning(s)."
+                            ).format(count=len(import_result.warnings))
+                        )
+                    )
+            else:
+                self.window.toast_overlay.add_toast(
+                    Adw.Toast(title=import_result.message)
+                )
+                if import_result.warnings:
+                    for warning in import_result.warnings:
+                        self.logger.warning(warning)
+        except Exception as exc:
+            self.logger.error(f"SecureCRT folder selection failed: {exc}")
+            self.window.toast_overlay.add_toast(
+                Adw.Toast(
+                    title=_("Failed to import SecureCRT sessions: {error}").format(
+                        error=exc
+                    )
+                )
+            )
+        finally:
+            try:
+                dialog.destroy()
+            except Exception:
+                pass
 
     def shortcuts(self, *_args):
         self._hide_tooltip()

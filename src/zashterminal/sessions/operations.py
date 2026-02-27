@@ -4,7 +4,7 @@ import os
 import threading
 from functools import partial
 from pathlib import Path
-from typing import Callable, List, Optional, Tuple, Union
+from typing import Callable, Dict, List, Optional, Set, Tuple, Union
 
 from gi.repository import Gio
 
@@ -410,6 +410,210 @@ class SessionOperations:
             self.logger.info(success_message)
             return OperationResult(True, success_message, warnings=warnings)
 
+    def import_sessions_from_securecrt_directory(
+        self, root_path: Union[str, Path]
+    ) -> OperationResult:
+        """Imports folders/sessions from a SecureCRT Sessions directory tree."""
+        with self._operation_lock:
+            target_root = Path(root_path).expanduser()
+            if not target_root.exists() or not target_root.is_dir():
+                message = _("SecureCRT sessions folder not found at {path}").format(
+                    path=str(target_root)
+                )
+                self.logger.warning(message)
+                return OperationResult(False, message)
+
+            warnings: List[str] = []
+            imported_count = 0
+            created_folder_count = 0
+
+            existing_folder_paths: Set[str] = {
+                folder.path
+                for folder in self.folder_store
+                if isinstance(folder, SessionFolder)
+            }
+            session_names_by_folder: Dict[str, Set[str]] = {}
+            visited_dirs: Set[str] = set()
+
+            def get_folder_session_names(folder_path: str) -> Set[str]:
+                names = session_names_by_folder.get(folder_path)
+                if names is None:
+                    names = set(self._get_session_names_in_folder(folder_path))
+                    session_names_by_folder[folder_path] = names
+                return names
+
+            def import_directory(dir_path: Path, folder_path: str) -> bool:
+                nonlocal imported_count, created_folder_count
+
+                try:
+                    dir_key = str(dir_path.resolve())
+                except Exception:
+                    dir_key = str(dir_path)
+                if dir_key in visited_dirs:
+                    return False
+                visited_dirs.add(dir_key)
+
+                folder_data = self._parse_securecrt_ini_file(
+                    dir_path / "__FolderData__.ini"
+                )
+                listed_folders = self._split_securecrt_list(
+                    folder_data.get("Folder List", "")
+                )
+                listed_sessions = self._split_securecrt_list(
+                    folder_data.get("Session List", "")
+                )
+
+                child_dirs: Dict[str, Path] = {}
+                ini_files: Dict[str, Path] = {}
+                try:
+                    for item in dir_path.iterdir():
+                        if item.is_dir():
+                            child_dirs[item.name] = item
+                        elif (
+                            item.is_file()
+                            and item.suffix.lower() == ".ini"
+                            and item.name != "__FolderData__.ini"
+                        ):
+                            ini_files[item.stem] = item
+                except OSError as exc:
+                    warnings.append(
+                        _("Could not read directory {path}: {error}").format(
+                            path=str(dir_path), error=exc
+                        )
+                    )
+                    return False
+
+                ordered_session_files: List[Path] = []
+                if listed_sessions:
+                    for session_stem in listed_sessions:
+                        ini_file = ini_files.pop(session_stem, None)
+                        if ini_file is None:
+                            ini_file = self._find_case_insensitive_ini_file(
+                                dir_path, session_stem
+                            )
+                            if ini_file:
+                                ini_files.pop(ini_file.stem, None)
+                        if ini_file is None:
+                            warnings.append(
+                                _(
+                                    "Listed SecureCRT session '{name}' was not found under {path}."
+                                ).format(name=session_stem, path=str(dir_path))
+                            )
+                            continue
+                        ordered_session_files.append(ini_file)
+
+                ordered_session_files.extend(
+                    sorted(ini_files.values(), key=lambda p: p.name.lower())
+                )
+
+                valid_session_files: List[Path] = []
+                for ini_file in ordered_session_files:
+                    session_data = self._parse_securecrt_ini_file(ini_file)
+                    hostname = session_data.get("Hostname", "").strip()
+                    if not hostname:
+                        warnings.append(
+                            _("Skipped '{name}': missing Hostname field.").format(
+                                name=ini_file.name
+                            )
+                        )
+                        continue
+                    valid_session_files.append(ini_file)
+
+                has_sessions_in_subtree = False
+
+                if valid_session_files:
+                    if folder_path:
+                        created_folder_count += self._ensure_folder_hierarchy_exists(
+                            folder_path, existing_folder_paths
+                        )
+
+                    for ini_file in valid_session_files:
+                        session_data = self._parse_securecrt_ini_file(ini_file)
+                        username = session_data.get("Username", "").strip()
+                        password_v2 = session_data.get("Password V2", "").strip()
+                        auth_type = "password" if password_v2 else ""
+
+                        existing_names = get_folder_session_names(folder_path)
+                        session_name = generate_unique_name(ini_file.stem, existing_names)
+
+                        session = SessionItem(
+                            name=session_name,
+                            session_type="ssh",
+                            host=session_data.get("Hostname", "").strip(),
+                            user=username,
+                            auth_type=auth_type,
+                            auth_value=password_v2 if password_v2 else "",
+                            folder_path=folder_path,
+                            source="securecrt",
+                        )
+
+                        if not session.validate():
+                            warnings.append(
+                                _("Skipped '{name}': invalid session data.").format(
+                                    name=ini_file.name
+                                )
+                            )
+                            continue
+
+                        self.session_store.append(session)
+                        existing_names.add(session_name)
+                        imported_count += 1
+                        has_sessions_in_subtree = True
+
+                ordered_child_dirs: List[Path] = []
+                processed_child_names: Set[str] = set()
+
+                for folder_name in listed_folders:
+                    child_dir = child_dirs.get(folder_name)
+                    if child_dir is None:
+                        warnings.append(
+                            _(
+                                "Listed SecureCRT folder '{name}' was not found under {path}."
+                            ).format(name=folder_name, path=str(dir_path))
+                        )
+                        continue
+                    ordered_child_dirs.append(child_dir)
+                    processed_child_names.add(folder_name)
+
+                for child_name in sorted(child_dirs.keys(), key=str.lower):
+                    if child_name not in processed_child_names:
+                        ordered_child_dirs.append(child_dirs[child_name])
+
+                for child_dir in ordered_child_dirs:
+                    child_folder_path = (
+                        f"{folder_path}/{child_dir.name}" if folder_path else f"/{child_dir.name}"
+                    )
+                    child_has_sessions = import_directory(child_dir, child_folder_path)
+                    if child_has_sessions:
+                        has_sessions_in_subtree = True
+
+                return has_sessions_in_subtree
+
+            import_directory(target_root, "")
+
+            if imported_count == 0:
+                message = _("No SecureCRT sessions were imported from {path}.").format(
+                    path=str(target_root)
+                )
+                self.logger.info(message)
+                return OperationResult(False, message, warnings=warnings)
+
+            if not self._save_changes():
+                message = _("Failed to save imported SecureCRT sessions.")
+                self.logger.error(message)
+                return OperationResult(False, message, warnings=warnings)
+
+            AppSignals.get().emit("request-tree-refresh")
+            message = _(
+                "Imported {sessions} SecureCRT session(s) and {folders} folder(s) from {path}."
+            ).format(
+                sessions=imported_count,
+                folders=created_folder_count,
+                path=str(target_root),
+            )
+            self.logger.info(message)
+            return OperationResult(True, message, warnings=warnings)
+
     def paste_item(
         self,
         item_to_paste: Union[SessionItem, SessionFolder],
@@ -556,3 +760,80 @@ class SessionOperations:
             )
         except Exception as exc:  # pragma: no cover - defensive
             self.logger.warning(f"Failed to persist ignored SSH config hosts: {exc}")
+
+    def _parse_securecrt_ini_file(self, ini_path: Path) -> Dict[str, str]:
+        """Parses `S:\"Key\"=Value` pairs from a SecureCRT .ini file."""
+        if not ini_path.exists() or not ini_path.is_file():
+            return {}
+
+        try:
+            content = ini_path.read_text(encoding="utf-8")
+        except UnicodeDecodeError:
+            content = ini_path.read_text(encoding="latin-1", errors="ignore")
+        except OSError:
+            return {}
+
+        result: Dict[str, str] = {}
+        for raw_line in content.splitlines():
+            line = raw_line.strip().lstrip("\ufeff")
+            if not line.startswith('S:"'):
+                continue
+            marker_index = line.find('"=')
+            if marker_index <= 3:
+                continue
+            key = line[3:marker_index]
+            value = line[marker_index + 2 :].strip()
+            if len(value) >= 2 and value[0] == '"' and value[-1] == '"':
+                value = value[1:-1]
+            result[key] = value
+        return result
+
+    def _split_securecrt_list(self, value: str) -> List[str]:
+        """Splits SecureCRT colon-delimited list strings."""
+        if not value:
+            return []
+        return [item for item in value.split(":") if item]
+
+    def _find_case_insensitive_ini_file(
+        self, directory: Path, session_stem: str
+    ) -> Optional[Path]:
+        """Finds `<session_stem>.ini` in a case-insensitive way."""
+        target_name = f"{session_stem}.ini".lower()
+        try:
+            for item in directory.iterdir():
+                if item.is_file() and item.name.lower() == target_name:
+                    return item
+        except OSError:
+            return None
+        return None
+
+    def _ensure_folder_hierarchy_exists(
+        self, folder_path: str, existing_folder_paths: Set[str]
+    ) -> int:
+        """Creates missing folder hierarchy in memory. Returns number of folders created."""
+        if not folder_path:
+            return 0
+
+        created = 0
+        segments = [segment for segment in folder_path.strip("/").split("/") if segment]
+        parent_path = ""
+        for segment in segments:
+            current_path = f"{parent_path}/{segment}" if parent_path else f"/{segment}"
+            if current_path in existing_folder_paths:
+                parent_path = current_path
+                continue
+
+            folder = SessionFolder(
+                name=segment,
+                path=current_path,
+                parent_path=parent_path,
+            )
+            if not folder.validate():
+                parent_path = current_path
+                continue
+
+            self.folder_store.append(folder)
+            existing_folder_paths.add(current_path)
+            created += 1
+            parent_path = current_path
+        return created

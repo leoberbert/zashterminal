@@ -1683,6 +1683,26 @@ class SettingsManager:
                 .command-form-dialog row label {{
                     color: {fg_color};
                 }}
+
+                /* Toast notifications (Adw.ToastOverlay) */
+                toastoverlay toast,
+                toast,
+                .toast {{
+                    background-color: color-mix(in srgb, {bg_color} 86%, {fg_color});
+                    color: {fg_color};
+                    border: 1px solid color-mix(in srgb, {fg_color} 18%, {bg_color});
+                    border-radius: 10px;
+                }}
+                toastoverlay toast label,
+                toast label,
+                .toast label {{
+                    color: {fg_color};
+                }}
+                toastoverlay toast button:not(.suggested-action):not(.destructive-action),
+                toast button:not(.suggested-action):not(.destructive-action),
+                .toast button:not(.suggested-action):not(.destructive-action) {{
+                    color: {fg_color};
+                }}
                 """)
             else:
                 self.logger.info(
@@ -2114,7 +2134,7 @@ class SettingsManager:
             self.logger.warning(f"Error during CSS provider cleanup: {e}")
 
     # ------------------------------------------------------------------
-    # Theme handling aligned with ashyterm: single provider + ThemeEngine.
+    # Theme handling aligned with zashterminal: single provider + ThemeEngine.
     # Keep zashterminal public API names used by window/dialog modules.
     # ------------------------------------------------------------------
     def _update_app_theme_css(self, window=None) -> None:

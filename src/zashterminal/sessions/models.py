@@ -228,6 +228,7 @@ class SessionItem(BaseModel):
             raise SessionValidationError(self.name, [f"Invalid auth type: {value}"])
         if self._auth_type == "password" and value != "password":
             _get_crypto().clear_password(self.name)
+            self._auth_value = ""
         self._auth_type = value
         self._mark_modified()
 
@@ -236,11 +237,19 @@ class SessionItem(BaseModel):
         """Returns the password from keyring or the raw key path."""
         if self.uses_password_auth():
             crypto = _get_crypto()
+            if self._auth_value:
+                if crypto.is_securecrt_v2_password(self._auth_value):
+                    try:
+                        return crypto.decrypt_session_password(self._auth_value)
+                    except Exception as e:
+                        self.logger.warning(
+                            f"Failed to decrypt stored password for '{self.name}': {e}"
+                        )
+                        return ""
+                return self._auth_value
+
             if crypto.is_encryption_available():
                 return crypto.lookup_password(self.name) or ""
-            self.logger.warning(
-                "Encryption is not available, cannot retrieve password."
-            )
             return ""
         return self._auth_value
 
@@ -249,14 +258,23 @@ class SessionItem(BaseModel):
         """Sets the auth value, storing it in the keyring if it's a password."""
         if self.uses_password_auth():
             crypto = _get_crypto()
-            if crypto.is_encryption_available():
-                if value:
-                    crypto.store_password(self.name, value)
-                else:
+            if value:
+                try:
+                    self._auth_value = crypto.encrypt_session_password(value)
+                    # Remove legacy keyring copy to avoid stale values.
                     crypto.clear_password(self.name)
+                except Exception as e:
+                    self.logger.error(
+                        f"Cannot encrypt password for '{self.name}', falling back to keyring: {e}"
+                    )
+                    if crypto.is_encryption_available():
+                        crypto.store_password(self.name, value)
+                        self._auth_value = ""
+                    else:
+                        self._auth_value = value
             else:
-                self.logger.error("Cannot store password: Encryption is not available.")
-            self._auth_value = ""
+                self._auth_value = ""
+                crypto.clear_password(self.name)
         else:
             self._auth_value = value
         self._mark_modified()
@@ -540,7 +558,7 @@ class SessionItem(BaseModel):
 
     def to_dict(self) -> Dict[str, Any]:
         """Serializes the session item to a dictionary."""
-        auth_value_to_save = "" if self.uses_password_auth() else self._auth_value
+        auth_value_to_save = self._auth_value
         return {
             "name": self.name,
             "session_type": self._session_type,

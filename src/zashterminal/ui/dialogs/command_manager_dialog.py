@@ -2862,8 +2862,10 @@ class CommandManagerDialog(Adw.Window):
         dialog.set_extra_child(content_box)
 
         dialog.add_response("cancel", _("Cancel"))
+        dialog.add_response("all_sessions", _("All Sessions"))
         dialog.add_response("send", _("Send Command"))
         dialog.set_default_response("send")
+        dialog.set_response_appearance("all_sessions", Adw.ResponseAppearance.SUGGESTED)
         dialog.set_response_appearance("send", Adw.ResponseAppearance.SUGGESTED)
 
         dialog.connect(
@@ -2871,6 +2873,7 @@ class CommandManagerDialog(Adw.Window):
             self._on_terminal_selection_response,
             command,
             execute,
+            all_terminals,
             selection_controls,
         )
         dialog.present()
@@ -2899,32 +2902,38 @@ class CommandManagerDialog(Adw.Window):
         response_id: str,
         command: str,
         execute: bool,
+        all_terminals: list,
         selection_controls: list,
     ):
         """Handle terminal selection dialog response."""
-        if response_id == "send":
+        if response_id not in ("send", "all_sessions"):
+            return
+
+        if response_id == "all_sessions":
+            selected_terminals = list(all_terminals)
+        else:
             selected_terminals = [
                 terminal for terminal, check in selection_controls if check.get_active()
             ]
 
-            if not selected_terminals:
-                return
+        if not selected_terminals:
+            return
 
-            # Send command to selected terminals
-            cmd = command + "\n" if execute else command
-            command_bytes = cmd.encode("utf-8")
+        # Send command to selected terminals
+        cmd = command + "\n" if execute else command
+        command_bytes = cmd.encode("utf-8")
 
-            if not cmd.endswith("\n"):
-                # Use bracketed paste for insertion without execution
-                for terminal in selected_terminals:
-                    paste_data = b"\x1b[200~" + command_bytes + b"\x1b[201~"
-                    terminal.feed_child(paste_data)
-            else:
-                # Execute on selected terminals
-                for terminal in selected_terminals:
-                    terminal.feed_child(command_bytes)
+        if not cmd.endswith("\n"):
+            # Use bracketed paste for insertion without execution
+            for terminal in selected_terminals:
+                paste_data = b"\x1b[200~" + command_bytes + b"\x1b[201~"
+                terminal.feed_child(paste_data)
+        else:
+            # Execute on selected terminals
+            for terminal in selected_terminals:
+                terminal.feed_child(command_bytes)
 
-            self.close()
+        self.close()
 
     def _on_execute_clicked(self, button):
         """Handle execute button click - shows terminal selection dialog."""

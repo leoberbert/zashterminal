@@ -23,6 +23,25 @@
 - **Optional AI assistance**: Only the text you explicitly select is sent, keeping control and privacy in your hands.
 - **Built on modern Linux UI**: GTK4 + libadwaita for a native, responsive desktop experience.
 
+## SecureCRT Migration & PAM Compatibility
+
+No more excuses to postpone your migration to Zashterminal:
+
+- **Import SecureCRT sessions directly from the main menu** (`Import SecureCRT Sessions`).
+- **Bulk import from full directory trees** (folders + `.ini` sessions).
+- **SecureCRT Password V2 compatibility**: Zashterminal can import and use `Password V2` entries (`02:<hex>`), keeping credentials compatible with the Zashterminal session format.
+- **Balabit/One Identity gateway compatibility**: Zashterminal supports keyboard-interactive privileged access gateway flows commonly used in Balabit environments.
+
+About Balabit and One Identity:
+
+- Balabit products were integrated into **One Identity** and the Balabit brand was gradually discontinued.
+- Example: *Balabit Shell Control Box* became **One Identity Safeguard for Privileged Sessions**.
+- One Identity links:
+  - Company: https://www.oneidentity.com/
+  - Privileged Access Management (PAM): https://www.oneidentity.com/br-pt/privileged-access-management/
+
+One Identity Privileged Access Management (PAM) solutions help reduce security risk and support compliance, available both on-prem and SaaS. They provide control, monitoring, analysis, and governance for privileged access across multiple environments and platforms, including Zero Trust and least-privilege operational models.
+
 ## Screenshots
 
 <img width="1457" height="699" alt="image" src="https://github.com/user-attachments/assets/4c264548-909e-4edb-95be-a5dc6a6756bb" />
@@ -85,7 +104,7 @@ To build and run Zashterminal, you will need:
 -   **VTE for GTK4** (`vte4` >= 0.76 recommended)
 -   **Python Libraries**:
     -   `PyGObject` (GTK bindings)
-    -   `cryptography` (Secure password storage)
+    -   `pycryptodomex` (SecureCRT-compatible password encryption/decryption)
     -   `requests` (For AI API connectivity)
     -   `pygments` (For syntax highlighting)
     -   `psutil` (Optional, for advanced process tracking)

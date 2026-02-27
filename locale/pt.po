@@ -180,9 +180,7 @@ msgstr "O arquivo de armazenamento '{}' está corrompido."
 #: NEEDS WORK
 #, python-brace-format
 msgid ": {}"
-msgstr ""
-"Chave: {}  \n"
-"String para traduzir: {}"
+msgstr ": {}"
 # 
 # File: usr/share/zashterminal/utils/exceptions.py, line: 259
 #: NEEDS WORK
@@ -5829,6 +5827,11 @@ msgstr "Escolha as abas que devem executar este comando:"
 msgid "Send Command"
 msgstr "Enviar Comando"
 # 
+# File: src/zashterminal/ui/dialogs/command_manager_dialog.py, line: 2865
+#: NEEDS WORK
+msgid "All Sessions"
+msgstr "Todas as Sessões"
+# 
 # File: usr/share/zashterminal/window.py, line: 857
 #: NEEDS WORK
 msgid "Terminal"
@@ -8558,3 +8561,140 @@ msgstr "Erro ao Deletar Layout"
 #: NEEDS WORK
 msgid "Error Moving Layout"
 msgstr "Erro ao Mover Layout"
+
+# 
+# File: src/zashterminal/terminal/manager.py, line: 1425
+#: NEEDS WORK
+msgid "Gateway Authentication"
+msgstr "Autenticação do Gateway"
+
+# 
+# File: src/zashterminal/terminal/manager.py, line: 1456
+#: NEEDS WORK
+msgid "This SSH gateway requested keyboard-interactive authentication. Enter the gateway user and password to send them to the terminal session. If your gateway expects blank values, leave the fields empty and click Send."
+msgstr "Este gateway SSH solicitou autenticação interativa por teclado. Digite o usuário e a senha do gateway para enviá-los para a sessão do terminal. Se o seu gateway esperar valores em branco, deixe os campos vazios e clique em Enviar."
+
+# 
+# File: src/zashterminal/terminal/manager.py, line: 1477
+#: NEEDS WORK
+msgid "Gateway User"
+msgstr "Usuário do Gateway"
+
+# 
+# File: src/zashterminal/terminal/manager.py, line: 1488
+#: NEEDS WORK
+msgid "Gateway Password"
+msgstr "Senha do Gateway"
+
+# 
+# File: src/zashterminal/terminal/manager.py, line: 1515
+#: NEEDS WORK
+msgid "Some gateways hide the prompt text, so the terminal can appear stuck until the credentials are sent."
+msgstr "Alguns gateways ocultam o texto do prompt, então o terminal pode parecer travado até que as credenciais sejam enviadas."
+
+# 
+# File: src/zashterminal/terminal/manager.py, line: 1579
+#: NEEDS WORK
+msgid "Server Password"
+msgstr "Senha do Servidor"
+
+# 
+# File: src/zashterminal/terminal/manager.py, line: 1608
+#: NEEDS WORK
+msgid "The target server password is not saved for this session. Enter it to continue this SSH login."
+msgstr "A senha do servidor de destino não está salva para esta sessão. Digite-a para continuar este login SSH."
+
+# 
+# File: src/zashterminal/ui/menus.py, line: 163
+#: NEEDS WORK
+msgid "Import SecureCRT Sessions"
+msgstr "Importar Sessões do SecureCRT"
+
+# 
+# File: src/zashterminal/ui/actions.py, line: 413
+#: NEEDS WORK
+msgid "Select SecureCRT Sessions Folder"
+msgstr "Selecione a Pasta de Sessões do SecureCRT"
+
+# 
+# File: src/zashterminal/ui/actions.py, line: 448
+#: NEEDS WORK
+#, python-brace-format
+msgid "SecureCRT import finished with {count} warning(s)."
+msgstr "Importação do SecureCRT finalizada com {count} aviso(s)."
+
+# 
+# File: src/zashterminal/ui/actions.py, line: 461
+#: NEEDS WORK
+#, python-brace-format
+msgid "Failed to select SecureCRT folder: {error}"
+msgstr "Falha ao selecionar a pasta do SecureCRT: {error}"
+
+# 
+# File: src/zashterminal/ui/actions.py, line: 469
+#: NEEDS WORK
+#, python-brace-format
+msgid "Failed to import SecureCRT sessions: {error}"
+msgstr "Falha ao importar sessões do SecureCRT: {error}"
+
+# 
+# File: src/zashterminal/sessions/operations.py, line: 430
+#: NEEDS WORK
+#, python-brace-format
+msgid "SecureCRT sessions folder not found at {path}"
+msgstr "Pasta de sessões do SecureCRT não encontrada em {path}"
+
+# 
+# File: src/zashterminal/sessions/operations.py, line: 481
+#: NEEDS WORK
+#, python-brace-format
+msgid "Could not read directory {path}: {error}"
+msgstr "Não foi possível ler o diretório {path}: {error}"
+
+# 
+# File: src/zashterminal/sessions/operations.py, line: 507
+#: NEEDS WORK
+#, python-brace-format
+msgid "Listed SecureCRT session '{name}' was not found under {path}."
+msgstr "A sessão do SecureCRT '{name}' listada não foi encontrada em {path}."
+
+# 
+# File: src/zashterminal/sessions/operations.py, line: 531
+#: NEEDS WORK
+#, python-brace-format
+msgid "Skipped '{name}': missing Hostname field."
+msgstr "Ignorada '{name}': campo Hostname ausente."
+
+# 
+# File: src/zashterminal/sessions/operations.py, line: 559
+#: NEEDS WORK
+#, python-brace-format
+msgid "Skipped '{name}': invalid session data."
+msgstr "Ignorada '{name}': dados de sessão inválidos."
+
+# 
+# File: src/zashterminal/sessions/operations.py, line: 576
+#: NEEDS WORK
+#, python-brace-format
+msgid "Listed SecureCRT folder '{name}' was not found under {path}."
+msgstr "A pasta do SecureCRT '{name}' listada não foi encontrada em {path}."
+
+# 
+# File: src/zashterminal/sessions/operations.py, line: 582
+#: NEEDS WORK
+#, python-brace-format
+msgid "No SecureCRT sessions were imported from {path}."
+msgstr "Nenhuma sessão do SecureCRT foi importada de {path}."
+
+# 
+# File: src/zashterminal/sessions/operations.py, line: 588
+#: NEEDS WORK
+msgid "Failed to save imported SecureCRT sessions."
+msgstr "Falha ao salvar as sessões do SecureCRT importadas."
+
+# 
+# File: src/zashterminal/sessions/operations.py, line: 595
+#: NEEDS WORK
+#, python-brace-format
+msgid "Imported {sessions} SecureCRT session(s) and {folders} folder(s) from {path}."
+msgstr "Importadas {sessions} sessão(ões) e {folders} pasta(s) do SecureCRT de {path}."
