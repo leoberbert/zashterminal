@@ -59,6 +59,14 @@ def setup_signal_handlers():
 
 def main() -> int:
     """Main entry point for the application."""
+    # Apply renderer/environment fallbacks before importing GTK.
+    try:
+        from .utils.platform import apply_graphics_safety_fallbacks
+
+        apply_graphics_safety_fallbacks()
+    except Exception:
+        pass
+
     # Ensure accent/diacritics work on Wayland without IBUS/FCITX.
     # Must run before any GTK import.
     try:

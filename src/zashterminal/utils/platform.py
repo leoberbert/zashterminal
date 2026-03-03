@@ -171,6 +171,92 @@ def get_environment_manager() -> EnvironmentManager:
     return _environment_manager
 
 
+def _read_os_release() -> Dict[str, str]:
+    """
+    Read /etc/os-release as a key/value mapping.
+
+    Returns empty dict when file is unavailable.
+    """
+    os_release_path = Path("/etc/os-release")
+    if not os_release_path.exists():
+        return {}
+
+    data: Dict[str, str] = {}
+    try:
+        for raw_line in os_release_path.read_text(encoding="utf-8").splitlines():
+            line = raw_line.strip()
+            if not line or line.startswith("#") or "=" not in line:
+                continue
+            key, value = line.split("=", 1)
+            value = value.strip().strip('"').strip("'")
+            data[key] = value
+    except Exception:
+        return {}
+    return data
+
+
+def _version_tuple(version: str) -> tuple[int, int]:
+    """Parse semantic distro version into (major, minor)."""
+    if not version:
+        return (0, 0)
+    parts = version.split(".")
+    try:
+        major = int(parts[0])
+        minor = int(parts[1]) if len(parts) > 1 else 0
+        return (major, minor)
+    except Exception:
+        return (0, 0)
+
+
+def is_ubuntu_at_least(major: int, minor: int) -> bool:
+    """
+    Return True when current distro is Ubuntu and version is >= major.minor.
+    """
+    info = _read_os_release()
+    distro_id = info.get("ID", "").strip().lower()
+    if distro_id != "ubuntu":
+        return False
+    current = _version_tuple(info.get("VERSION_ID", ""))
+    return current >= (major, minor)
+
+
+def apply_graphics_safety_fallbacks() -> None:
+    """
+    Apply conservative GTK/GSK environment fallbacks for unstable stacks.
+
+    On Ubuntu 25.10+, some combinations of GTK4 + Mesa/Zink have shown
+    crashes/segfaults with the default GL renderer. We force software Cairo
+    when GSK_RENDERER is not explicitly set by the user.
+    """
+    logger = get_logger("zashterminal.platform.graphics")
+
+    # Respect user override.
+    if os.environ.get("GSK_RENDERER"):
+        return
+
+    if is_ubuntu_at_least(25, 10):
+        os.environ["GSK_RENDERER"] = "cairo"
+        logger.warning(
+            "Detected Ubuntu 25.10+; forcing GSK_RENDERER=cairo for stability."
+        )
+
+
+def should_use_native_tooltips() -> bool:
+    """
+    Decide whether custom popover tooltips should be disabled for stability.
+
+    Env override:
+      - ZASHTERMINAL_NATIVE_TOOLTIPS=1/true/yes/on forces native tooltips.
+    """
+    env_value = os.environ.get("ZASHTERMINAL_NATIVE_TOOLTIPS", "").strip().lower()
+    if env_value in {"1", "true", "yes", "on"}:
+        return True
+
+    # Ubuntu 25.10+ currently uses native GTK tooltips due to popover flicker
+    # and renderer instability reported in the field.
+    return is_ubuntu_at_least(25, 10)
+
+
 def get_config_directory() -> Path:
     return get_platform_info().config_dir
 
