@@ -16,6 +16,7 @@ gi.require_version("Gtk", "4.0")
 gi.require_version("Gdk", "4.0")
 gi.require_version("Adw", "1")
 from gi.repository import Adw, Gdk, GLib, Gtk
+from .platform import should_use_native_tooltips
 
 if TYPE_CHECKING:
     from ..settings.manager import SettingsManager
@@ -33,6 +34,13 @@ def _is_x11_backend() -> bool:
     except Exception:
         # If we can't determine, assume not X11 to preserve original behavior
         return False
+
+
+def _must_use_native_tooltips() -> bool:
+    """
+    Choose native tooltips on backends/platforms with popover instability.
+    """
+    return _is_x11_backend() or should_use_native_tooltips()
 
 
 # Singleton instance
@@ -100,8 +108,8 @@ class TooltipHelper:
         self.settings_manager = settings_manager
         self.app = app
 
-        # Detect X11 backend - use native tooltips to avoid segfaults
-        self._use_native_tooltips = _is_x11_backend()
+        # Use native tooltips on unstable backends/platforms.
+        self._use_native_tooltips = _must_use_native_tooltips()
 
         # State machine variables
         self.active_widget = None
