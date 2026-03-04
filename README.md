@@ -95,6 +95,45 @@ Zashterminal creates a bridge between your shell and Large Language Models (LLMs
 -   **Directory Tracking**: Updates tab titles automatically based on the current working directory (OSC7 support).
 -   **Deep Customization**: Visual theme editor, font sizing, transparency (window and headerbar), and extensive keyboard shortcuts.
 
+### 🎨 Color Schemes
+
+Zashterminal includes built-in palettes ranging from classic terminals to modern editor-inspired themes.
+
+- **Current default theme**: `GitHub Dark`
+- **All available built-in schemes (30):**
+  - `Ayu Mirage` (`ayu_mirage`)
+  - `Catppuccin Mocha` (`catppuccin`)
+  - `Catppuccin Latte` (`catppuccin_latte`)
+  - `Dark` (`dark`)
+  - `Dracula` (`dracula`)
+  - `Everforest Green` (`everforest`)
+  - `Everforest Dark` (`everforest_dark`)
+  - `Everforest Light` (`everforest_light`)
+  - `GitHub Dark` (`github_dark`)
+  - `GitHub Light` (`github_light`)
+  - `Gruvbox Dark Hard` (`gruvbox_dark_hard`)
+  - `Gruvbox Light` (`gruvbox_light`)
+  - `Horizon Dark` (`horizon_dark`)
+  - `Kanagawa Wave` (`kanagawa_wave`)
+  - `Light` (`light`)
+  - `Material Ocean` (`material_ocean`)
+  - `Monokai` (`monokai`)
+  - `Moonfly` (`moonfly`)
+  - `Night Owl` (`night_owl`)
+  - `Nord` (`nord`)
+  - `One Dark Pro` (`onedark_pro`)
+  - `Oxocarbon Dark` (`oxocarbon_dark`)
+  - `Palenight` (`palenight`)
+  - `Pink Light` (`pink_light`)
+  - `Rosé Pine` (`rose_pine`)
+  - `Solarized Dark` (`solarized_dark`)
+  - `Solarized Light` (`solarized_light`)
+  - `System Default` (`system_default`)
+  - `Tokyo Night` (`tokyonight`)
+  - `VS Code Dark+` (`vscode_dark_plus`)
+
+You can switch themes and create your own custom palettes from the appearance/preferences dialog.
+
 
 ## Dependencies
 To build and run Zashterminal, you will need:
