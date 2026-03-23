@@ -953,8 +953,7 @@ class FileManager(GObject.Object):
         self.combined_filter.changed(Gtk.FilterChange.DIFFERENT)
         if hasattr(self, "column_view") and self.column_view:
             if self.selection_model and self.selection_model.get_n_items() > 0:
-                self.selection_model.select_item(0, True)
-                self.column_view.scroll_to(0, None, Gtk.ListScrollFlags.NONE, None)
+                self.selection_model.unselect_all()
 
     def _start_recursive_search(self, search_term: str) -> None:
         if not self.operations:
@@ -1272,11 +1271,7 @@ class FileManager(GObject.Object):
             and file_items
             and self.selection_model.get_n_items() > 0
         ):
-            self.selection_model.select_item(0, True)
-            if hasattr(self, "column_view") and self.column_view:
-                self.column_view.scroll_to(
-                    0, None, Gtk.ListScrollFlags.NONE, None
-                )
+            self.selection_model.unselect_all()
 
         return False
 
@@ -1366,6 +1361,7 @@ class FileManager(GObject.Object):
 
     def _create_detailed_column_view(self) -> Gtk.ColumnView:
         col_view = Gtk.ColumnView()
+        col_view.add_css_class("file-manager-column-view")
         col_view.set_show_column_separators(True)
         col_view.set_show_row_separators(True)
 
@@ -1927,8 +1923,7 @@ class FileManager(GObject.Object):
                 sorter.changed(Gtk.SorterChange.DIFFERENT)
         if hasattr(self, "column_view") and self.column_view:
             if self.selection_model and self.selection_model.get_n_items() > 0:
-                self.selection_model.select_item(0, True)
-                self.column_view.scroll_to(0, None, Gtk.ListScrollFlags.NONE, None)
+                self.selection_model.unselect_all()
                 if source == "filemanager":
                     self.column_view.grab_focus()
         return False
