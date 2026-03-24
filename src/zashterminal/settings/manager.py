@@ -915,6 +915,11 @@ class SettingsManager:
             # Hover/selected alpha values based on theme
             hover_alpha = "10%" if is_dark_theme else "8%"
             selected_alpha = "15%" if is_dark_theme else "12%"
+            palette = scheme.get("palette", [])
+            accent_color = palette[4] if len(palette) > 4 else "#3584e4"
+            file_hover_mix = "22%" if is_dark_theme else "16%"
+            file_selected_mix = "32%" if is_dark_theme else "24%"
+            file_selected_hover_mix = "42%" if is_dark_theme else "32%"
 
             self.logger.info(
                 f"Applying GTK terminal theme CSS - BG: {bg_color}, FG: {fg_color}, "
@@ -1405,29 +1410,54 @@ class SettingsManager:
                 }}
                 .file-manager-main-box scrolledwindow,
                 .file-manager-main-box viewport,
-                .file-manager-main-box columnview,
-                .file-manager-main-box columnview *,
+                .file-manager-main-box .file-manager-column-view,
                 .file-manager-main-box listview,
-                .file-manager-main-box listview row,
-                .file-manager-main-box columnview row,
-                .file-manager-main-box columnview cell {{
+                .file-manager-main-box listview row {{
                     background-color: {bg_color};
                     color: {fg_color};
                 }}
-                .file-manager-main-box columnview row > * {{
+                .file-manager-main-box .file-manager-column-view row,
+                .file-manager-main-box .file-manager-column-view columnviewrow,
+                .file-manager-main-box .file-manager-column-view listitem {{
+                    background-color: transparent;
                     color: {fg_color};
                 }}
+                .file-manager-main-box .file-manager-column-view cell {{
+                    background-color: transparent;
+                    color: {fg_color};
+                }}
+                .file-manager-main-box .file-manager-column-view row > * {{
+                    color: {fg_color};
+                }}
+                .file-manager-main-box .file-manager-column-view row,
+                .file-manager-main-box .file-manager-column-view columnviewrow,
+                .file-manager-main-box .file-manager-column-view listitem {{
+                    border-radius: 8px;
+                    margin: 1px 4px;
+                }}
                 .file-manager-main-box listview row:hover,
-                .file-manager-main-box columnview row:hover {{
-                    background-color: color-mix(in srgb, {fg_color} {hover_alpha}, {bg_color});
+                .file-manager-main-box .file-manager-column-view row:hover,
+                .file-manager-main-box .file-manager-column-view columnviewrow:hover,
+                .file-manager-main-box .file-manager-column-view listitem:hover,
+                .file-manager-main-box .file-manager-column-view row:hover > *,
+                .file-manager-main-box .file-manager-column-view columnviewrow:hover > * {{
+                    background-color: color-mix(in srgb, {accent_color} {file_hover_mix}, {bg_color});
                 }}
                 .file-manager-main-box listview row:selected,
-                .file-manager-main-box columnview row:selected {{
-                    background-color: color-mix(in srgb, {fg_color} {selected_alpha}, {bg_color});
+                .file-manager-main-box .file-manager-column-view row:selected,
+                .file-manager-main-box .file-manager-column-view columnviewrow:selected,
+                .file-manager-main-box .file-manager-column-view listitem:selected,
+                .file-manager-main-box .file-manager-column-view row:selected > *,
+                .file-manager-main-box .file-manager-column-view columnviewrow:selected > * {{
+                    background-color: color-mix(in srgb, {accent_color} {file_selected_mix}, {bg_color});
                 }}
                 .file-manager-main-box listview row:selected:hover,
-                .file-manager-main-box columnview row:selected:hover {{
-                    background-color: color-mix(in srgb, {fg_color} 18%, {bg_color});
+                .file-manager-main-box .file-manager-column-view row:selected:hover,
+                .file-manager-main-box .file-manager-column-view columnviewrow:selected:hover,
+                .file-manager-main-box .file-manager-column-view listitem:selected:hover,
+                .file-manager-main-box .file-manager-column-view row:selected:hover > *,
+                .file-manager-main-box .file-manager-column-view columnviewrow:selected:hover > * {{
+                    background-color: color-mix(in srgb, {accent_color} {file_selected_hover_mix}, {bg_color});
                 }}
                 .file-manager-main-box label,
                 .file-manager-main-box button:not(.suggested-action):not(.destructive-action),
@@ -1447,8 +1477,6 @@ class SettingsManager:
 
             # === DIALOGS ===
             # Get accent color from palette for command guide styling
-            palette = scheme.get("palette", [])
-            accent_color = palette[4] if len(palette) > 4 else "#3584e4"
 
             # === SSH ERROR BANNER ===
             # Always apply - uses bg_color which is always defined

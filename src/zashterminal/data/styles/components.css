@@ -167,6 +167,31 @@
     padding: 0px;
 }
 
+/* Fallback hover/selection highlight for file manager rows */
+.file-manager-main-box .file-manager-column-view row:hover,
+.file-manager-main-box .file-manager-column-view columnviewrow:hover,
+.file-manager-main-box .file-manager-column-view listitem:hover,
+.file-manager-main-box .file-manager-column-view row:hover > *,
+.file-manager-main-box .file-manager-column-view columnviewrow:hover > * {
+    background-color: alpha(@accent_bg_color, 0.16);
+}
+
+.file-manager-main-box .file-manager-column-view row:selected,
+.file-manager-main-box .file-manager-column-view columnviewrow:selected,
+.file-manager-main-box .file-manager-column-view listitem:selected,
+.file-manager-main-box .file-manager-column-view row:selected > *,
+.file-manager-main-box .file-manager-column-view columnviewrow:selected > * {
+    background-color: alpha(@accent_bg_color, 0.24);
+}
+
+.file-manager-main-box .file-manager-column-view row,
+.file-manager-main-box .file-manager-column-view columnviewrow,
+.file-manager-main-box .file-manager-column-view listitem {
+    background-color: transparent;
+    border-radius: 8px;
+    margin: 1px 4px;
+}
+
 /* ==========================================================================
    Tooltip Design - GTK4 compatible
    ========================================================================== */
