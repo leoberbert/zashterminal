@@ -42,6 +42,10 @@ class WindowActions:
             "split-horizontal": self.split_horizontal,
             "split-vertical": self.split_vertical,
             "close-pane": self.close_pane,
+            "focus-pane-up": self.focus_pane_up,
+            "focus-pane-down": self.focus_pane_down,
+            "focus-pane-left": self.focus_pane_left,
+            "focus-pane-right": self.focus_pane_right,
             "open-url": self.open_url,
             "copy-url": self.copy_url,
             "zoom-in": self.zoom_in,
@@ -149,6 +153,18 @@ class WindowActions:
     def close_pane(self, *_args):
         if terminal := self.window.tab_manager.get_selected_terminal():
             self.window.tab_manager.close_pane(terminal)
+
+    def focus_pane_up(self, *_args):
+        self.window.tab_manager.navigate_pane("up")
+
+    def focus_pane_down(self, *_args):
+        self.window.tab_manager.navigate_pane("down")
+
+    def focus_pane_left(self, *_args):
+        self.window.tab_manager.navigate_pane("left")
+
+    def focus_pane_right(self, *_args):
+        self.window.tab_manager.navigate_pane("right")
 
     # --- Terminal Actions ---
 

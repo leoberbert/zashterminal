@@ -5663,6 +5663,26 @@ msgid "Close Active Pane"
 msgstr "Close Active Pane"
 
 #
+# File: src/zashterminal/ui/dialogs/shortcuts_dialog.py, line: 31
+msgid "Focus Pane Up"
+msgstr "Focus Pane Up"
+
+#
+# File: src/zashterminal/ui/dialogs/shortcuts_dialog.py, line: 32
+msgid "Focus Pane Down"
+msgstr "Focus Pane Down"
+
+#
+# File: src/zashterminal/ui/dialogs/shortcuts_dialog.py, line: 33
+msgid "Focus Pane Left"
+msgstr "Focus Pane Left"
+
+#
+# File: src/zashterminal/ui/dialogs/shortcuts_dialog.py, line: 34
+msgid "Focus Pane Right"
+msgstr "Focus Pane Right"
+
+#
 # File: src/zashterminal/ui/dialogs/shortcuts_dialog.py, line: 34
 msgid "Terminal Interaction"
 msgstr "Terminal Interaction"

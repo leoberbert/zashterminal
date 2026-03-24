@@ -24,6 +24,7 @@ from .settings.config import (
     LAYOUT_DIR,
     SESSIONS_FILE,
     SETTINGS_FILE,
+    WEBSITE,
 )
 from .settings.manager import SettingsManager, get_settings_manager
 # Lazy import: from .terminal.spawner import cleanup_spawner  # Only needed at shutdown
@@ -244,6 +245,10 @@ class CommTerminalApp(Adw.Application):
                 "split-horizontal",
                 "split-vertical",
                 "close-pane",
+                "focus-pane-up",
+                "focus-pane-down",
+                "focus-pane-left",
+                "focus-pane-right",
                 "next-tab",
                 "previous-tab",
                 "toggle-broadcast",
@@ -423,8 +428,9 @@ class CommTerminalApp(Adw.Application):
     def _on_about_action(self, _action, _param) -> None:
         """Handle about action."""
         try:
+            active_window = self.get_active_window()
             about_dialog = Adw.AboutWindow(
-                transient_for=self.get_active_window(),
+                transient_for=active_window,
                 modal=True,
                 application_name=APP_TITLE,
                 application_icon="zashterminal",
@@ -434,13 +440,45 @@ class CommTerminalApp(Adw.Application):
                 copyright=COPYRIGHT,
                 license_type=Gtk.License.GPL_3_0,
                 issue_url=ISSUE_URL,
-                comments=_("A modern terminal emulator with session management"),
+                comments=_(
+                    "Terminal emulator for local and remote workflows on Linux."
+                ),
             )
+
+            # Keep About clean and professional with only essential metadata/actions.
+            if hasattr(about_dialog, "set_website"):
+                about_dialog.set_website(WEBSITE)
+            if hasattr(about_dialog, "set_support_url"):
+                about_dialog.set_support_url(ISSUE_URL)
+            if hasattr(about_dialog, "add_link"):
+                about_dialog.add_link(_("Source Code"), WEBSITE)
+                about_dialog.add_link(_("Report an Issue"), ISSUE_URL)
+
             if self.settings_manager and self.settings_manager.get("debug_mode", False):
-                debug_info = "Platform: Linux\n"
-                debug_info += f"Architecture: {self.platform_info.architecture}\n"
-                debug_info += f"Shell: {os.environ.get('SHELL', 'N/A')}"
+                gtk_version = (
+                    f"{Gtk.get_major_version()}."
+                    f"{Gtk.get_minor_version()}."
+                    f"{Gtk.get_micro_version()}"
+                )
+                adw_version = (
+                    f"{Adw.get_major_version()}."
+                    f"{Adw.get_minor_version()}."
+                    f"{Adw.get_micro_version()}"
+                )
+                debug_info = (
+                    f"App ID: {APP_ID}\n"
+                    f"Version: {APP_VERSION}\n"
+                    f"Platform: Linux\n"
+                    f"Architecture: {self.platform_info.architecture}\n"
+                    f"Shell: {os.environ.get('SHELL', 'N/A')}\n"
+                    f"GTK: {gtk_version}\n"
+                    f"libadwaita: {adw_version}\n"
+                    f"Sessions file: {SESSIONS_FILE}\n"
+                    f"Settings file: {SETTINGS_FILE}\n"
+                    f"Layouts dir: {LAYOUT_DIR}"
+                )
                 about_dialog.set_debug_info(debug_info)
+
             about_dialog.present()
         except Exception as e:
             self.logger.error(f"Failed to show about dialog: {e}")

@@ -114,8 +114,11 @@ class CommTerminalWindow(Adw.ApplicationWindow):
                         new_close_button = Gtk.Button(
                             tooltip_text=_("Close Pane"),
                         )
-                        new_close_button.set_child(icon_image("window-close-symbolic"))
+                        new_close_button.set_child(
+                            icon_image("window-close-symbolic", size=16)
+                        )
                         new_close_button.add_css_class("flat")
+                        new_close_button.set_size_request(26, 26)
                         new_close_button.connect(
                             "clicked",
                             lambda _, term=terminal_widget: self.tab_manager.close_pane(
@@ -127,9 +130,10 @@ class CommTerminalWindow(Adw.ApplicationWindow):
                             tooltip_text=_("Move to New Tab"),
                         )
                         new_move_button.set_child(
-                            icon_image("select-rectangular-symbolic")
+                            icon_image("go-next-symbolic", size=14)
                         )
                         new_move_button.add_css_class("flat")
+                        new_move_button.set_size_request(26, 26)
                         new_move_button.connect(
                             "clicked",
                             lambda _,
@@ -522,6 +526,16 @@ class CommTerminalWindow(Adw.ApplicationWindow):
         prev_tab_shortcut = self.settings_manager.get_shortcut("previous-tab")
         split_h_shortcut = self.settings_manager.get_shortcut("split-horizontal")
         split_v_shortcut = self.settings_manager.get_shortcut("split-vertical")
+        focus_pane_up_shortcut = self.settings_manager.get_shortcut("focus-pane-up")
+        focus_pane_down_shortcut = self.settings_manager.get_shortcut(
+            "focus-pane-down"
+        )
+        focus_pane_left_shortcut = self.settings_manager.get_shortcut(
+            "focus-pane-left"
+        )
+        focus_pane_right_shortcut = self.settings_manager.get_shortcut(
+            "focus-pane-right"
+        )
         ai_shortcut = self.settings_manager.get_shortcut("ai-assistant")
 
         # Check if the pressed key combination matches one of our dynamic shortcuts.
@@ -539,6 +553,18 @@ class CommTerminalWindow(Adw.ApplicationWindow):
         if accel_string and accel_string == split_v_shortcut:
             if terminal := self.tab_manager.get_selected_terminal():
                 self.tab_manager.split_vertical(terminal)
+            return Gdk.EVENT_STOP
+        if accel_string and accel_string == focus_pane_up_shortcut:
+            self.tab_manager.navigate_pane("up")
+            return Gdk.EVENT_STOP
+        if accel_string and accel_string == focus_pane_down_shortcut:
+            self.tab_manager.navigate_pane("down")
+            return Gdk.EVENT_STOP
+        if accel_string and accel_string == focus_pane_left_shortcut:
+            self.tab_manager.navigate_pane("left")
+            return Gdk.EVENT_STOP
+        if accel_string and accel_string == focus_pane_right_shortcut:
+            self.tab_manager.navigate_pane("right")
             return Gdk.EVENT_STOP
         if accel_string and accel_string == ai_shortcut:
             self._on_ai_assistant_requested()

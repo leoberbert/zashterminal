@@ -91,6 +91,23 @@ paned separator {
     background: @window_bg_color;
 }
 
+/* Split pane hover/focus feedback */
+.terminal-pane {
+    border: 1px solid transparent;
+    border-radius: 8px;
+    transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+
+.terminal-pane.pane-hover {
+    border-color: alpha(@accent_bg_color, 0.22);
+    box-shadow: inset 0 0 0 1px alpha(@accent_bg_color, 0.06);
+}
+
+.terminal-pane.pane-focused {
+    border-color: alpha(@accent_bg_color, 0.45);
+    box-shadow: inset 0 0 0 1px alpha(@accent_bg_color, 0.10);
+}
+
 popover.menu separator {
     background-color: alpha(@borders, 0.35);
 }
