@@ -5198,6 +5198,26 @@ msgstr "Dividir Verticalmente"
 msgid "Close Active Pane"
 msgstr "Fechar Painel Ativo"
 # 
+# File: src/zashterminal/ui/dialogs/shortcuts_dialog.py, line: 31
+#: NEEDS WORK
+msgid "Focus Pane Up"
+msgstr "Focar painel acima"
+# 
+# File: src/zashterminal/ui/dialogs/shortcuts_dialog.py, line: 32
+#: NEEDS WORK
+msgid "Focus Pane Down"
+msgstr "Focar painel abaixo"
+# 
+# File: src/zashterminal/ui/dialogs/shortcuts_dialog.py, line: 33
+#: NEEDS WORK
+msgid "Focus Pane Left"
+msgstr "Focar painel à esquerda"
+# 
+# File: src/zashterminal/ui/dialogs/shortcuts_dialog.py, line: 34
+#: NEEDS WORK
+msgid "Focus Pane Right"
+msgstr "Focar painel à direita"
+# 
 # File: usr/share/zashterminal/ui/dialogs/shortcuts_dialog.py, line: 34
 #: NEEDS WORK
 msgid "Terminal Interaction"

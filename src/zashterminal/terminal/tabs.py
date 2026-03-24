@@ -62,13 +62,17 @@ def _create_terminal_pane(
 
     # Action buttons (using bundled icons)
     move_to_tab_button = icon_button(
-        "select-rectangular-symbolic", tooltip=_("Move to New Tab")
+        "go-next-symbolic", size=14, tooltip=_("Move to New Tab")
     )
     move_to_tab_button.add_css_class("flat")
+    move_to_tab_button.set_size_request(26, 26)
     move_to_tab_button.connect("clicked", lambda _: on_move_to_tab_callback(terminal))
 
-    close_button = icon_button("window-close-symbolic", tooltip=_("Close Pane"))
+    close_button = icon_button(
+        "window-close-symbolic", size=16, tooltip=_("Close Pane")
+    )
     close_button.add_css_class("flat")
+    close_button.set_size_request(26, 26)
     close_button.connect("clicked", lambda _: on_close_callback(terminal))
 
     header_box.append(move_to_tab_button)
@@ -1234,6 +1238,108 @@ class TabManager:
         self._find_terminals_recursive(page_content, terminals)
         return terminals[0] if terminals else None
 
+    def navigate_pane(self, direction: str) -> bool:
+        """Move keyboard focus to an adjacent split pane in the given direction."""
+        current_terminal = self.get_selected_terminal()
+        if not current_terminal:
+            return False
+
+        page = self.get_page_for_terminal(current_terminal)
+        if not page:
+            return False
+
+        current_pane = self._find_pane_for_terminal(page, current_terminal)
+        if not current_pane:
+            return False
+
+        root = page.get_child()
+        if not root:
+            return False
+
+        panes: List[Adw.ToolbarView] = []
+        self._find_panes_recursive(root, panes)
+        if len(panes) <= 1:
+            return False
+
+        current_geom = self._get_pane_geometry_in_root(current_pane, root)
+        if not current_geom:
+            return False
+        cur_center_x, cur_center_y = current_geom["center_x"], current_geom["center_y"]
+
+        best_candidate_terminal: Optional[Vte.Terminal] = None
+        best_score = None
+
+        for pane in panes:
+            if pane is current_pane:
+                continue
+            if not hasattr(pane, "terminal") or not pane.terminal:
+                continue
+
+            geom = self._get_pane_geometry_in_root(pane, root)
+            if not geom:
+                continue
+
+            dx = geom["center_x"] - cur_center_x
+            dy = geom["center_y"] - cur_center_y
+
+            if direction == "up":
+                if dy >= 0:
+                    continue
+                score = (abs(dy), abs(dx))
+            elif direction == "down":
+                if dy <= 0:
+                    continue
+                score = (abs(dy), abs(dx))
+            elif direction == "left":
+                if dx >= 0:
+                    continue
+                score = (abs(dx), abs(dy))
+            elif direction == "right":
+                if dx <= 0:
+                    continue
+                score = (abs(dx), abs(dy))
+            else:
+                return False
+
+            if best_score is None or score < best_score:
+                best_score = score
+                best_candidate_terminal = pane.terminal
+
+        if not best_candidate_terminal:
+            return False
+
+        if (
+            best_candidate_terminal.get_realized()
+            and best_candidate_terminal.is_visible()
+            and best_candidate_terminal.get_can_focus()
+        ):
+            best_candidate_terminal.grab_focus()
+            return True
+        return False
+
+    def _get_pane_geometry_in_root(
+        self, pane: Adw.ToolbarView, root: Gtk.Widget
+    ) -> Optional[dict]:
+        """Return pane position and center in root coordinates."""
+        try:
+            coords = pane.translate_coordinates(root, 0, 0)
+            if not coords:
+                return None
+            x, y = coords
+            alloc = pane.get_allocation()
+            width = alloc.width
+            height = alloc.height
+            return {
+                "x": x,
+                "y": y,
+                "width": width,
+                "height": height,
+                "center_x": x + width / 2.0,
+                "center_y": y + height / 2.0,
+            }
+        except Exception:
+            return None
+
     def get_all_terminals_in_page(self, page: Adw.ViewStackPage) -> List[Vte.Terminal]:
         terminals = []
         if root_widget := page.get_child():
@@ -1332,6 +1438,67 @@ class TabManager:
         page = self.get_page_for_terminal(terminal)
         if page:
             page._last_focused_in_page = weakref.ref(terminal)
+        self._update_pane_focus_visual(terminal)
+
+    def _setup_pane_hover_focus(
+        self, pane: Optional[Adw.ToolbarView], terminal: Optional[Vte.Terminal]
+    ) -> None:
+        """Enable hover highlight + focus-follows-mouse for split panes."""
+        if not pane or not terminal:
+            return
+        if hasattr(pane, "_pane_hover_motion_controller"):
+            return
+
+        motion_controller = Gtk.EventControllerMotion.new()
+        motion_controller.connect(
+            "enter", self._on_pane_pointer_enter, terminal, pane
+        )
+        motion_controller.connect("leave", self._on_pane_pointer_leave, pane)
+        pane.add_controller(motion_controller)
+        pane._pane_hover_motion_controller = motion_controller
+
+    def _on_pane_pointer_enter(
+        self,
+        _controller: Gtk.EventControllerMotion,
+        _x: float,
+        _y: float,
+        terminal: Vte.Terminal,
+        pane: Adw.ToolbarView,
+    ) -> None:
+        pane.add_css_class("pane-hover")
+
+        if (
+            terminal
+            and terminal.get_realized()
+            and terminal.is_visible()
+            and terminal.get_can_focus()
+            and self.terminal_manager.parent_window.get_focus() != terminal
+        ):
+            terminal.grab_focus()
+
+    def _on_pane_pointer_leave(
+        self,
+        _controller: Gtk.EventControllerMotion,
+        pane: Adw.ToolbarView,
+    ) -> None:
+        pane.remove_css_class("pane-hover")
+
+    def _update_pane_focus_visual(self, terminal: Optional[Vte.Terminal]) -> None:
+        """Keep a visual marker on the pane that currently receives keyboard input."""
+        if not terminal:
+            return
+        page = self.get_page_for_terminal(terminal)
+        if not page:
+            return
+
+        panes: List[Adw.ToolbarView] = []
+        self._find_panes_recursive(page.get_child(), panes)
+        for pane in panes:
+            pane.remove_css_class("pane-focused")
+
+        focused_pane = self._find_pane_for_terminal(page, terminal)
+        if focused_pane:
+            focused_pane.add_css_class("pane-focused")
 
     def _schedule_terminal_focus(self, terminal: Vte.Terminal) -> None:
         """Schedules a deferred focus call for the terminal, ensuring the UI is ready."""
@@ -1974,6 +2141,7 @@ class TabManager:
                 self._on_move_to_tab_callback,
                 self.terminal_manager.settings_manager,
             )
+            self._setup_pane_hover_focus(new_pane, new_terminal)
             focus_controller = Gtk.EventControllerFocus()
             focus_controller.connect("enter", self._on_pane_focus_in, new_terminal)
             new_terminal.add_controller(focus_controller)
@@ -2005,8 +2173,16 @@ class TabManager:
                     self._on_move_to_tab_callback,
                     self.terminal_manager.settings_manager,
                 )
+                self._setup_pane_hover_focus(pane_being_split, focused_terminal)
             else:
                 pane_being_split = pane_to_replace
+
+            if isinstance(pane_being_split, Adw.ToolbarView) and hasattr(
+                pane_being_split, "terminal"
+            ):
+                self._setup_pane_hover_focus(
+                    pane_being_split, pane_being_split.terminal
+                )
 
             is_start_child = False
             if isinstance(container, Gtk.Paned):
@@ -2236,6 +2412,7 @@ class TabManager:
                 self._on_move_to_tab_callback,
                 self.terminal_manager.settings_manager,
             )
+            self._setup_pane_hover_focus(pane_widget, terminal)
 
             focus_controller = Gtk.EventControllerFocus()
             focus_controller.connect("enter", self._on_pane_focus_in, terminal)

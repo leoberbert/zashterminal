@@ -28,6 +28,10 @@ SHORTCUT_DATA = [
             ("split-horizontal", _("Split Horizontally")),
             ("split-vertical", _("Split Vertically")),
             ("close-pane", _("Close Active Pane")),
+            ("focus-pane-up", _("Focus Pane Up")),
+            ("focus-pane-down", _("Focus Pane Down")),
+            ("focus-pane-left", _("Focus Pane Left")),
+            ("focus-pane-right", _("Focus Pane Right")),
         ],
     },
     {

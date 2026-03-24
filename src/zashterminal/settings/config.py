@@ -35,7 +35,7 @@ class AppConstants:
 
     APP_ID = "org.leoberbert.zashterminal"
     APP_TITLE = "Terminal Zash"
-    APP_VERSION = "0.6.0"
+    APP_VERSION = "0.7.0"
     DEVELOPER_NAME = "Leonardo Berbert"
     DEVELOPER_TEAM = ["Leonardo Berbert"]
     COPYRIGHT = "© 2025 Leonardo Berbert"
@@ -324,6 +324,10 @@ class DefaultSettings:
                 "split-horizontal": "<Control><Shift>parenleft",
                 "split-vertical": "<Control><Shift>parenright",
                 "close-pane": "<Control><Shift>k",
+                "focus-pane-up": "<Control><Shift>Up",
+                "focus-pane-down": "<Control><Shift>Down",
+                "focus-pane-left": "<Control><Shift>Left",
+                "focus-pane-right": "<Control><Shift>Right",
                 "next-tab": "<Alt>Page_Down",
                 "previous-tab": "<Alt>Page_Up",
                 "toggle-file-manager": "<Control><Shift>e",
