@@ -149,7 +149,7 @@ To build and run Zashterminal, you will need:
     -   `psutil` (Optional, for advanced process tracking)
     -   `regex` (Optional, for high-performance highlighting patterns)
 
-## Installation (works on any distro)
+## Installation
 
 ### Arch/Manjaro
 
@@ -159,12 +159,12 @@ yay -S zashterminal        # or
 paru -S zashterminal
 ```
 
-Local installer (same flow used on other distros, system-wide with venv):
+Local installer (system-wide with venv):
 ```bash
 curl -fsSL https://raw.githubusercontent.com/leoberbert/zashterminal/refs/heads/main/install.sh | bash
 ```
 
-### Debian / Ubuntu / Fedora / openSUSE / others
+### Debian / Ubuntu / Fedora / openSUSE
 
 The installer detects the distro, installs the required system packages, and installs Zashterminal system-wide using a virtual environment in `/opt/zashterminal/venv`.
 
