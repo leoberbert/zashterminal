@@ -14,7 +14,7 @@
   <a href="https://ko-fi.com/leoberbert"><img src="https://img.shields.io/badge/Support-Ko--fi-ff5f5f.svg" alt="Support on Ko-fi"/></a>
 </p>
 
-**Zashterminal** is a modern, intuitive, and innovative terminal built with GTK4 and Adwaita. It blends powerful features for developers and system administrators with a welcoming experience for newcomers. Simplified session management, an integrated file manager, automatic color highlighting, and workflow-focused tools make the command line more productive on any Linux distribution.Teste123
+**Zashterminal** is a modern, intuitive, and innovative terminal built with GTK4 and Adwaita. It blends powerful features for developers and system administrators with a welcoming experience for newcomers. Simplified session management, an integrated file manager, automatic color highlighting, and workflow-focused tools make the command line more productive on any Linux distribution.
 
 ## Why Zashterminal
 
