@@ -100,7 +100,4 @@ jobs:
           fi
           git add PKGBUILD .SRCINFO
           git commit -m "Update to ${{ steps.version.outputs.pkgver }}"
-          retry 6 bash -lc '
-            git pull --rebase origin master || true
-            git push origin HEAD:master
-         '
+          retry 6 bash -lc "git pull --rebase origin master || true; git push origin HEAD:master"
