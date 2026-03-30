@@ -64,12 +64,28 @@ jobs:
           chmod 600 "${KEY_FILE}"
           ssh-keygen -lf "${KEY_FILE}"
 
-          export GIT_SSH_COMMAND="ssh -i ${KEY_FILE} -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=accept-new"
+          export GIT_SSH_COMMAND="ssh -i ${KEY_FILE} -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=accept-new -o ConnectTimeout=20 -o ConnectionAttempts=5 -o ServerAliveInterval=15 -o ServerAliveCountMax=3"
+
+          retry() {
+            local max_attempts="$1"
+            shift
+            local attempt=1
+            until "$@"; do
+              if [ "${attempt}" -ge "${max_attempts}" ]; then
+                echo "Command failed after ${attempt} attempts: $*"
+                return 1
+              fi
+              echo "Attempt ${attempt}/${max_attempts} failed. Retrying in 5s..."
+              attempt=$((attempt + 1))
+              sleep 5
+            done
+          }
+
           git ls-remote ssh://aur@aur.archlinux.org/zashterminal.git HEAD >/dev/null || {
             echo "AUR git auth failed (ls-remote)";
             exit 1;
           }
-          git clone ssh://aur@aur.archlinux.org/zashterminal.git aur-repo
+          retry 4 git clone --depth 1 ssh://aur@aur.archlinux.org/zashterminal.git aur-repo
           cp PKGBUILD .SRCINFO aur-repo/
           cd aur-repo
           git config user.name "github-actions[bot]"
@@ -80,4 +96,4 @@ jobs:
           fi
           git add PKGBUILD .SRCINFO
           git commit -m "Update to ${{ steps.version.outputs.pkgver }}"
-          git push
+          retry 4 git push
