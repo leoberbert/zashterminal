@@ -177,6 +177,31 @@ curl -fsSLO https://raw.githubusercontent.com/leoberbert/zashterminal/refs/heads
 bash install.sh
 ```
 
+### NixOS
+
+On NixOS, `install.sh` uses the project's flake (`default.nix` / `flake.nix`) and installs Zashterminal into the current user profile with menu/icon integration.
+
+Recommended permanent NixOS setting:
+
+```nix
+nix.settings.experimental-features = [ "nix-command" "flakes" ];
+```
+
+Also ensure `git` is available in your system packages:
+
+```nix
+environment.systemPackages = with pkgs; [
+  git
+];
+```
+
+Then:
+
+```bash
+sudo nixos-rebuild switch
+curl -fsSL https://raw.githubusercontent.com/leoberbert/zashterminal/refs/heads/main/install.sh | bash
+```
+
 ### WSL on Windows (Experimental)
 
 Zashterminal can run on WSL, but this is still **experimental** and may present issues depending on your WSLg/graphics/input setup.

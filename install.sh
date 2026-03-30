@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 set -euo pipefail
 
@@ -18,6 +18,7 @@ DISTRO_FAMILY=""
 PKG_MANAGER=""
 INSTALL_MODE="${INSTALL_MODE:-auto}"   # auto | local | aur
 ARCH_AUR_HELPER="${ARCH_AUR_HELPER:-}" # yay | paru
+NIX_FEATURES="nix-command flakes"
 
 log() { echo "[$(date +%H:%M:%S)] $*"; }
 warn() { echo "[$(date +%H:%M:%S)] WARNING: $*" >&2; }
@@ -49,6 +50,10 @@ detect_system() {
     *" opensuse "*|*" suse "*)
       DISTRO_FAMILY="suse"
       PKG_MANAGER="zypper"
+      ;;
+    *" nixos "*)
+      DISTRO_FAMILY="nixos"
+      PKG_MANAGER="nix"
       ;;
     *)
       die "Unsupported distro (${ID:-unknown}). Add package mapping in install.sh."
@@ -222,6 +227,11 @@ resolve_install_mode() {
       ;;
   esac
 
+  if [ "${DISTRO_FAMILY}" = "nixos" ]; then
+    log "Install mode: nix-profile (flake)"
+    return 0
+  fi
+
   if [ "${DISTRO_FAMILY}" != "arch" ]; then
     log "Install mode: local (AUR mode only applies to Arch/Manjaro)"
     return 0
@@ -253,6 +263,37 @@ install_arch_via_aur() {
   "${helper}" -S --noconfirm "${PACKAGE_NAME}"
 }
 
+nixos_features_configured() {
+  if [ -r /etc/nix/nix.conf ] && \
+    grep -Eq '^[[:space:]]*experimental-features[[:space:]]*=' /etc/nix/nix.conf && \
+    grep -Eq '^[[:space:]]*experimental-features[[:space:]]*=.*nix-command' /etc/nix/nix.conf && \
+    grep -Eq '^[[:space:]]*experimental-features[[:space:]]*=.*flakes' /etc/nix/nix.conf; then
+    return 0
+  fi
+
+  if [ -r /etc/nixos/configuration.nix ] && \
+    grep -Eq 'nix\.settings\.experimental-features[[:space:]]*=' /etc/nixos/configuration.nix && \
+    grep -Eq 'nix\.settings\.experimental-features[[:space:]]*=.*"nix-command"' /etc/nixos/configuration.nix && \
+    grep -Eq 'nix\.settings\.experimental-features[[:space:]]*=.*"flakes"' /etc/nixos/configuration.nix; then
+    return 0
+  fi
+
+  return 1
+}
+
+warn_if_nixos_features_not_configured() {
+  [ "${DISTRO_FAMILY}" = "nixos" ] || return 0
+  if nixos_features_configured; then
+    return 0
+  fi
+
+  warn "NixOS experimental features not found in system config."
+  warn "Recommended permanent setting in /etc/nixos/configuration.nix:"
+  warn '  nix.settings.experimental-features = [ "nix-command" "flakes" ];'
+  warn "Then apply with: sudo nixos-rebuild switch"
+  warn "Continuing using temporary flags: --extra-experimental-features \"${NIX_FEATURES}\""
+}
+
 prepare_source() {
   local script_dir
   script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -268,6 +309,52 @@ prepare_source() {
   log "Cloning ${PACKAGE_NAME} source into temporary directory..." >&2
   git clone --depth 1 "$REPO_URL" "${tmp_dir}/${PACKAGE_NAME}" >/dev/null
   echo "${tmp_dir}/${PACKAGE_NAME}"
+}
+
+install_nixos_menu_entries() {
+  local profile_dir="${HOME}/.nix-profile"
+  local profile_desktop="${profile_dir}/share/applications/${DESKTOP_ID}.desktop"
+  local profile_icon="${profile_dir}/share/icons/hicolor/scalable/apps/${PACKAGE_NAME}.svg"
+  local user_app_dir="${HOME}/.local/share/applications"
+  local user_icon_dir="${HOME}/.local/share/icons/hicolor/scalable/apps"
+  local user_pixmap_dir="${HOME}/.local/share/pixmaps"
+
+  mkdir -p "${user_app_dir}" "${user_icon_dir}" "${user_pixmap_dir}"
+
+  if [ -f "${profile_desktop}" ]; then
+    install -m 644 "${profile_desktop}" "${user_app_dir}/${DESKTOP_ID}.desktop"
+  fi
+
+  if [ -f "${profile_icon}" ]; then
+    install -m 644 "${profile_icon}" "${user_icon_dir}/${PACKAGE_NAME}.svg"
+    install -m 644 "${profile_icon}" "${user_pixmap_dir}/${PACKAGE_NAME}.svg"
+  fi
+
+  command -v update-desktop-database >/dev/null 2>&1 && \
+    update-desktop-database "${user_app_dir}" >/dev/null 2>&1 || true
+  command -v gtk-update-icon-cache >/dev/null 2>&1 && \
+    gtk-update-icon-cache "${HOME}/.local/share/icons/hicolor" >/dev/null 2>&1 || true
+}
+
+install_nixos_via_flake() {
+  local src_dir="$1"
+  require_cmd nix
+
+  warn_if_nixos_features_not_configured
+
+  log "Building ${PACKAGE_NAME} via flake..."
+  nix --extra-experimental-features "${NIX_FEATURES}" \
+    build "${src_dir}#zashterminal"
+
+  log "Installing ${PACKAGE_NAME} to user profile via nix profile..."
+  nix --extra-experimental-features "${NIX_FEATURES}" \
+    profile add "${src_dir}#zashterminal"
+
+  log "Installing desktop/menu integration for current user..."
+  install_nixos_menu_entries
+
+  log "NixOS installation complete (user profile)."
+  log "Run: ${PACKAGE_NAME}"
 }
 
 compile_locales_if_possible() {
@@ -350,6 +437,14 @@ main() {
   detect_system
   resolve_install_mode
 
+  local src_dir
+  src_dir="$(prepare_source)"
+
+  if [ "${DISTRO_FAMILY}" = "nixos" ]; then
+    install_nixos_via_flake "${src_dir}"
+    exit 0
+  fi
+
   if [ "${DISTRO_FAMILY}" = "arch" ]; then
     if helper="$(choose_arch_aur_helper 2>/dev/null)" && [ "${INSTALL_MODE}" != "local" ]; then
       install_arch_via_aur
@@ -360,9 +455,6 @@ main() {
 
   install_system_dependencies
   ensure_runtime_prereqs
-
-  local src_dir
-  src_dir="$(prepare_source)"
 
   install_python_app "${src_dir}"
   install_launcher
