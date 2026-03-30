@@ -52,8 +52,10 @@ jobs:
 
       - name: Start ssh-agent
         run: |
+          test -n "${{ secrets.AUR_SSH_KEY }}" || { echo "AUR_SSH_KEY secret is empty"; exit 1; }
           eval "$(ssh-agent -s)"
-          ssh-add - <<< "${{ secrets.AUR_SSH_KEY }}"
+          printf '%s\n' "${{ secrets.AUR_SSH_KEY }}" | tr -d '\r' | ssh-add -
+          ssh-add -l
           echo "SSH_AUTH_SOCK=$SSH_AUTH_SOCK" >> "$GITHUB_ENV"
           echo "SSH_AGENT_PID=$SSH_AGENT_PID" >> "$GITHUB_ENV"
 
@@ -76,9 +78,8 @@ jobs:
 
       - name: Publish to AUR
         run: |
-          test -n "${{ secrets.AUR_SSH_KEY }}" || { echo "AUR_SSH_KEY secret is empty"; exit 1; }
           export GIT_SSH_COMMAND='ssh -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=accept-new'
-          ssh -T aur@aur.archlinux.org || true
+          ssh -T aur@aur.archlinux.org || { echo "AUR SSH auth failed"; exit 1; }
           git clone ssh://aur@aur.archlinux.org/zashterminal.git aur-repo
           cp PKGBUILD .SRCINFO aur-repo/
           cd aur-repo
