@@ -50,37 +50,21 @@ jobs:
           docker run --rm -u "$(id -u):$(id -g)" -v "$PWD:/repo" -w /repo archlinux:base-devel \
             bash -c "makepkg --printsrcinfo > .SRCINFO"
 
-      - name: Start ssh-agent
-        run: |
-          test -n "${{ secrets.AUR_SSH_KEY }}" || { echo "AUR_SSH_KEY secret is empty"; exit 1; }
-          eval "$(ssh-agent -s)"
-          printf '%s\n' "${{ secrets.AUR_SSH_KEY }}" | tr -d '\r' | ssh-add -
-          ssh-add -l
-          echo "SSH_AUTH_SOCK=$SSH_AUTH_SOCK" >> "$GITHUB_ENV"
-          echo "SSH_AGENT_PID=$SSH_AGENT_PID" >> "$GITHUB_ENV"
-
-      - name: Prepare SSH
-        run: |
-          mkdir -p ~/.ssh
-          chmod 700 ~/.ssh
-          # Best effort known_hosts prefill; do not fail workflow if keyscan is flaky.
-          ssh-keyscan -H aur.archlinux.org >> ~/.ssh/known_hosts 2>/dev/null || true
-          chmod 600 ~/.ssh/known_hosts || true
-          {
-            echo "Host aur.archlinux.org"
-            echo "  HostName aur.archlinux.org"
-            echo "  User aur"
-            echo "  IdentitiesOnly yes"
-            echo "  StrictHostKeyChecking accept-new"
-            echo "  UserKnownHostsFile ~/.ssh/known_hosts"
-          } >> ~/.ssh/config
-          chmod 600 ~/.ssh/config
-
       - name: Publish to AUR
         run: |
-          export GIT_SSH_COMMAND='ssh -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=accept-new'
-          # AUR may return non-zero for plain ssh -T even when auth is valid.
-          # Validate auth/repo access using git itself.
+          test -n "${{ secrets.AUR_SSH_KEY }}" || { echo "AUR_SSH_KEY secret is empty"; exit 1; }
+
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          ssh-keyscan -H aur.archlinux.org >> ~/.ssh/known_hosts 2>/dev/null || true
+          chmod 600 ~/.ssh/known_hosts || true
+
+          KEY_FILE="${RUNNER_TEMP}/aur_ssh_key"
+          printf '%s\n' "${{ secrets.AUR_SSH_KEY }}" | tr -d '\r' > "${KEY_FILE}"
+          chmod 600 "${KEY_FILE}"
+          ssh-keygen -lf "${KEY_FILE}"
+
+          export GIT_SSH_COMMAND="ssh -i ${KEY_FILE} -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=accept-new"
           git ls-remote ssh://aur@aur.archlinux.org/zashterminal.git HEAD >/dev/null || {
             echo "AUR git auth failed (ls-remote)";
             exit 1;
