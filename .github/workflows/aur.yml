@@ -57,14 +57,27 @@ jobs:
           echo "SSH_AUTH_SOCK=$SSH_AUTH_SOCK" >> "$GITHUB_ENV"
           echo "SSH_AGENT_PID=$SSH_AGENT_PID" >> "$GITHUB_ENV"
 
-      - name: Add AUR host key
+      - name: Prepare SSH
         run: |
           mkdir -p ~/.ssh
-          ssh-keyscan -t ed25519 aur.archlinux.org >> ~/.ssh/known_hosts
+          chmod 700 ~/.ssh
+          # Best effort known_hosts prefill; do not fail workflow if keyscan is flaky.
+          ssh-keyscan -H aur.archlinux.org >> ~/.ssh/known_hosts 2>/dev/null || true
+          chmod 600 ~/.ssh/known_hosts || true
+          {
+            echo "Host aur.archlinux.org"
+            echo "  HostName aur.archlinux.org"
+            echo "  User aur"
+            echo "  IdentitiesOnly yes"
+            echo "  StrictHostKeyChecking accept-new"
+            echo "  UserKnownHostsFile ~/.ssh/known_hosts"
+          } >> ~/.ssh/config
+          chmod 600 ~/.ssh/config
 
       - name: Publish to AUR
         run: |
           test -n "${{ secrets.AUR_SSH_KEY }}" || { echo "AUR_SSH_KEY secret is empty"; exit 1; }
+          export GIT_SSH_COMMAND='ssh -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=accept-new'
           ssh -T aur@aur.archlinux.org || true
           git clone ssh://aur@aur.archlinux.org/zashterminal.git aur-repo
           cp PKGBUILD .SRCINFO aur-repo/
