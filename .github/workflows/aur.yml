@@ -79,7 +79,12 @@ jobs:
       - name: Publish to AUR
         run: |
           export GIT_SSH_COMMAND='ssh -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=accept-new'
-          ssh -T aur@aur.archlinux.org || { echo "AUR SSH auth failed"; exit 1; }
+          # AUR may return non-zero for plain ssh -T even when auth is valid.
+          # Validate auth/repo access using git itself.
+          git ls-remote ssh://aur@aur.archlinux.org/zashterminal.git HEAD >/dev/null || {
+            echo "AUR git auth failed (ls-remote)";
+            exit 1;
+          }
           git clone ssh://aur@aur.archlinux.org/zashterminal.git aur-repo
           cp PKGBUILD .SRCINFO aur-repo/
           cd aur-repo
