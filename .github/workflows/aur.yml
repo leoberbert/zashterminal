@@ -6,6 +6,10 @@ on:
       - main
   workflow_dispatch:
 
+concurrency:
+  group: aur-publish
+  cancel-in-progress: false
+
 jobs:
   aur:
     runs-on: ubuntu-latest
@@ -64,7 +68,7 @@ jobs:
           chmod 600 "${KEY_FILE}"
           ssh-keygen -lf "${KEY_FILE}"
 
-          export GIT_SSH_COMMAND="ssh -i ${KEY_FILE} -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=accept-new -o ConnectTimeout=20 -o ConnectionAttempts=5 -o ServerAliveInterval=15 -o ServerAliveCountMax=3"
+          export GIT_SSH_COMMAND="ssh -i ${KEY_FILE} -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=accept-new -o ConnectTimeout=20 -o ConnectionAttempts=5 -o ServerAliveInterval=15 -o ServerAliveCountMax=3 -o IPQoS=throughput"
 
           retry() {
             local max_attempts="$1"
@@ -81,7 +85,7 @@ jobs:
             done
           }
 
-          git ls-remote ssh://aur@aur.archlinux.org/zashterminal.git HEAD >/dev/null || {
+          retry 5 git ls-remote ssh://aur@aur.archlinux.org/zashterminal.git HEAD >/dev/null || {
             echo "AUR git auth failed (ls-remote)";
             exit 1;
           }
