@@ -9,10 +9,12 @@ on:
 jobs:
   aur:
     runs-on: ubuntu-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
@@ -24,7 +26,7 @@ jobs:
           import re
           import os
 
-          target = 'locale/src/zashterminal/settings/config.py'
+          target = 'src/zashterminal/settings/config.py'
           if not os.path.exists(target):
               import sys; sys.exit(f'Erro: Arquivo {target} nao encontrado na raiz')
 
@@ -38,7 +40,6 @@ jobs:
               import sys; sys.exit('Erro: Variavel APP_VERSION nao encontrada dentro do arquivo')
           ")
           echo "pkgver=$PKGVER" >> $GITHUB_OUTPUT
-          echo "pkgver=$PKGVER" >> $GITHUB_OUTPUT
 
       - name: Update PKGBUILD pkgver
         run: |
@@ -50,10 +51,11 @@ jobs:
             bash -c "makepkg --printsrcinfo > .SRCINFO"
 
       - name: Start ssh-agent
-        uses: webfactory/ssh-agent@v0.9.0
-        with:
-          ssh-private-key: ${{ secrets.AUR_SSH_KEY }}
-          log-public-key: false
+        run: |
+          eval "$(ssh-agent -s)"
+          ssh-add - <<< "${{ secrets.AUR_SSH_KEY }}"
+          echo "SSH_AUTH_SOCK=$SSH_AUTH_SOCK" >> "$GITHUB_ENV"
+          echo "SSH_AGENT_PID=$SSH_AGENT_PID" >> "$GITHUB_ENV"
 
       - name: Add AUR host key
         run: |
@@ -62,6 +64,8 @@ jobs:
 
       - name: Publish to AUR
         run: |
+          test -n "${{ secrets.AUR_SSH_KEY }}" || { echo "AUR_SSH_KEY secret is empty"; exit 1; }
+          ssh -T aur@aur.archlinux.org || true
           git clone ssh://aur@aur.archlinux.org/zashterminal.git aur-repo
           cp PKGBUILD .SRCINFO aur-repo/
           cd aur-repo
