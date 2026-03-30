@@ -68,7 +68,7 @@ jobs:
           chmod 600 "${KEY_FILE}"
           ssh-keygen -lf "${KEY_FILE}"
 
-          export GIT_SSH_COMMAND="ssh -i ${KEY_FILE} -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=accept-new -o ConnectTimeout=20 -o ConnectionAttempts=5 -o ServerAliveInterval=15 -o ServerAliveCountMax=3 -o IPQoS=throughput"
+          export GIT_SSH_COMMAND="ssh -i ${KEY_FILE} -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=accept-new -o ConnectTimeout=30 -o ConnectionAttempts=8 -o ServerAliveInterval=20 -o ServerAliveCountMax=6 -o TCPKeepAlive=yes -o IPQoS=throughput"
 
           retry() {
             local max_attempts="$1"
@@ -100,4 +100,7 @@ jobs:
           fi
           git add PKGBUILD .SRCINFO
           git commit -m "Update to ${{ steps.version.outputs.pkgver }}"
-          retry 4 git push
+          retry 6 bash -lc '
+            git pull --rebase origin master || true
+            git push origin HEAD:master
+         '
