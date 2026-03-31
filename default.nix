@@ -42,7 +42,15 @@ python3Packages.buildPythonApplication {
     libsecret
   ];
 
+  # NixOS/Wayland stacks can hit EGL/ZINK crashes with some drivers.
+  # Keep conservative defaults for stability; users can override at runtime.
+  makeWrapperArgs = [
+    "--set-default GSK_RENDERER cairo"
+    "--set-default GDK_BACKEND wayland,x11"
+  ];
+
   postInstall = ''
     cp $src/usr/share $out/share -r
   '';
 }
+
