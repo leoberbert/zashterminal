@@ -710,7 +710,7 @@ class SettingsManager:
         terminal.set_scroll_on_insert(self.get("scroll_on_insert", True))
         terminal.set_mouse_autohide(self.get("mouse_autohide", True))
         terminal.set_audible_bell(self.get("bell_sound", False))
-        terminal.set_scrollback_lines(self.get("scrollback_lines", 10000))
+        terminal.set_scrollback_lines(self.get("scrollback_lines", 5000))
 
         cursor_shape_map = [
             Vte.CursorShape.BLOCK,

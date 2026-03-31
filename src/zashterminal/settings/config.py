@@ -35,7 +35,7 @@ class AppConstants:
 
     APP_ID = "org.leoberbert.zashterminal"
     APP_TITLE = "Terminal Zash"
-    APP_VERSION = "0.7.12"
+    APP_VERSION = "0.7.13"
     DEVELOPER_NAME = "Leonardo Berbert"
     DEVELOPER_TEAM = ["Leonardo Berbert"]
     COPYRIGHT = "© 2025 Leonardo Berbert"
@@ -216,7 +216,7 @@ class DefaultSettings:
             "use_login_shell": False,
             "session_restore_policy": "never",
             # VTE Features
-            "scrollback_lines": 10000,
+            "scrollback_lines": 5000,
             "mouse_scroll_sensitivity": 30.0,
             "touchpad_scroll_sensitivity": 30.0,
             "cursor_shape": 0,

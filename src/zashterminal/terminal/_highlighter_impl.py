@@ -71,6 +71,8 @@ from .highlighter.shell_input import ShellInputHighlighter, get_shell_input_high
 
 # Sentinel marker for prompt detection in CAT queue
 _PROMPT_MARKER = b"__PROMPT_DETECTED__"
+_MAX_LINE_QUEUE_BYTES = 4 * 1024 * 1024
+_MAX_LINE_QUEUE_ITEMS = 20000
 
 
 class HighlightedTerminalProxy:
@@ -135,6 +137,7 @@ class HighlightedTerminalProxy:
         self._output_lock = threading.Lock()
 
         self._line_queue: deque = deque()
+        self._line_queue_bytes = 0
         self._queue_processing = False
 
         # Buffer for partial lines
@@ -557,6 +560,7 @@ class HighlightedTerminalProxy:
         with self._output_lock:
             self._pending_outputs.clear()
         self._line_queue.clear()
+        self._line_queue_bytes = 0
         self._queue_processing = False
         self._partial_line_buffer = b""
         self._burst_counter = 0
@@ -1539,10 +1543,38 @@ class HighlightedTerminalProxy:
             while self._line_queue:
                 try:
                     chunk = self._line_queue.popleft()
+                    self._line_queue_bytes -= len(chunk)
                     term.feed(chunk)
                 except IndexError:
                     break
+            if self._line_queue_bytes < 0:
+                self._line_queue_bytes = 0
             self._queue_processing = False
+
+    def _enqueue_line_chunk(self, term: Vte.Terminal, chunk: bytes) -> bool:
+        """
+        Queue a highlighted chunk with memory backpressure.
+
+        If the queue grows beyond configured thresholds, flush pending chunks and
+        feed the current chunk directly to avoid unbounded memory growth.
+        """
+        chunk_len = len(chunk)
+        if (
+            len(self._line_queue) >= _MAX_LINE_QUEUE_ITEMS
+            or self._line_queue_bytes + chunk_len > _MAX_LINE_QUEUE_BYTES
+        ):
+            self.logger.debug(
+                f"Highlight queue backlog high ({len(self._line_queue)} items, "
+                f"{self._line_queue_bytes} bytes). Flushing and switching to raw feed "
+                f"for current chunk."
+            )
+            self._flush_queue(term)
+            term.feed(chunk)
+            return False
+
+        self._line_queue.append(chunk)
+        self._line_queue_bytes += chunk_len
+        return True
 
     def _process_data_streaming(self, data: bytes, term: Vte.Terminal) -> None:
         """
@@ -1557,6 +1589,7 @@ class HighlightedTerminalProxy:
             if not self._highlighter.is_enabled_for_type(self._terminal_type):
                 # Clear any stale highlighted data from the queue
                 self._line_queue.clear()
+                self._line_queue_bytes = 0
                 # Feed any partial buffer and the current data raw
                 if self._partial_line_buffer:
                     term.feed(self._partial_line_buffer)
@@ -1976,15 +2009,19 @@ class HighlightedTerminalProxy:
 
             for i, line in enumerate(lines):
                 if skip_first and i == 0:
-                    self._line_queue.append(line.encode("utf-8", errors="replace"))
+                    self._enqueue_line_chunk(
+                        term, line.encode("utf-8", errors="replace")
+                    )
                     continue
 
                 if not line or line in ("\n", "\r", "\r\n"):
-                    self._line_queue.append(line.encode("utf-8"))
+                    self._enqueue_line_chunk(term, line.encode("utf-8"))
                     continue
 
                 if "\x1b]7;" in line or "\033]7;" in line:
-                    self._line_queue.append(line.encode("utf-8", errors="replace"))
+                    self._enqueue_line_chunk(
+                        term, line.encode("utf-8", errors="replace")
+                    )
                     # Termprop handler already manages prompt state for OSC7
                     continue
 
@@ -2003,7 +2040,9 @@ class HighlightedTerminalProxy:
                 else:
                     highlighted = ending
 
-                self._line_queue.append(highlighted.encode("utf-8", errors="replace"))
+                self._enqueue_line_chunk(
+                    term, highlighted.encode("utf-8", errors="replace")
+                )
 
             if not self._queue_processing:
                 self._queue_processing = True
@@ -2443,6 +2482,7 @@ class HighlightedTerminalProxy:
                 for _ in range(10):
                     if self._line_queue:
                         chunk = self._line_queue.popleft()
+                        self._line_queue_bytes -= len(chunk)
                         lines_to_feed.append(chunk)
                     else:
                         break
@@ -2456,10 +2496,13 @@ class HighlightedTerminalProxy:
                     GLib.idle_add(self._process_line_queue, term)
                 else:
                     self._queue_processing = False
+                    self._line_queue_bytes = 0
             else:
                 self._queue_processing = False
+                self._line_queue_bytes = 0
 
         except Exception:
             self._queue_processing = False
+            self._line_queue_bytes = 0
 
         return False  # Remove this callback

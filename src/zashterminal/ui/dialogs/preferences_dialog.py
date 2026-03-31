@@ -284,7 +284,7 @@ class PreferencesDialog(Adw.PreferencesWindow):
         )
         scrollback_spin = Gtk.SpinButton.new_with_range(0, 1000000, 1000)
         scrollback_spin.set_valign(Gtk.Align.CENTER)
-        scrollback_spin.set_value(self.settings_manager.get("scrollback_lines", 10000))
+        scrollback_spin.set_value(self.settings_manager.get("scrollback_lines", 5000))
         scrollback_spin.connect("value-changed", self._on_scrollback_changed)
         scrollback_row.add_suffix(scrollback_spin)
         scrollback_row.set_activatable_widget(scrollback_spin)

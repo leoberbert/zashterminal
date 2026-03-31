@@ -1,5 +1,6 @@
 # zashterminal/terminal/manager.py
 
+import json
 import os
 import pathlib
 import re
@@ -505,6 +506,38 @@ class TerminalManager:
         )
         self.logger.info("Terminal manager initialized")
 
+    def _is_highlighting_preload_needed(self) -> bool:
+        """
+        Check if highlighting resources should be preloaded at startup.
+
+        To reduce baseline memory usage, we only preload when highlighting
+        features are likely to be used based on user configuration.
+        """
+        try:
+            # Shell input highlighting has its own setting and should trigger preload.
+            if self.settings_manager.get("shell_input_highlighting_enabled", False):
+                return True
+
+            # Cat colorization only matters when output highlighting is enabled.
+            if not self.settings_manager.get("cat_colorization_enabled", True):
+                return False
+
+            # Read lightweight highlight activation flags without instantiating
+            # HighlightManager (which loads/compiles many JSON rules).
+            highlights_file = (
+                self.settings_manager.config_paths.CONFIG_DIR / "highlights_settings.json"
+            )
+            if not highlights_file.exists():
+                return False
+
+            with open(highlights_file, "r", encoding="utf-8") as f:
+                data = json.load(f)
+
+            return bool(data.get("enabled_for_local") or data.get("enabled_for_ssh"))
+        except Exception as e:
+            self.logger.debug(f"Could not evaluate highlight preload need: {e}")
+            return False
+
     def prepare_initial_terminal(self) -> None:
         """
         Pre-create the base terminal widget and prepare shell environment in background.
@@ -539,34 +572,39 @@ class TerminalManager:
             finally:
                 self._precreated_env_ready.set()
 
-            # Pre-load the HighlightManager (loads 50+ JSON files)
-            try:
-                from ..settings.highlights import get_highlight_manager
+            if self._is_highlighting_preload_needed():
+                # Pre-load the HighlightManager (loads 50+ JSON files)
+                try:
+                    from ..settings.highlights import get_highlight_manager
 
-                self._highlight_manager = get_highlight_manager()
+                    self._highlight_manager = get_highlight_manager()
+                    self.logger.debug(
+                        "Pre-loaded HighlightManager (JSON rules) in background"
+                    )
+                except Exception as e:
+                    self.logger.warning(f"Failed to pre-load HighlightManager: {e}")
+
+                # Pre-load highlight modules (output, shell_input, and proxy implementation)
+                try:
+                    from .highlighter.output import get_output_highlighter
+                    from .highlighter.shell_input import get_shell_input_highlighter
+
+                    get_output_highlighter()
+                    get_shell_input_highlighter()
+                    # Pre-import the proxy implementation to warm up GTK stack
+                    from ._highlighter_impl import (
+                        HighlightedTerminalProxy as _,  # noqa: F401
+                    )
+
+                    self.logger.debug("Pre-loaded highlighting modules in background")
+                except Exception as e:
+                    self.logger.warning(f"Failed to pre-load highlights: {e}")
+            else:
                 self.logger.debug(
-                    "Pre-loaded HighlightManager (JSON rules) in background"
-                )
-            except Exception as e:
-                self.logger.warning(f"Failed to pre-load HighlightManager: {e}")
-
-            # Pre-load highlight modules (output, shell_input, and proxy implementation)
-            try:
-                from .highlighter.output import get_output_highlighter
-                from .highlighter.shell_input import get_shell_input_highlighter
-
-                get_output_highlighter()
-                get_shell_input_highlighter()
-                # Pre-import the proxy implementation to warm up GTK stack
-                from ._highlighter_impl import (
-                    HighlightedTerminalProxy as _,  # noqa: F401
+                    "Skipping highlight preload (features disabled by configuration)"
                 )
 
-                self.logger.debug("Pre-loaded highlighting modules in background")
-            except Exception as e:
-                self.logger.warning(f"Failed to pre-load highlights: {e}")
-            finally:
-                self._highlights_ready.set()
+            self._highlights_ready.set()
 
         bg_thread = threading.Thread(target=prepare_background, daemon=True)
         bg_thread.start()
@@ -3566,4 +3604,3 @@ class TerminalManager:
         except Exception as e:
             self.logger.error(f"Failed to open hyperlink '{uri}': {e}")
             return False
-
