@@ -1676,7 +1676,7 @@ class CommTerminalWindow(Adw.ApplicationWindow):
             )
 
     def create_execute_tab(
-        self, command: str, working_directory: str, close_after: bool
+        self, command: str, working_directory: Optional[str], close_after: bool
     ):
         """Public method to create a tab that executes a command."""
         return self.tab_manager.create_local_tab(

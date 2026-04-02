@@ -8718,3 +8718,79 @@ msgstr "Falha ao salvar as sessões do SecureCRT importadas."
 #, python-brace-format
 msgid "Imported {sessions} SecureCRT session(s) and {folders} folder(s) from {path}."
 msgstr "Importadas {sessions} sessão(ões) e {folders} pasta(s) do SecureCRT de {path}."
+
+# 
+# File: src/zashterminal/app.py, line: 333
+#: NEEDS WORK
+msgid "Update Available"
+msgstr "Atualização disponível"
+
+# 
+# File: src/zashterminal/app.py, line: 337
+#: NEEDS WORK
+#, python-brace-format
+msgid "A newer version ({version}) is available. Do you want to update now?"
+msgstr "Uma versão mais recente ({version}) está disponível. Deseja atualizar agora?"
+
+# 
+# File: src/zashterminal/app.py, line: 339
+#: NEEDS WORK
+msgid "Later"
+msgstr "Depois"
+
+# 
+# File: src/zashterminal/app.py, line: 340
+#: NEEDS WORK
+msgid "Update Now"
+msgstr "Atualizar agora"
+
+# 
+# File: src/zashterminal/app.py, line: 362
+#: NEEDS WORK
+#, python-brace-format
+msgid "Installing update to version {version}. You can continue using Zashterminal while installation runs."
+msgstr "Instalando atualização para a versão {version}. Você pode continuar usando o Zashterminal enquanto a instalação é executada."
+
+# 
+# File: src/zashterminal/app.py, line: 379
+#: NEEDS WORK
+msgid "Could not start update installation."
+msgstr "Não foi possível iniciar a instalação da atualização."
+
+# 
+# File: src/zashterminal/app.py, line: 396
+#: NEEDS WORK
+msgid "Update Failed"
+msgstr "Falha na atualização"
+
+# 
+# File: src/zashterminal/app.py, line: 397
+#: NEEDS WORK
+#, python-brace-format
+msgid "Update process exited with code {code}. Check the update terminal tab for details."
+msgstr "O processo de atualização terminou com código {code}. Verifique a aba de terminal da atualização para mais detalhes."
+
+# 
+# File: src/zashterminal/app.py, line: 406
+#: NEEDS WORK
+msgid "Update Installed"
+msgstr "Atualização instalada"
+
+# 
+# File: src/zashterminal/app.py, line: 407
+#: NEEDS WORK
+#, python-brace-format
+msgid "Zashterminal was updated to version {version}. You need to restart the application to apply all changes."
+msgstr "O Zashterminal foi atualizado para a versão {version}. Você precisa reiniciar o aplicativo para aplicar todas as alterações."
+
+# 
+# File: src/zashterminal/app.py, line: 413
+#: NEEDS WORK
+msgid "Restart Now"
+msgstr "Reiniciar agora"
+
+# 
+# File: src/zashterminal/app.py, line: 443
+#: NEEDS WORK
+msgid "Could not restart automatically. Please close and open Zashterminal again."
+msgstr "Não foi possível reiniciar automaticamente. Feche e abra o Zashterminal novamente."
