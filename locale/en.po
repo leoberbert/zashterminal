@@ -9225,3 +9225,67 @@ msgstr "Failed to save imported SecureCRT sessions."
 #, python-brace-format
 msgid "Imported {sessions} SecureCRT session(s) and {folders} folder(s) from {path}."
 msgstr "Imported {sessions} SecureCRT session(s) and {folders} folder(s) from {path}."
+
+#
+# File: src/zashterminal/app.py, line: 333
+msgid "Update Available"
+msgstr "Update Available"
+
+#
+# File: src/zashterminal/app.py, line: 337
+#, python-brace-format
+msgid "A newer version ({version}) is available. Do you want to update now?"
+msgstr "A newer version ({version}) is available. Do you want to update now?"
+
+#
+# File: src/zashterminal/app.py, line: 339
+msgid "Later"
+msgstr "Later"
+
+#
+# File: src/zashterminal/app.py, line: 340
+msgid "Update Now"
+msgstr "Update Now"
+
+#
+# File: src/zashterminal/app.py, line: 362
+#, python-brace-format
+msgid "Installing update to version {version}. You can continue using Zashterminal while installation runs."
+msgstr "Installing update to version {version}. You can continue using Zashterminal while installation runs."
+
+#
+# File: src/zashterminal/app.py, line: 379
+msgid "Could not start update installation."
+msgstr "Could not start update installation."
+
+#
+# File: src/zashterminal/app.py, line: 396
+msgid "Update Failed"
+msgstr "Update Failed"
+
+#
+# File: src/zashterminal/app.py, line: 397
+#, python-brace-format
+msgid "Update process exited with code {code}. Check the update terminal tab for details."
+msgstr "Update process exited with code {code}. Check the update terminal tab for details."
+
+#
+# File: src/zashterminal/app.py, line: 406
+msgid "Update Installed"
+msgstr "Update Installed"
+
+#
+# File: src/zashterminal/app.py, line: 407
+#, python-brace-format
+msgid "Zashterminal was updated to version {version}. You need to restart the application to apply all changes."
+msgstr "Zashterminal was updated to version {version}. You need to restart the application to apply all changes."
+
+#
+# File: src/zashterminal/app.py, line: 413
+msgid "Restart Now"
+msgstr "Restart Now"
+
+#
+# File: src/zashterminal/app.py, line: 443
+msgid "Could not restart automatically. Please close and open Zashterminal again."
+msgstr "Could not restart automatically. Please close and open Zashterminal again."

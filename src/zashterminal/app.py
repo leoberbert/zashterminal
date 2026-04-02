@@ -2,6 +2,11 @@
 
 import atexit
 import os
+import re
+import shlex
+import shutil
+import subprocess
+import sys
 import threading
 from typing import TYPE_CHECKING, Optional
 
@@ -28,6 +33,7 @@ from .settings.config import (
 )
 from .settings.manager import SettingsManager, get_settings_manager
 # Lazy import: from .terminal.spawner import cleanup_spawner  # Only needed at shutdown
+from .utils.updater import UpdateManager
 from .utils.exceptions import handle_exception
 from .utils.logger import enable_debug_mode, get_logger, log_app_shutdown, log_app_start
 from .utils.translation_utils import _
@@ -56,6 +62,9 @@ class CommTerminalApp(Adw.Application):
         self._backup_manager = None
         self._security_auditor = None
         self._platform_info = None  # Lazy loaded via property
+        self._update_manager: Optional[UpdateManager] = None
+        self._update_check_started = False
+        self._update_finish_handled_terminals: set[int] = set()
         self._initialized = False
         self._shutting_down = False
 
@@ -122,6 +131,7 @@ class CommTerminalApp(Adw.Application):
             GLib.timeout_add(1000, self._log_crypto_status)
 
             self._initialized = True
+            self._update_manager = UpdateManager()
             self.logger.info("All essential subsystems initialized successfully")
             return True
         except Exception as e:
@@ -268,6 +278,7 @@ class CommTerminalApp(Adw.Application):
         # Skip if we already presented the window during command-line processing
         if getattr(self, "_window_already_presented", False):
             self._window_already_presented = False
+            self._schedule_update_check_once()
             return
 
         if not self.get_windows():
@@ -276,6 +287,227 @@ class CommTerminalApp(Adw.Application):
             self._present_window_and_request_focus(window)
         else:
             self._present_window_and_request_focus(self.get_active_window())
+
+        self._schedule_update_check_once()
+
+    def _schedule_update_check_once(self) -> None:
+        if self._update_check_started:
+            return
+        if not self._update_manager:
+            return
+        self._update_check_started = True
+
+        def _task():
+            try:
+                result = self._update_manager.check_for_updates(APP_VERSION)
+            except Exception as e:
+                self.logger.warning(f"Update check failed: {e}")
+                result = {"checked": False, "reason": "exception"}
+            GLib.idle_add(self._handle_update_check_result, result)
+
+        threading.Thread(target=_task, daemon=True).start()
+
+    def _handle_update_check_result(self, result: dict) -> bool:
+        try:
+            if not result or not result.get("update_available", False):
+                return False
+
+            local_version = result.get("local_version", APP_VERSION)
+            remote_version = result.get("remote_version", "")
+            remote_ref = result.get("remote_ref", "main")
+
+            if self._update_manager and self._update_manager.has_prompted_today():
+                return False
+
+            self._show_update_available_dialog(local_version, remote_version, remote_ref)
+            return False
+        except Exception as e:
+            self.logger.warning(f"Failed to handle update result: {e}")
+            return False
+
+    def _show_update_available_dialog(
+        self, local_version: str, remote_version: str, remote_ref: str
+    ) -> None:
+        if self._update_manager:
+            self._update_manager.mark_prompted_today(remote_version)
+        parent = self.get_active_window() or (self.get_windows()[0] if self.get_windows() else None)
+        dialog = Adw.MessageDialog(
+            transient_for=parent,
+            heading=_("Update Available"),
+            body=_(
+                "A new Zashterminal version is available.\n\nCurrent: {local}\nLatest: {remote}\n\nDo you want to update now?"
+            ).format(local=local_version, remote=remote_version),
+            close_response="later",
+        )
+        dialog.add_response("later", _("Later"))
+        dialog.add_response("update", _("Update Now"))
+        dialog.set_default_response("update")
+        dialog.set_response_appearance("update", Adw.ResponseAppearance.SUGGESTED)
+
+        def on_response(dlg, response_id):
+            try:
+                if response_id == "update":
+                    self._trigger_update_install(remote_ref, remote_version)
+            finally:
+                dlg.close()
+
+        dialog.connect("response", on_response)
+        dialog.present()
+
+    def _trigger_update_install(self, remote_ref: str, remote_version: str) -> None:
+        if not self._update_manager:
+            return
+        try:
+            raw_command = self._update_manager.build_update_command(remote_ref)
+            # Run update as a single shell command and exit with the same status.
+            # This avoids relying on an extra "exit" fed to stdin, which can be
+            # consumed by package managers/sudo prompts on some distros.
+            command = (
+                f"bash -lc {shlex.quote(raw_command)}; "
+                "__ZASH_UPDATE_RC=$?; "
+                'echo "__ZASH_UPDATE_RC:${__ZASH_UPDATE_RC}"; '
+                'exit "${__ZASH_UPDATE_RC}"'
+            )
+            window = self.get_active_window()
+            if not window:
+                window = self.create_new_window()
+                self._present_window_and_request_focus(window)
+
+            terminal = window.create_execute_tab(
+                command=command, working_directory=None, close_after=False
+            )
+            if terminal:
+                self._update_finish_handled_terminals.discard(id(terminal))
+                terminal.connect(
+                    "child-exited", self._on_update_command_finished, remote_version
+                )
+                terminal.connect("eof", self._on_update_terminal_eof, remote_version)
+            self._update_manager.mark_update_triggered(remote_version)
+        except Exception as e:
+            self.logger.error(f"Failed to start update installation: {e}")
+
+    def _decode_exit_status(self, status: int) -> int:
+        """Decode process status from VTE child-exited signal."""
+        try:
+            if os.WIFEXITED(status):
+                return os.WEXITSTATUS(status)
+            if os.WIFSIGNALED(status):
+                # 128 + signal is a common shell convention.
+                return 128 + os.WTERMSIG(status)
+            return status
+        except Exception:
+            return status
+
+    def _on_update_command_finished(
+        self, terminal: Gtk.Widget, status: int, remote_version: str
+    ) -> None:
+        term_id = id(terminal)
+        if term_id in self._update_finish_handled_terminals:
+            return
+        self._update_finish_handled_terminals.add(term_id)
+        exit_code = self._decode_exit_status(status)
+        if exit_code == 0:
+            self._show_update_restart_dialog(remote_version)
+            return
+
+        self._show_error_dialog(
+            _("Update Failed"),
+            _(
+                "The update command finished with an error (exit code: {code}). Please check the update tab output."
+            ).format(code=exit_code),
+        )
+
+    def _extract_update_exit_code_from_terminal(self, terminal: Gtk.Widget) -> Optional[int]:
+        try:
+            if not hasattr(terminal, "get_row_count"):
+                return None
+            col_count = terminal.get_column_count()
+            row_count = terminal.get_row_count()
+            if col_count <= 0 or row_count <= 0:
+                return None
+            start_row = max(0, row_count - 120)
+            result = terminal.get_text_range_format(
+                0,
+                start_row,
+                0,
+                row_count - 1,
+                col_count - 1,
+            )
+            if not result or not result[0]:
+                return None
+            text = result[0]
+            match = re.search(r"__ZASH_UPDATE_RC:(\d+)", text)
+            if not match:
+                return None
+            return int(match.group(1))
+        except Exception:
+            return None
+
+    def _on_update_terminal_eof(self, terminal: Gtk.Widget, remote_version: str) -> None:
+        term_id = id(terminal)
+        if term_id in self._update_finish_handled_terminals:
+            return
+
+        exit_code = self._extract_update_exit_code_from_terminal(terminal)
+        if exit_code is None:
+            self.logger.warning("Update terminal EOF received without detectable exit code marker.")
+            return
+
+        self._update_finish_handled_terminals.add(term_id)
+        if exit_code == 0:
+            self._show_update_restart_dialog(remote_version)
+            return
+
+        self._show_error_dialog(
+            _("Update Failed"),
+            _(
+                "The update command finished with an error (exit code: {code}). Please check the update tab output."
+            ).format(code=exit_code),
+        )
+
+    def _show_update_restart_dialog(self, remote_version: str) -> None:
+        parent = self.get_active_window() or (self.get_windows()[0] if self.get_windows() else None)
+        dialog = Adw.MessageDialog(
+            transient_for=parent,
+            heading=_("Update Installed"),
+            body=_(
+                "Zashterminal was updated to version {version}. You need to restart the application to apply all changes."
+            ).format(version=remote_version),
+            close_response="later",
+        )
+        dialog.add_response("later", _("Later"))
+        dialog.add_response("restart", _("Restart Now"))
+        dialog.set_default_response("restart")
+        dialog.set_response_appearance("restart", Adw.ResponseAppearance.SUGGESTED)
+
+        def on_response(dlg, response_id):
+            try:
+                if response_id == "restart":
+                    self._restart_application()
+            finally:
+                dlg.close()
+
+        dialog.connect("response", on_response)
+        dialog.present()
+
+    def _restart_application(self) -> None:
+        """Restart the app process and quit current instance."""
+        try:
+            launcher = shutil.which("zashterminal")
+            if launcher:
+                subprocess.Popen([launcher], start_new_session=True)
+            else:
+                subprocess.Popen(
+                    [sys.executable, "-m", "zashterminal"],
+                    start_new_session=True,
+                )
+            self.quit()
+        except Exception as e:
+            self.logger.error(f"Failed to restart application: {e}")
+            self._show_error_dialog(
+                _("Restart Failed"),
+                _("Could not restart automatically. Please close and open Zashterminal again."),
+            )
 
     def do_command_line(self, command_line):
         """Handle command line arguments for both initial and subsequent launches."""
