@@ -11,17 +11,21 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 
 TARGETS = (
-    ("src/zashterminal/settings/config.py", r'(APP_VERSION\s*=\s*")([^"]+)(")', "python"),
+    (
+        "src/zashterminal/settings/config.py",
+        r'(APP_VERSION\s*=\s*")([^"]+)(")',
+        "group3",
+    ),
     (
         "locale/src/zashterminal/settings/config.py",
         r'(APP_VERSION\s*=\s*")([^"]+)(")',
-        "python",
+        "group3",
     ),
-    ("pyproject.toml", r'^(version\s*=\s*")([^"]+)(")\s*$', "toml"),
-    ("locale/pyproject.toml", r'^(version\s*=\s*")([^"]+)(")\s*$', "toml"),
-    ("default.nix", r'^(  version\s*=\s*")([^"]+)(";\s*)$', "nix"),
-    ("locale/default.nix", r'^(  version\s*=\s*")([^"]+)(";\s*)$', "nix"),
-    ("PKGBUILD", r"^(pkgver=)([^\n]+)$", "pkgbuild"),
+    ("pyproject.toml", r'^(version\s*=\s*")([^"]+)(")\s*$', "group3"),
+    ("locale/pyproject.toml", r'^(version\s*=\s*")([^"]+)(")\s*$', "group3"),
+    ("default.nix", r'^(  version\s*=\s*")([^"]+)(";\s*)$', "group3"),
+    ("locale/default.nix", r'^(  version\s*=\s*")([^"]+)(";\s*)$', "group3"),
+    ("PKGBUILD", r"^(pkgver=)([^\n]+)$", "group2"),
 )
 
 
@@ -51,15 +55,18 @@ def bump_version(version: str, part: str) -> str:
     raise SystemExit(f"Unsupported bump type: {part}")
 
 
+def _replace_match(match: re.Match[str], new_version: str, mode: str) -> str:
+    if mode == "group2":
+        return f"{match.group(1)}{new_version}"
+    return f"{match.group(1)}{new_version}{match.group(3)}"
+
+
 def replace_once(path: Path, pattern: str, new_version: str, mode: str) -> bool:
     text = path.read_text(encoding="utf-8")
-    regex = re.MULTILINE
-    compiled = re.compile(pattern, regex)
-
-    def _replacement(match: re.Match[str]) -> str:
-        return f"{match.group(1)}{new_version}{match.group(3)}" if mode != "pkgbuild" else f"{match.group(1)}{new_version}"
-
-    updated, count = compiled.subn(_replacement, text, count=1)
+    compiled = re.compile(pattern, re.MULTILINE)
+    updated, count = compiled.subn(
+        lambda match: _replace_match(match, new_version, mode), text, count=1
+    )
     if count != 1:
         raise SystemExit(f"Unable to update version in {path}")
 
@@ -80,6 +87,26 @@ def sync_all(new_version: str) -> list[str]:
     return changed
 
 
+def collect_mismatches(expected_version: str) -> list[str]:
+    mismatches: list[str] = []
+    for rel_path, pattern, _mode in TARGETS:
+        path = ROOT / rel_path
+        if not path.exists():
+            continue
+
+        text = path.read_text(encoding="utf-8")
+        match = re.search(pattern, text, re.MULTILINE)
+        if not match:
+            mismatches.append(f"{rel_path}: version marker not found")
+            continue
+
+        current_value = match.group(2)
+        if current_value != expected_version:
+            mismatches.append(f"{rel_path}: {current_value} != {expected_version}")
+
+    return mismatches
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Synchronize Zashterminal version across project files."
@@ -96,6 +123,11 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Print the current APP_VERSION from config.py.",
     )
+    parser.add_argument(
+        "--check",
+        action="store_true",
+        help="Fail if any tracked file is not aligned with APP_VERSION.",
+    )
     return parser
 
 
@@ -104,6 +136,16 @@ def main() -> int:
     args = parser.parse_args()
 
     current_version = read_current_version()
+
+    if args.check and not args.set_version and not args.bump:
+        mismatches = collect_mismatches(current_version)
+        if mismatches:
+            print(f"Version mismatch detected against APP_VERSION={current_version}:")
+            for item in mismatches:
+                print(item)
+            return 1
+        print(f"All tracked files are aligned with APP_VERSION={current_version}")
+        return 0
 
     if args.print_current and not args.set_version and not args.bump:
         print(current_version)
@@ -114,7 +156,7 @@ def main() -> int:
     elif args.bump:
         new_version = bump_version(current_version, args.bump)
     else:
-        parser.error("Provide --print-current, --set, or --bump.")
+        parser.error("Provide --print-current, --check, --set, or --bump.")
 
     changed = sync_all(new_version)
     print(new_version)
