@@ -1,9 +1,11 @@
 name: Publish AUR
 
 on:
-  push:
-    branches:
-      - main
+  workflow_run:
+    workflows:
+      - Sync Version
+    types:
+      - completed
   workflow_dispatch:
 
 concurrency:
@@ -12,6 +14,7 @@ concurrency:
 
 jobs:
   aur:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
@@ -20,29 +23,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
         with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && github.ref || github.event.workflow_run.head_branch }}
           fetch-depth: 0
 
       - name: Determine version from app config
         id: version
         run: |
-          # Usando Python para extrair a versão de forma robusta
-          PKGVER=$(python3 -c "
-          import re
-          import os
-
-          target = 'src/zashterminal/settings/config.py'
-          if not os.path.exists(target):
-              import sys; sys.exit(f'Erro: Arquivo {target} nao encontrado na raiz')
-
-          with open(target, 'r', encoding='utf-8') as f:
-              content = f.read()
-          # Regex simplificada que aceita aspas simples ou duplas
-          match = re.search(r'APP_VERSION\\s*=\\s*[\\\"\\']([^\\\"\\']+)[\\\"\\']', content)
-          if match:
-              print(match.group(1))
-          else:
-              import sys; sys.exit('Erro: Variavel APP_VERSION nao encontrada dentro do arquivo')
-          ")
+          python3 scripts/sync_version.py --check
+          PKGVER=$(python3 scripts/sync_version.py --print-current)
           echo "pkgver=$PKGVER" >> $GITHUB_OUTPUT
 
       - name: Update PKGBUILD pkgver

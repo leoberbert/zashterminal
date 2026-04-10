@@ -1,0 +1,64 @@
+name: Sync Version
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: "Semantic bump type"
+        required: false
+        default: "patch"
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+      version:
+        description: "Explicit version override (optional, e.g. 0.8.2)"
+        required: false
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  sync-version:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.x"
+
+      - name: Bump and sync version files
+        id: sync
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ github.event.inputs.version }}" ]; then
+            OUTPUT=$(python3 scripts/sync_version.py --set "${{ github.event.inputs.version }}")
+          elif [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            OUTPUT=$(python3 scripts/sync_version.py --bump "${{ github.event.inputs.bump || 'patch' }}")
+          else
+            OUTPUT=$(python3 scripts/sync_version.py --bump patch)
+          fi
+          printf '%s\n' "$OUTPUT"
+          NEW_VERSION=$(printf '%s\n' "$OUTPUT" | head -n 1)
+          echo "version=$NEW_VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Commit changes
+        run: |
+          if git diff --quiet; then
+            echo "No version changes to commit."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add src/zashterminal/settings/config.py locale/src/zashterminal/settings/config.py pyproject.toml locale/pyproject.toml default.nix locale/default.nix PKGBUILD scripts/sync_version.py
+          git commit -m "Bump version to ${{ steps.sync.outputs.version }}"
+          git push
