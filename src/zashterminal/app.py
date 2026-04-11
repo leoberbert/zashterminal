@@ -359,15 +359,15 @@ class CommTerminalApp(Adw.Application):
             return
         try:
             raw_command = self._update_manager.build_update_command(remote_ref)
-            # Run update as a single shell command and exit with the same status.
-            # This avoids relying on an extra "exit" fed to stdin, which can be
-            # consumed by package managers/sudo prompts on some distros.
-            command = (
-                f"bash -lc {shlex.quote(raw_command)}; "
+            # Keep the whole update flow inside bash so shells like fish do not
+            # try to interpret POSIX assignment syntax from the wrapper.
+            bash_command = (
+                f"{raw_command}; "
                 "__ZASH_UPDATE_RC=$?; "
                 'echo "__ZASH_UPDATE_RC:${__ZASH_UPDATE_RC}"; '
                 'exit "${__ZASH_UPDATE_RC}"'
             )
+            command = f"bash -lc {shlex.quote(bash_command)}"
             window = self.get_active_window()
             if not window:
                 window = self.create_new_window()
