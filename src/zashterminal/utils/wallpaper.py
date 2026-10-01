@@ -2,6 +2,7 @@
 
 No polling, shell integration or desktop configuration writes. GI imports are
 lazy so the color math and configuration readers can be tested without GTK.
+For WM: works only with Noctalia shell.
 """
 
 import copy
@@ -58,12 +59,7 @@ def read_kde_wallpapers(config_file):
 
 
 def read_noctalia_wallpapers(config_file):
-    """Read Noctalia's per-monitor/default wallpaper from its state settings.toml.
-
-    Noctalia (the shell used with Umbriel, and also on Niri/Hyprland/Sway) owns
-    the wallpaper there; the compositor itself has none. A tiny line reader keeps
-    Python 3.8 support without a TOML dependency.
-    """
+    """Read Noctalia's per-monitor/default wallpaper from its state settings.toml."""
     monitors, fallback, section = [], {}, None
     with open(config_file, encoding="utf-8") as stream:
         for raw in stream:
@@ -147,7 +143,6 @@ def discover_wallpapers():
             path = local_path(value)
             choices = [(label, path)]
             if path.is_dir():
-                # Expose both variants instead of guessing the active appearance.
                 choices = []
                 for variant in ("images", "images_dark"):
                     images = sorted((path / "contents" / variant).glob("*"))
