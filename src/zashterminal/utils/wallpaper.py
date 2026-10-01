@@ -2,6 +2,7 @@
 
 No polling, shell integration or desktop configuration writes. GI imports are
 lazy so the color math and configuration readers can be tested without GTK.
+For WM: works only with Noctalia shell.
 """
 
 import copy
@@ -57,6 +58,32 @@ def read_kde_wallpapers(config_file):
     return result
 
 
+def read_noctalia_wallpapers(config_file):
+    """Read Noctalia's per-monitor/default wallpaper from its state settings.toml."""
+    monitors, fallback, section = [], {}, None
+    with open(config_file, encoding="utf-8") as stream:
+        for raw in stream:
+            line = raw.strip()
+            if line.startswith("["):
+                section = line.strip("[]").strip()
+                continue
+            match = re.fullmatch(r"""path\s*=\s*(?:"((?:[^"\\]|\\.)*)"|'([^']*)')\s*(?:#.*)?""", line)
+            if not match or not section or not section.startswith("wallpaper."):
+                continue
+            value = re.sub(r"\\(.)", r"\1", match[1]) if match[1] is not None else match[2]
+            if section.startswith("wallpaper.monitors."):
+                name = section[len("wallpaper.monitors."):].strip('"')
+                monitors.append((f"Noctalia · {name}", value))
+            elif section in ("wallpaper.default", "wallpaper.last"):
+                fallback[section] = value
+    if monitors:
+        return monitors
+    for key in ("wallpaper.default", "wallpaper.last"):
+        if fallback.get(key):
+            return [("Noctalia", fallback[key])]
+    return []
+
+
 def _gsettings_wallpapers(desktop):
     from gi.repository import Gio
 
@@ -101,13 +128,21 @@ def discover_wallpapers():
             parts = line.split(None, 1)
             if len(parts) == 2 and parts[0].endswith(("/last-image", "/image-path")):
                 candidates.append((parts[0], parts[1].strip()))
+    if not candidates:
+        # Compositors such as Umbriel delegate wallpapers to the shell.
+        state = Path(os.environ.get("XDG_STATE_HOME", str(Path.home() / ".local" / "state")))
+        noctalia = state / "noctalia" / "settings.toml"
+        if noctalia.is_file():
+            try:
+                candidates = read_noctalia_wallpapers(noctalia)
+            except (OSError, UnicodeDecodeError):
+                candidates = []
     result, seen = [], set()
     for label, value in candidates:
         try:
             path = local_path(value)
             choices = [(label, path)]
             if path.is_dir():
-                # Expose both variants instead of guessing the active appearance.
                 choices = []
                 for variant in ("images", "images_dark"):
                     images = sorted((path / "contents" / variant).glob("*"))
