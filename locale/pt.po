@@ -8814,3 +8814,157 @@ msgstr "Reiniciar agora"
 #: NEEDS WORK
 msgid "Could not restart automatically. Please close and open Zashterminal again."
 msgstr "Não foi possível reiniciar automaticamente. Feche e abra o Zashterminal novamente."
+
+#: src/zashterminal/ui/wallpaper_group.py:21
+msgid "Wallpaper colors"
+msgstr "Cores do papel de parede"
+
+#: src/zashterminal/ui/wallpaper_group.py:22
+msgid "Generate a theme from a local image. Preview first; colors change only when you apply. Updates are manual."
+msgstr "Gere um tema a partir de uma imagem local. Confira a prévia; as cores só mudam ao aplicar. As atualizações são manuais."
+
+#: src/zashterminal/ui/wallpaper_group.py:107
+msgid "Manual theme active"
+msgstr "Tema manual ativo"
+
+#: src/zashterminal/ui/wallpaper_group.py:40
+msgid "Detect wallpaper"
+msgstr "Detectar papel de parede"
+
+#: src/zashterminal/ui/wallpaper_group.py:41
+msgid "Choose image…"
+msgstr "Escolher imagem…"
+
+#: src/zashterminal/ui/wallpaper_group.py:48
+msgid "Detected images"
+msgstr "Imagens detectadas"
+
+#: src/zashterminal/ui/wallpaper_group.py:51
+msgid "Dark"
+msgstr "Escuro"
+
+#: src/zashterminal/ui/wallpaper_group.py:51
+msgid "Light"
+msgstr "Claro"
+
+#: src/zashterminal/ui/wallpaper_group.py:55
+msgid "Apply colors to the interface"
+msgstr "Aplicar cores à interface"
+
+#: src/zashterminal/ui/wallpaper_group.py:56
+msgid "When off, your existing interface theme preference is used."
+msgstr "Quando desativado, a preferência atual de tema da interface é mantida."
+
+#: src/zashterminal/ui/wallpaper_group.py:65
+msgid "Preview · tabs and header"
+msgstr "Prévia · abas e cabeçalho"
+
+#: src/zashterminal/ui/wallpaper_group.py:79
+msgid "Save as theme"
+msgstr "Salvar como tema"
+
+#: src/zashterminal/ui/wallpaper_group.py:80
+msgid "Restore manual theme"
+msgstr "Restaurar tema manual"
+
+#: src/zashterminal/ui/wallpaper_group.py:88
+msgid "Transparency can reduce contrast. Programs with their own RGB themes may keep their colors."
+msgstr "A transparência pode reduzir o contraste. Programas com temas RGB próprios podem manter suas cores."
+
+#: src/zashterminal/ui/wallpaper_group.py:107
+msgid "Wallpaper colors active"
+msgstr "Cores do papel de parede ativas"
+
+#: src/zashterminal/ui/wallpaper_group.py:153
+msgid "Preparing preview…"
+msgstr "Preparando prévia…"
+
+#: src/zashterminal/ui/wallpaper_group.py:159
+msgid "Could not read a supported image. Choose a local PNG, JPEG, WebP or BMP (up to 32 MiB and 40 MP). Your current theme was kept."
+msgstr "Não foi possível ler uma imagem compatível. Escolha um arquivo local PNG, JPEG, WebP ou BMP (até 32 MiB e 40 MP). Seu tema atual foi mantido."
+
+#: src/zashterminal/ui/wallpaper_group.py:191
+msgid "No static wallpaper detected for this desktop. Use Choose image; it works on any Linux distribution."
+msgstr "Nenhum papel de parede estático foi detectado neste ambiente. Use Escolher imagem; essa opção funciona em qualquer distribuição Linux."
+
+#: src/zashterminal/ui/wallpaper_group.py:201
+msgid "Choose wallpaper image"
+msgstr "Escolher imagem do papel de parede"
+
+#: src/zashterminal/ui/wallpaper_group.py:201
+msgid "Open"
+msgstr "Abrir"
+
+#: src/zashterminal/ui/wallpaper_group.py:203
+msgid "Static images"
+msgstr "Imagens estáticas"
+
+#: src/zashterminal/ui/wallpaper_group.py:215
+msgid "Choose a local image file."
+msgstr "Escolha um arquivo de imagem local."
+
+#: src/zashterminal/ui/wallpaper_group.py:238
+#, python-brace-format
+msgid "Preview ready: {name}. Apply to use these colors."
+msgstr "Prévia pronta: {name}. Clique em Aplicar para usar estas cores."
+
+#: src/zashterminal/ui/wallpaper_group.py:264
+msgid "Success"
+msgstr "Sucesso"
+
+#: src/zashterminal/ui/wallpaper_group.py:265
+msgid "Warning"
+msgstr "Aviso"
+
+#: src/zashterminal/ui/wallpaper_group.py:286
+msgid "Colors applied. Sessions and terminal history are preserved."
+msgstr "Cores aplicadas. As sessões e o histórico do terminal foram preservados."
+
+#: src/zashterminal/ui/wallpaper_group.py:290
+msgid "Your manual theme and interface preference have been restored."
+msgstr "Seu tema manual e sua preferência de interface foram restaurados."
+
+#: src/zashterminal/ui/wallpaper_group.py:299
+msgid "Wallpaper"
+msgstr "Papel de parede"
+
+#: src/zashterminal/ui/wallpaper_group.py:306
+msgid "Could not save the theme. Your active theme was kept."
+msgstr "Não foi possível salvar o tema. Seu tema ativo foi mantido."
+
+#: src/zashterminal/ui/wallpaper_group.py:313
+#, python-brace-format
+msgid "Saved as {name}. Your active theme was kept."
+msgstr "Salvo como {name}. Seu tema ativo foi mantido."
+
+#: src/zashterminal/ui/wallpaper_group.py
+msgid "Generate a Pywal palette from a local image. Preview first; colors change only when you apply. Updates are manual."
+msgstr "Gere uma paleta do Pywal a partir de uma imagem local. Confira a prévia; as cores só mudam ao aplicar. As atualizações são manuais."
+
+#: src/zashterminal/ui/wallpaper_group.py
+msgid "Install pywal16 in the Python environment running Zashterminal. Your current theme was kept."
+msgstr "Instale pywal16 no ambiente Python que executa o Zashterminal. Seu tema atual foi mantido."
+
+#: src/zashterminal/ui/wallpaper_group.py
+msgid "Install ImageMagick to generate wallpaper colors with Pywal. Your current theme was kept."
+msgstr "Instale o ImageMagick para gerar as cores do papel de parede com o Pywal. Seu tema atual foi mantido."
+
+#: src/zashterminal/ui/wallpaper_group.py
+msgid "Pywal took too long to generate colors. Try another image. Your current theme was kept."
+msgstr "O Pywal demorou demais para gerar as cores. Tente outra imagem. Seu tema atual foi mantido."
+
+#: src/zashterminal/ui/wallpaper_group.py
+msgid "Could not generate the Pywal palette. Choose a valid local PNG, JPEG, WebP or BMP (up to 32 MiB and 40 MP). Your current theme was kept."
+msgstr "Não foi possível gerar a paleta do Pywal. Escolha um arquivo local válido PNG, JPEG, WebP ou BMP (até 32 MiB e 40 MP). Seu tema atual foi mantido."
+
+#: src/zashterminal/ui/wallpaper_group.py
+msgid "Dark wallpaper"
+msgstr "Papel de parede escuro"
+
+#: src/zashterminal/ui/wallpaper_group.py
+msgid "Light wallpaper"
+msgstr "Papel de parede claro"
+
+#: src/zashterminal/ui/wallpaper_group.py
+msgid "Several wallpaper variants were found. Select the image matching your desktop; light and dark variants can have different colors."
+msgstr "Foram encontradas várias versões do papel de parede. Selecione a imagem que corresponde à sua área de trabalho; as versões clara e escura podem ter cores diferentes."

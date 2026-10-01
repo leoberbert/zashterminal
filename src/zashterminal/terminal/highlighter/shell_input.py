@@ -82,7 +82,7 @@ class ShellInputHighlighter:
 
             # Get terminal color scheme for background detection
             gtk_theme = settings.get("gtk_theme", "")
-            if gtk_theme == "terminal":
+            if gtk_theme == "terminal" or settings.get("wallpaper_theme"):
                 scheme = settings.get_color_scheme_data()
                 self._palette = scheme.get("palette", [])
                 self._foreground = scheme.get("foreground", "#ffffff")

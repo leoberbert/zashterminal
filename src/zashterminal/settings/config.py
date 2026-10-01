@@ -186,6 +186,8 @@ class DefaultSettings:
             # General Appearance
             "gtk_theme": "terminal",
             "color_scheme": 8,
+            # Persist the applied snapshot; never decode images on startup.
+            "wallpaper_theme": None,
             "transparency": 16,
             "headerbar_transparency": 12,
             "font": DefaultSettings.get_available_default_font(),

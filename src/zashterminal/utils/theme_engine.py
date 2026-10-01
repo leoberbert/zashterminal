@@ -75,6 +75,8 @@ class ThemeEngine:
             "user_transparency": transparency,
             "luminance": luminance,
             "is_dark_theme": is_dark_theme,
+            "accent": scheme.get("accent"),
+            "accent_foreground": scheme.get("selection_foreground", "#ffffff"),
         }
 
     @classmethod
@@ -98,11 +100,18 @@ class ThemeEngine:
         fg = params["fg_color"]
         bg = params["bg_color"]
         header_bg = params["header_bg_color"]
+        accent_css = ""
+        if params.get("accent"):
+            accent_css = f"--accent-bg-color: {params['accent']}; --accent-color: {params['accent']}; --accent-fg-color: {params['accent_foreground']};"
 
         if not ThemeEngine._supports_modern_css():
             header_shade = ThemeEngine._mix_hex(header_bg, "#000000", 0.93)
             card_bg = ThemeEngine._mix_hex(bg, "#ffffff", 0.95)
+            legacy_accent = ""
+            if params.get("accent"):
+                legacy_accent = f"@define-color accent_bg_color {params['accent']}; @define-color accent_color {params['accent']}; @define-color accent_fg_color {params['accent_foreground']};"
             return f"""
+            {legacy_accent}
             window,
             .background {{
                 background-color: {bg};
@@ -146,6 +155,7 @@ class ThemeEngine:
 
         return f"""
         :root {{
+            {accent_css}
             --window-bg-color: {bg};
             --window-fg-color: {fg};
             --view-bg-color: {bg};
