@@ -824,6 +824,29 @@ class CommTerminalWindow(Adw.ApplicationWindow):
 
     def _on_setting_changed(self, key: str, old_value, new_value):
         """Handle changes from the settings manager."""
+        if key == "wallpaper_theme":
+            theme = self.settings_manager.get("gtk_theme")
+            style = Adw.StyleManager.get_default()
+            scheme = self.settings_manager.get_color_scheme_data()
+            if theme == "terminal":
+                from .utils.wallpaper import luminance
+
+                style.set_color_scheme(Adw.ColorScheme.FORCE_DARK if luminance(scheme["background"]) < 0.3 else Adw.ColorScheme.FORCE_LIGHT)
+                self.settings_manager.apply_gtk_terminal_theme(self)
+            else:
+                style.set_color_scheme({"dark": Adw.ColorScheme.FORCE_DARK, "light": Adw.ColorScheme.FORCE_LIGHT}.get(theme, Adw.ColorScheme.DEFAULT))
+                self.settings_manager.remove_gtk_terminal_theme(self)
+            for terminal_id in self.terminal_manager.registry.get_all_terminal_ids():
+                terminal = self.terminal_manager.registry.get_terminal(terminal_id)
+                if terminal:
+                    self.settings_manager.apply_terminal_colors(terminal)
+            self._update_tooltip_colors()
+            self._update_file_manager_transparency()
+            from .terminal.highlighter import get_shell_input_highlighter
+
+            get_shell_input_highlighter().refresh_settings()
+            return
+
         if getattr(self, "ai_assistant", None):
             self.ai_assistant.handle_setting_changed(key, old_value, new_value)
 
@@ -835,6 +858,8 @@ class CommTerminalWindow(Adw.ApplicationWindow):
                 self.ui_builder.hide_ai_panel()
 
         if key == "gtk_theme":
+            # A wallpaper snapshot can temporarily override the manual choice.
+            new_value = self.settings_manager.get("gtk_theme")
             # MODIFIED: This is the correct place to handle theme changes for the window.
             style_manager = Adw.StyleManager.get_default()
             if new_value == "light":

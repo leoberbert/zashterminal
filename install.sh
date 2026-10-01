@@ -119,7 +119,7 @@ install_system_dependencies() {
   case "$DISTRO_FAMILY" in
     arch)
       base_packages=(
-        python python-pip git rsync sshpass gettext
+        python python-pip git rsync sshpass gettext imagemagick
         gtk4 libadwaita vte4 libsecret
         gobject-introspection python-gobject python-cairo
       )
@@ -130,7 +130,7 @@ install_system_dependencies() {
       ;;
     debian)
       base_packages=(
-        python3 python3-venv python3-pip git rsync sshpass gettext
+        python3 python3-venv python3-pip git rsync sshpass gettext imagemagick
         libgtk-4-1 libadwaita-1-0 libvte-2.91-gtk4-0 libsecret-1-0
         gir1.2-gtk-4.0 gir1.2-adw-1 gir1.2-vte-3.91 gir1.2-secret-1
         python3-gi python3-gi-cairo python3-cairo
@@ -144,7 +144,7 @@ install_system_dependencies() {
       ;;
     fedora)
       base_packages=(
-        python3 python3-pip git rsync sshpass gettext
+        python3 python3-pip git rsync sshpass gettext ImageMagick
         gtk4 libadwaita vte291-gtk4 libsecret gobject-introspection
         python3-gobject python3-cairo
       )
@@ -158,7 +158,7 @@ install_system_dependencies() {
       ;;
     suse)
       base_packages=(
-        python3 python3-pip git rsync sshpass gettext-tools
+        python3 python3-pip git rsync sshpass gettext-tools ImageMagick
         gtk4 libadwaita-1-0 libvte-2_91-0 libsecret-1-0
         typelib-1_0-Gtk-4_0 typelib-1_0-Adw-1 typelib-1_0-Vte-3_91 typelib-1_0-Secret-1
         python3-gobject python3-cairo
@@ -384,6 +384,7 @@ install_python_app() {
 
   sudo "${VENV_DIR}/bin/python" -m pip install --upgrade pip >/dev/null
   sudo "${VENV_DIR}/bin/python" -m pip install --no-deps "${src_dir}" >/dev/null
+  sudo "${VENV_DIR}/bin/python" -m pip install 'pywal16>=3.8,<4' >/dev/null
 
   # Default extras in the venv (py7zr + setproctitle requested as default).
   # They may already be available via system packages on some distros.

@@ -9,6 +9,8 @@
   libsecret,
   wrapGAppsHook4,
   gobject-introspection,
+  pywal16,
+  imagemagick,
 }:
 
 python3Packages.buildPythonApplication {
@@ -26,6 +28,7 @@ python3Packages.buildPythonApplication {
     setproctitle
     requests
     py7zr
+    (toPythonModule pywal16)
   ];
 
   nativeBuildInputs = [
@@ -45,6 +48,7 @@ python3Packages.buildPythonApplication {
   # NixOS/Wayland stacks can hit EGL/ZINK crashes with some drivers.
   # Keep conservative defaults for stability; users can override at runtime.
   makeWrapperArgs = [
+    "--prefix PATH : ${imagemagick}/bin"
     "--set-default GSK_RENDERER cairo"
     "--set-default GDK_BACKEND wayland,x11"
   ];
@@ -53,4 +57,3 @@ python3Packages.buildPythonApplication {
     cp $src/usr/share $out/share -r
   '';
 }
-

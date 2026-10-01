@@ -418,6 +418,7 @@ class ColorSchemeDialog(Adw.PreferencesWindow):
         self.settings_manager = settings_manager
         self.main_window = main_window
         self.logger = get_logger("zashterminal.ui.color_scheme_dialog")
+        self._populating = False
 
         self._build_ui()
         self._populate_schemes_list()
@@ -428,6 +429,11 @@ class ColorSchemeDialog(Adw.PreferencesWindow):
 
         page = Adw.PreferencesPage()
         self.add(page)
+
+        from .wallpaper_group import WallpaperGroup
+
+        self.wallpaper_group = WallpaperGroup(self, self.settings_manager, self._populate_schemes_list)
+        page.add(self.wallpaper_group)
 
         schemes_group = Adw.PreferencesGroup(
             title=_("Available Schemes"),
@@ -473,6 +479,7 @@ class ColorSchemeDialog(Adw.PreferencesWindow):
         actions_box.append(self.delete_button)
 
     def _populate_schemes_list(self):
+        self._populating = True
         while child := self.schemes_listbox.get_first_child():
             self.schemes_listbox.remove(child)
 
@@ -492,15 +499,18 @@ class ColorSchemeDialog(Adw.PreferencesWindow):
                     settings_manager=self.settings_manager,
                 )
                 self.schemes_listbox.append(row)
-                if scheme_key == current_scheme_key:
+                if scheme_key == current_scheme_key and not self.settings_manager._get_wallpaper():
                     self.schemes_listbox.select_row(row)
+        self._populating = False
 
     def _on_row_selected(self, listbox, row: Optional[_SchemePreviewRow]):
         for r in listbox:
             if isinstance(r, _SchemePreviewRow):
                 r.set_selected(r == row)
 
-        if row:
+        if row and not self._populating:
+            if self.settings_manager.get("wallpaper_theme") is not None:
+                self.settings_manager.set("wallpaper_theme", None)
             selected_index = self.settings_manager.get_scheme_order().index(
                 row.scheme_key
             )

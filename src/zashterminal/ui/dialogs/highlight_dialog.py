@@ -1505,6 +1505,11 @@ class HighlightDialog(Adw.PreferencesWindow):
 
     def _setup_color_scheme_page(self, page: Adw.PreferencesPage) -> None:
         """Setup the Terminal Colors page with integrated Color Scheme selector."""
+        from ..wallpaper_group import WallpaperGroup
+
+        self._populating_schemes = False
+        self.wallpaper_group = WallpaperGroup(self, get_settings_manager(), self._populate_color_schemes)
+        page.add(self.wallpaper_group)
         # Color Scheme group
         scheme_group = Adw.PreferencesGroup(
             title=_("Color Scheme"),
@@ -1543,6 +1548,7 @@ class HighlightDialog(Adw.PreferencesWindow):
 
     def _populate_color_schemes(self) -> None:
         """Populate the color scheme list."""
+        self._populating_schemes = True
         settings = get_settings_manager()
         all_schemes = settings.get_all_schemes()
         scheme_order = settings.get_scheme_order()
@@ -1561,15 +1567,16 @@ class HighlightDialog(Adw.PreferencesWindow):
                 continue
 
             scheme_data = all_schemes[scheme_key]
-            is_custom = scheme_key.startswith("custom_")
+            is_custom = scheme_key in settings.custom_schemes
 
             row = self._create_scheme_row(scheme_key, scheme_data, is_custom)
             self._scheme_listbox.append(row)
             self._scheme_rows[scheme_key] = row
 
             # Select current scheme
-            if scheme_key == current_scheme:
+            if scheme_key == current_scheme and not settings._get_wallpaper():
                 self._scheme_listbox.select_row(row)
+        self._populating_schemes = False
 
     def _create_scheme_row(
         self, scheme_key: str, scheme_data: dict, is_custom: bool
@@ -1671,8 +1678,13 @@ class HighlightDialog(Adw.PreferencesWindow):
         for scheme_row in self._scheme_rows.values():
             scheme_row.check_icon.set_visible(scheme_row == row)
 
+        if self._populating_schemes:
+            return
+
         # Apply the scheme
         settings = get_settings_manager()
+        if settings.get("wallpaper_theme") is not None:
+            settings.set("wallpaper_theme", None)
         scheme_order = settings.get_scheme_order()
         selected_index = scheme_order.index(row.scheme_key)
         settings.set("color_scheme", selected_index)

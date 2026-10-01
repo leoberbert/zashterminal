@@ -34,7 +34,7 @@ from gi.repository import GObject
 
 from ..utils.logger import get_logger, log_error_with_context
 from ..utils.security import ensure_secure_file_permissions
-from .config import ColorSchemeMap, ColorSchemes, get_config_paths
+from .config import get_config_paths
 
 # Mapping of logical color names to ANSI color indices (0-15)
 # Standard ANSI: 0-7, Bright: 8-15
@@ -635,27 +635,13 @@ class HighlightManager(GObject.GObject):
             return self._get_default_palette()
 
         try:
-            # Get current scheme index
-            scheme_index = self._settings_manager.get("color_scheme", 0)
-            scheme_order = ColorSchemeMap.SCHEME_ORDER
-
-            if 0 <= scheme_index < len(scheme_order):
-                scheme_name = scheme_order[scheme_index]
-            else:
-                scheme_name = "dracula"
-
-            # Update current theme name for cache invalidation
-            self._current_theme_name = scheme_name
-
-            schemes = ColorSchemes.get_schemes()
-            if scheme_name in schemes:
-                scheme = schemes[scheme_name]
-                return {
-                    "foreground": scheme["foreground"],
-                    "background": scheme["background"],
-                    "cursor": scheme.get("cursor", scheme["foreground"]),
-                    "palette": scheme["palette"],
-                }
+            scheme = self._settings_manager.get_color_scheme_data()
+            signature = (scheme["foreground"], scheme["background"],
+                         scheme.get("cursor"), tuple(scheme["palette"]))
+            if signature != self._current_theme_name:
+                self._color_cache.clear()
+                self._current_theme_name = signature
+            return scheme
         except Exception as e:
             self.logger.warning(f"Failed to get theme palette: {e}")
 

@@ -10,6 +10,7 @@ arch=('any')
 url="https://github.com/leoberbert/zashterminal"
 license=('GPL3')
 depends=(
+    'python-pywal16>=3.8' 'imagemagick'
     'gtk4' 'libadwaita' 'libsecret' 'python' 'python-cairo' 'python-py7zr'
     'python-gobject' 'python-setproctitle' 'python-requests' 'python-psutil'
     'sshpass' 'rsync' 'vte4' 'gobject-introspection' 'python-regex' 'python-pygments'

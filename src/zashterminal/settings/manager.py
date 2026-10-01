@@ -151,6 +151,8 @@ class SettingsManager:
         self._app_css_provider = Gtk.CssProvider()
         self._provider_attached = False
         self._theme_css_cache: Dict[tuple, tuple] = {}
+        self._wallpaper_checked = None
+        self._wallpaper_active = None
         self._modern_css_supported = self._detect_modern_css_support()
         self._initialize()
         self.logger.info("Settings manager initialized")
@@ -308,8 +310,10 @@ class SettingsManager:
             with open(self.custom_schemes_file, "w", encoding="utf-8") as f:
                 json.dump(self.custom_schemes, f, indent=2)
             self.logger.info(f"Saved {len(self.custom_schemes)} custom schemes.")
+            return True
         except Exception as e:
             self.logger.error(f"Failed to save custom color schemes: {e}")
+            return False
 
     def _apply_log_settings(self):
         """Applies log settings to the logger system."""
@@ -533,6 +537,10 @@ class SettingsManager:
     def get(self, key: str, default: Any = None) -> Any:
         with self._lock:
             try:
+                if key == "gtk_theme":
+                    wallpaper = self._get_wallpaper()
+                    if wallpaper and wallpaper["apply_to_interface"]:
+                        return "terminal"
                 if "." in key:
                     keys = key.split(".")
                     value = self._settings
@@ -548,6 +556,8 @@ class SettingsManager:
                 return default
 
     def _validate_setting_value(self, key: str, value: Any):
+        if key == "wallpaper_theme" and value is not None and not self._valid_wallpaper(value):
+            raise ConfigValidationError(key, value, "Invalid wallpaper palette")
         base_key = key.split(".")[0]
         validators = {
             "color_scheme": lambda v: self.validator.validate_color_scheme(
@@ -578,6 +588,7 @@ class SettingsManager:
 
     def _is_theme_setting(self, key: str) -> bool:
         theme_keys = {
+            "wallpaper_theme",
             "gtk_theme",
             "color_scheme",
             "transparency",
@@ -605,9 +616,30 @@ class SettingsManager:
         return scheme_order[0]
 
     def get_color_scheme_data(self) -> Dict[str, Any]:
+        wallpaper = self._get_wallpaper()
+        if wallpaper:
+            return wallpaper["scheme"]
         scheme_name = self.get_color_scheme_name()
         all_schemes = self.get_all_schemes()
         return all_schemes.get(scheme_name, all_schemes[self.get_scheme_order()[0]])
+
+    def _get_wallpaper(self):
+        # Validate once per snapshot, not for each syntax-highlighted token.
+        with self._lock:
+            value = self._settings.get("wallpaper_theme")
+            if value is not self._wallpaper_checked:
+                self._wallpaper_checked = value
+                self._wallpaper_active = value if self._valid_wallpaper(value) else None
+            return self._wallpaper_active
+
+    @staticmethod
+    def _valid_wallpaper(value) -> bool:
+        if not isinstance(value, dict):
+            return False
+        from ..utils.wallpaper import valid_scheme
+
+        return (isinstance(value.get("apply_to_interface"), bool)
+                and valid_scheme(value.get("scheme")))
 
     def _calculate_adaptive_alpha(
         self, base_color_hex: str, user_transparency: float
@@ -653,6 +685,12 @@ class SettingsManager:
             )
             window._transparency_css_provider = css_provider
 
+        self.apply_terminal_colors(terminal)
+        self._apply_terminal_behavior(terminal)
+
+    def apply_terminal_colors(self, terminal) -> None:
+        """Apply only visual colors; never change font, PTY or scrollback."""
+        user_transparency = self.get("transparency", 0)
         color_scheme = self.get_color_scheme_data()
         fg_color, bg_color, cursor_color = Gdk.RGBA(), Gdk.RGBA(), Gdk.RGBA()
         fg_color.parse(color_scheme.get("foreground", "#FFFFFF"))
@@ -694,6 +732,18 @@ class SettingsManager:
         terminal.set_colors(fg_color, bg_color, palette[:16])
         if hasattr(terminal, "set_color_cursor"):
             terminal.set_color_cursor(cursor_color)
+        for key, method in (
+            ("selection_background", "set_color_highlight"),
+            ("selection_foreground", "set_color_highlight_foreground"),
+        ):
+            color = None
+            if color_scheme.get(key):
+                color = Gdk.RGBA()
+                color.parse(color_scheme[key])
+            if hasattr(terminal, method):
+                getattr(terminal, method)(color)
+
+    def _apply_terminal_behavior(self, terminal) -> None:
         font_string = self.get("font", "Monospace 10")
         try:
             terminal.set_font(Pango.FontDescription.from_string(font_string))
@@ -888,6 +938,9 @@ class SettingsManager:
                 header_bg_color,
                 user_transparency,
                 is_dark_theme,
+                tuple(scheme.get("palette", [])),
+                scheme.get("accent"),
+                scheme.get("selection_foreground"),
             )
 
             # Check cache for pre-built CSS
@@ -916,7 +969,8 @@ class SettingsManager:
             hover_alpha = "10%" if is_dark_theme else "8%"
             selected_alpha = "15%" if is_dark_theme else "12%"
             palette = scheme.get("palette", [])
-            accent_color = palette[4] if len(palette) > 4 else "#3584e4"
+            accent_color = scheme.get("accent") or (palette[4] if len(palette) > 4 else "#3584e4")
+            accent_foreground = scheme.get("selection_foreground", "#ffffff")
             file_hover_mix = "22%" if is_dark_theme else "16%"
             file_selected_mix = "32%" if is_dark_theme else "24%"
             file_selected_hover_mix = "42%" if is_dark_theme else "32%"
@@ -1643,7 +1697,7 @@ class SettingsManager:
                 /* Execute button - now uses suggested-action class */
                 .command-manager-dialog button.suggested-action {{
                     background-color: {accent_color};
-                    color: #ffffff;
+                    color: {accent_foreground};
                 }}
                 .command-manager-dialog button.suggested-action:hover {{
                     background-color: color-mix(in srgb, {accent_color} 85%, white);
@@ -1766,6 +1820,8 @@ class SettingsManager:
             css = "".join(css_parts)
 
             # Cache the CSS for future use with same parameters
+            if len(self._theme_css_cache) >= 16:
+                self._theme_css_cache.pop(next(iter(self._theme_css_cache)))
             self._theme_css_cache[cache_key] = (css, None)
 
             provider = Gtk.CssProvider()
@@ -1803,7 +1859,7 @@ class SettingsManager:
         fg_color = scheme.get("foreground", "#ffffff")
         header_bg = scheme.get("headerbar_background", bg_color)
         palette = scheme.get("palette", [])
-        accent_color = palette[4] if len(palette) > 4 else "#3584e4"
+        accent_color = scheme.get("accent") or (palette[4] if len(palette) > 4 else "#3584e4")
 
         # Parse RGB values
         r = int(bg_color[1:3], 16)
@@ -2205,6 +2261,14 @@ class SettingsManager:
         # Keep public API, but restore the full terminal-theme CSS path for
         # sidebar/file-manager/session views while preserving the newer app CSS provider.
         if self.get("gtk_theme") == "terminal":
+            wallpaper = self._get_wallpaper()
+            if wallpaper:
+                from ..utils.wallpaper import luminance
+
+                dark = luminance(wallpaper["scheme"]["background"]) < 0.3
+                Adw.StyleManager.get_default().set_color_scheme(
+                    Adw.ColorScheme.FORCE_DARK if dark else Adw.ColorScheme.FORCE_LIGHT
+                )
             self._apply_gtk_terminal_theme_full(window)
             return
         self._update_app_theme_css(window)

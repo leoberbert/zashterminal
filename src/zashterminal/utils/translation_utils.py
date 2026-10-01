@@ -5,6 +5,7 @@
 #
 import gettext
 import os
+from pathlib import Path
 
 # Determine locale directory (works in AppImage and system install)
 locale_dir = '/usr/share/locale'  # Default for system install
@@ -26,5 +27,15 @@ if 'APPIMAGE' in os.environ or 'APPDIR' in os.environ:
 gettext.bindtextdomain("zashterminal", locale_dir)
 gettext.textdomain("zashterminal")
 
-# Export _ directly as the translation function
-_ = gettext.gettext
+# Prefer compiled checkout catalogs during source runs. Installed/AppImage
+# catalogs remain the fallback, and no compilation or writes happen at startup.
+_translation = gettext.translation("zashterminal", localedir=locale_dir, fallback=True)
+_checkout = Path(__file__).resolve().parents[3]
+if (_checkout / "pyproject.toml").is_file() and (_checkout / "locale").is_dir():
+    _local_translation = gettext.translation(
+        "zashterminal", localedir=str(_checkout / "locale"), fallback=True
+    )
+    _local_translation.add_fallback(_translation)
+    _translation = _local_translation
+
+_ = _translation.gettext
