@@ -12,7 +12,7 @@ from unittest.mock import Mock, patch
 
 from zashterminal.utils.wallpaper import (
     contrast, discover_wallpapers, extract_palette, local_path, preferred_wallpaper, desktop_prefers_dark,
-    scheme_from_pywal, read_kde_wallpapers, valid_scheme, WallpaperBackendError,
+    scheme_from_pywal, read_kde_wallpapers, read_noctalia_wallpapers, valid_scheme, WallpaperBackendError,
 )
 
 
@@ -275,3 +275,53 @@ class SettingsTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class NoctaliaTests(unittest.TestCase):
+    SAMPLE = """[bar]
+end = [ "tray", "wallpaper" ]
+
+[wallpaper]
+directory = "/home/u/Imagens/Wallpapers"
+fill_mode = "span"
+
+    [wallpaper.default]
+    path = "/home/u/Imagens/Área/default.jpg"
+
+    [wallpaper.last]
+    path = "/home/u/Imagens/last.jpg"
+
+    [wallpaper.monitors.HDMI-A-1]
+    path = "/home/u/Imagens/hdmi.jpg"
+"""
+
+    def write(self, directory, text):
+        path = Path(directory) / "noctalia" / "settings.toml"
+        path.parent.mkdir(parents=True)
+        path.write_text(text, encoding="utf-8")
+        return path
+
+    def test_reads_monitor_wallpapers_first(self):
+        with tempfile.TemporaryDirectory() as directory:
+            config = self.write(directory, self.SAMPLE)
+            self.assertEqual(read_noctalia_wallpapers(config),
+                             [("Noctalia · HDMI-A-1", "/home/u/Imagens/hdmi.jpg")])
+
+    def test_falls_back_to_default_and_keeps_unicode(self):
+        with tempfile.TemporaryDirectory() as directory:
+            text = self.SAMPLE.split("    [wallpaper.monitors")[0]
+            config = self.write(directory, text)
+            self.assertEqual(read_noctalia_wallpapers(config),
+                             [("Noctalia", "/home/u/Imagens/Área/default.jpg")])
+
+    def test_umbriel_session_discovers_noctalia_wallpaper(self):
+        with tempfile.TemporaryDirectory() as directory:
+            image = Path(directory) / "wall.jpg"
+            image.write_bytes(b"x")
+            self.write(directory, f'[wallpaper.monitors.HDMI-A-1]\npath = "{image}"\n'
+                                  f'[wallpaper.monitors.DP-1]\npath = "{image}"\n')
+            env = {"XDG_CURRENT_DESKTOP": "umbriel", "XDG_STATE_HOME": directory}
+            with patch.dict(os.environ, env, clear=False):
+                found = discover_wallpapers()
+            self.assertEqual(found, [("Noctalia · HDMI-A-1", str(image))])
+            self.assertEqual(preferred_wallpaper(found, (1920, 1080), None), 0)
