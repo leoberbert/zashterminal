@@ -16,9 +16,6 @@ depends=(
     'sshpass' 'rsync' 'vte4' 'gobject-introspection' 'python-regex' 'python-pygments'
 )
 makedepends=('python-build' 'python-installer' 'python-setuptools' 'python-wheel' 'uv' 'gettext')
-conflicts=('zash')
-provides=('zash' 'zashterminal')
-replaces=('zash')
 source=("${pkgname}::git+${url}.git")
 sha256sums=('SKIP')
 
