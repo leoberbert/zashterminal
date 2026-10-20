@@ -11,7 +11,7 @@ gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
 gi.require_version("Vte", "3.91")
 gi.require_version("Pango", "1.0")
-from gi.repository import Adw, Gdk, Gio, GLib, GObject, Gtk, Pango, Vte
+from gi.repository import Adw, Gdk, Gio, GLib, Gtk, Pango, Vte
 
 from ..helpers import create_themed_popover_menu
 from ..sessions.models import SessionItem
@@ -138,13 +138,8 @@ class TabManager:
         self._tab_being_moved: Optional[Gtk.Box] = None  # Context-menu click-to-place
         self._drop_target_tab: Optional[Gtk.Box] = None
         self._drop_side: str = "left"
-        # In-process DnD source (ContentProvider cannot reliably carry Gtk.Widget).
+        # In-process tab reorder (GestureDrag — avoids HeaderBar window-move grab).
         self._dnd_source_tab: Optional[Gtk.Box] = None
-        # Apply reorder only after drag-end so GTK can release the grab cursor.
-        self._pending_dnd_reorder: Optional[Tuple[Gtk.Box, Gtk.Box, str]] = None
-        self._pending_dnd_insert_index: Optional[int] = None
-
-        self._setup_tab_bar_drop_target()
 
         self._creation_lock = threading.Lock()
         self._cleanup_lock = threading.Lock()
@@ -219,157 +214,14 @@ class TabManager:
         except Exception:
             return False
 
-    def _setup_tab_bar_drop_target(self) -> None:
-        """Accept drops on the tab bar (gaps between tabs / empty bar area)."""
-        drop_target = Gtk.DropTarget.new(GObject.TYPE_STRING, Gdk.DragAction.MOVE)
-        drop_target.set_preload(True)
-        drop_target.connect("motion", self._on_tab_bar_drop_motion)
-        drop_target.connect("drop", self._on_tab_bar_drop)
-        drop_target.connect("leave", self._on_tab_drop_leave_clear)
-        self.tab_bar_box.add_controller(drop_target)
-
     def _setup_tab_drag_and_drop(self, tab_widget: Gtk.Box) -> None:
-        """GTK4 DragSource/DropTarget reorder using an in-process string token."""
-        drag_source = Gtk.DragSource.new()
-        drag_source.set_actions(Gdk.DragAction.MOVE)
-        drag_source.connect("prepare", self._on_tab_drag_prepare, tab_widget)
-        drag_source.connect("drag-begin", self._on_tab_drag_begin, tab_widget)
-        drag_source.connect("drag-end", self._on_tab_drag_end, tab_widget)
-        tab_widget.add_controller(drag_source)
-
-        drop_target = Gtk.DropTarget.new(GObject.TYPE_STRING, Gdk.DragAction.MOVE)
-        drop_target.set_preload(True)
-        drop_target.connect("motion", self._on_tab_drop_motion, tab_widget)
-        drop_target.connect("drop", self._on_tab_drop, tab_widget)
-        drop_target.connect("leave", self._on_tab_drop_leave, tab_widget)
-        tab_widget.add_controller(drop_target)
-
-    def _resolve_dnd_source(self, value) -> Optional[Gtk.Box]:
-        """Map DropTarget string payload back to the source tab widget."""
-        if self._dnd_source_tab is not None and self._dnd_source_tab in self.tabs:
-            return self._dnd_source_tab
-        if isinstance(value, str):
-            try:
-                token = int(value)
-            except (TypeError, ValueError):
-                return None
-            for tab in self.tabs:
-                if id(tab) == token:
-                    return tab
-        return None
-
-    def _on_tab_drag_prepare(self, _source, x, y, tab_widget: Gtk.Box):
-        """Begin DnD after GTK's drag threshold; skip close-button presses."""
-        if len(self.tabs) < 2:
-            return None
-        if self._pointer_over_close_button(tab_widget, x, y):
-            return None
-        self._dnd_source_tab = tab_widget
-        return Gdk.ContentProvider.new_for_value(str(id(tab_widget)))
-
-    def _on_tab_drag_begin(self, source, _drag, tab_widget: Gtk.Box) -> None:
-        self._dnd_source_tab = tab_widget
-        self._pending_dnd_reorder = None
-        self._pending_dnd_insert_index = None
-        self.set_active_tab(tab_widget)
-        tab_widget.add_css_class("tab-moving")
-        self.tab_bar_box.add_css_class("tab-bar-move-mode")
-        paintable = Gtk.WidgetPaintable.new(tab_widget)
-        source.set_icon(paintable, 12, 12)
-
-    def _reset_dnd_cursor(self) -> None:
-        """Force the pointer back to the default after a tab drag."""
-        widgets = [self.tab_bar_box, *list(self.tabs)]
-        root = self.tab_bar_box.get_root()
-        if root is not None:
-            widgets.append(root)
-
-        def _clear() -> bool:
-            for widget in widgets:
-                try:
-                    widget.set_cursor(None)
-                except Exception:
-                    pass
-            return False
-
-        _clear()
-        # One idle tick after GTK finishes releasing the DnD grab.
-        GLib.idle_add(_clear)
-
-    def _apply_pending_dnd_reorder(self) -> None:
-        """Commit a drop that was deferred until drag-end."""
-        if self._pending_dnd_insert_index is not None and self._dnd_source_tab is not None:
-            source = self._dnd_source_tab
-            insert_idx = self._pending_dnd_insert_index
-            self._pending_dnd_insert_index = None
-            if source in self.tabs:
-                moving_idx = self.tabs.index(source)
-                new_idx = insert_idx - (1 if moving_idx < insert_idx else 0)
-                new_idx = max(0, min(new_idx, len(self.tabs) - 1))
-                if new_idx != moving_idx:
-                    self.tabs.remove(source)
-                    self.tabs.insert(new_idx, source)
-                    sibling = self.tabs[new_idx - 1] if new_idx > 0 else None
-                    self.tab_bar_box.reorder_child_after(source, sibling)
-                    self.logger.info(
-                        f"Tab '{source.label_widget.get_text()}' "
-                        f"moved from {moving_idx} to {new_idx}"
-                    )
-            return
-
-        pending = self._pending_dnd_reorder
-        self._pending_dnd_reorder = None
-        if not pending:
-            return
-        source, target, side = pending
-        if source not in self.tabs or target not in self.tabs:
-            return
-        self._tab_being_moved = source
-        self._drop_target_tab = target
-        self._drop_side = side
-        self._perform_tab_move()
-        self._tab_being_moved = None
-
-    def _on_tab_drag_end(self, source, _drag, _delete_data, tab_widget: Gtk.Box) -> None:
-        try:
-            source.set_icon(None, 0, 0)
-        except Exception:
-            pass
-        self._apply_pending_dnd_reorder()
-        tab_widget.remove_css_class("tab-moving")
-        self.tab_bar_box.remove_css_class("tab-bar-move-mode")
-        self._clear_tab_drop_highlights()
-        self._dnd_source_tab = None
-        self._reset_dnd_cursor()
-
-    def _on_tab_drop_motion(self, _drop, x, _y, tab_widget: Gtk.Box):
-        source = self._dnd_source_tab
-        if source is None or tab_widget is source:
-            return Gdk.DragAction.MOVE
-        side = "left" if x < max(tab_widget.get_width(), 1) / 2 else "right"
-        self._update_move_highlight(tab_widget, side)
-        return Gdk.DragAction.MOVE
-
-    def _on_tab_drop_leave(self, _drop, tab_widget: Gtk.Box) -> None:
-        if self._drop_target_tab is tab_widget:
-            self._clear_tab_drop_highlights()
-
-    def _on_tab_drop_leave_clear(self, _drop) -> None:
-        self._clear_tab_drop_highlights()
-
-    def _on_tab_drop(self, _drop, value, x, _y, tab_widget: Gtk.Box) -> bool:
-        source = self._resolve_dnd_source(value)
-        if source is None or tab_widget not in self.tabs:
-            return False
-        if source is tab_widget:
-            self._pending_dnd_reorder = None
-            self._pending_dnd_insert_index = None
-            return True
-        side = "left" if x < max(tab_widget.get_width(), 1) / 2 else "right"
-        # Defer widget reorder until drag-end so the grab cursor can release.
-        self._pending_dnd_reorder = (source, tab_widget, side)
-        self._pending_dnd_insert_index = None
-        return True
+        """In-process reorder via GestureDrag (no system DnD / window-move grab)."""
+        gesture = Gtk.GestureDrag.new()
+        gesture.set_button(Gdk.BUTTON_PRIMARY)
+        gesture.connect("drag-begin", self._on_tab_gesture_drag_begin, tab_widget)
+        gesture.connect("drag-update", self._on_tab_gesture_drag_update, tab_widget)
+        gesture.connect("drag-end", self._on_tab_gesture_drag_end, tab_widget)
+        tab_widget.add_controller(gesture)
 
     def _tab_origin_in_bar(self, tab: Gtk.Box) -> Optional[Tuple[float, float]]:
         try:
@@ -389,29 +241,120 @@ class TabManager:
                 return i
         return len(self.tabs)
 
-    def _on_tab_bar_drop_motion(self, _drop, x, _y):
-        source = self._dnd_source_tab
-        if source is None:
-            return Gdk.DragAction.MOVE
-        insert_idx = self._insert_index_at_bar_x(x)
-        if insert_idx >= len(self.tabs):
-            target = self.tabs[-1]
-            side = "right"
-        else:
-            target = self.tabs[insert_idx]
-            side = "left"
-            if target is source:
-                return Gdk.DragAction.MOVE
-        self._update_move_highlight(target, side)
-        return Gdk.DragAction.MOVE
+    def _find_tab_at_bar_point(self, x: float, y: float) -> Optional[Gtk.Box]:
+        for tab in self.tabs:
+            point = self._unpack_translate(
+                self.tab_bar_box.translate_coordinates(tab, x, y)
+            )
+            if point is None:
+                continue
+            lx, ly = point
+            if 0 <= lx <= tab.get_width() and 0 <= ly <= tab.get_height():
+                return tab
+        return None
 
-    def _on_tab_bar_drop(self, _drop, value, x, _y) -> bool:
-        source = self._resolve_dnd_source(value)
-        if source is None or source not in self.tabs:
+    def _gesture_point_to_bar(
+        self, gesture, tab_widget: Gtk.Box, offset_x: float, offset_y: float
+    ) -> Optional[Tuple[float, float]]:
+        ok, start_x, start_y = gesture.get_start_point()
+        if not ok:
+            return None
+        return self._unpack_translate(
+            tab_widget.translate_coordinates(
+                self.tab_bar_box, start_x + offset_x, start_y + offset_y
+            )
+        )
+
+    def _on_tab_gesture_drag_begin(
+        self, gesture, start_x, start_y, tab_widget: Gtk.Box
+    ) -> None:
+        if len(self.tabs) < 2:
+            gesture.set_state(Gtk.EventSequenceState.DENIED)
+            return
+        if self._pointer_over_close_button(tab_widget, start_x, start_y):
+            gesture.set_state(Gtk.EventSequenceState.DENIED)
+            return
+        # Claim so Adw.HeaderBar does not start interactive window move.
+        gesture.set_state(Gtk.EventSequenceState.CLAIMED)
+        self._dnd_source_tab = tab_widget
+        self.set_active_tab(tab_widget)
+        tab_widget.add_css_class("tab-moving")
+        self.tab_bar_box.add_css_class("tab-bar-move-mode")
+
+    def _on_tab_gesture_drag_update(
+        self, gesture, offset_x, offset_y, tab_widget: Gtk.Box
+    ) -> None:
+        if self._dnd_source_tab is not tab_widget:
+            return
+        bar = self._gesture_point_to_bar(gesture, tab_widget, offset_x, offset_y)
+        if bar is None:
+            return
+        bar_x, bar_y = bar
+        target = self._find_tab_at_bar_point(bar_x, bar_y)
+        if target is None or target is tab_widget:
+            # Fall back to insert-gap highlight from X position.
+            insert_idx = self._insert_index_at_bar_x(bar_x)
+            if insert_idx >= len(self.tabs):
+                target = self.tabs[-1]
+                side = "right"
+            else:
+                target = self.tabs[insert_idx]
+                side = "left"
+            if target is tab_widget:
+                self._clear_tab_drop_highlights()
+                return
+            self._update_move_highlight(target, side)
+            return
+        t_point = self._unpack_translate(
+            self.tab_bar_box.translate_coordinates(target, bar_x, bar_y)
+        )
+        if t_point is None:
+            return
+        side = "left" if t_point[0] < max(target.get_width(), 1) / 2 else "right"
+        self._update_move_highlight(target, side)
+
+    def _on_tab_gesture_drag_end(
+        self, _gesture, _offset_x, _offset_y, tab_widget: Gtk.Box
+    ) -> None:
+        if self._dnd_source_tab is not tab_widget:
+            return
+        if (
+            self._drop_target_tab is not None
+            and self._drop_target_tab is not tab_widget
+        ):
+            self._tab_being_moved = tab_widget
+            self._perform_tab_move()
+            self._tab_being_moved = None
+        tab_widget.remove_css_class("tab-moving")
+        self.tab_bar_box.remove_css_class("tab-bar-move-mode")
+        self._clear_tab_drop_highlights()
+        self._dnd_source_tab = None
+        self._reset_tab_pointer_cursor()
+
+    def _reset_tab_pointer_cursor(self) -> None:
+        """Clear any leftover grab/hand cursor after tab reorder."""
+        widgets = [self.tab_bar_box, *list(self.tabs)]
+        root = self.tab_bar_box.get_root()
+        if root is not None:
+            widgets.append(root)
+            try:
+                native = root.get_native() if hasattr(root, "get_native") else root
+                surface = native.get_surface() if native is not None else None
+                if surface is not None:
+                    surface.set_cursor(Gdk.Cursor.new_from_name("default", None))
+            except Exception:
+                pass
+
+        def _clear() -> bool:
+            for widget in widgets:
+                try:
+                    widget.set_cursor(None)
+                except Exception:
+                    pass
             return False
-        self._pending_dnd_insert_index = self._insert_index_at_bar_x(x)
-        self._pending_dnd_reorder = None
-        return True
+
+        _clear()
+        GLib.idle_add(_clear)
 
     def _update_move_highlight(self, target_tab: Gtk.Box, side: str):
         """Update the visual highlight for the drop target."""
@@ -826,7 +769,7 @@ class TabManager:
         )
         tab_widget.append(close_button)
 
-        # DragSource before GestureClick so click (added later) wins on short presses.
+        # GestureDrag first; GestureClick added after so short clicks still select.
         self._setup_tab_drag_and_drop(tab_widget)
 
         left_click = Gtk.GestureClick.new()
@@ -852,6 +795,12 @@ class TabManager:
         return tab_widget
 
     def _on_tab_clicked(self, gesture, _n_press, x, y, tab_widget):
+        # Claim the sequence so Adw.HeaderBar does not start window interactive move.
+        try:
+            gesture.set_state(Gtk.EventSequenceState.CLAIMED)
+        except Exception:
+            pass
+
         # Context-menu move mode: click another tab to drop.
         if self._tab_being_moved is not None:
             if self._tab_being_moved != tab_widget:
@@ -865,7 +814,11 @@ class TabManager:
 
         self.set_active_tab(tab_widget)
 
-    def _on_tab_right_click(self, _gesture, _n_press, x, y, tab_widget):
+    def _on_tab_right_click(self, gesture, _n_press, x, y, tab_widget):
+        try:
+            gesture.set_state(Gtk.EventSequenceState.CLAIMED)
+        except Exception:
+            pass
         # Cancel any ongoing move operation when right-clicking
         if self._tab_being_moved is not None:
             self._cancel_tab_move()
