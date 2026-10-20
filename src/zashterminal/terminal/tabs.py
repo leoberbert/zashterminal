@@ -194,18 +194,11 @@ class TabManager:
             self._find_panes_recursive(child, panes_list)
 
     def _setup_tab_bar_move_handlers(self):
-        """Capture motion/release on the tab bar for press-drag reorder."""
+        """Capture motion on the tab bar for press-drag reorder."""
         motion = Gtk.EventControllerMotion.new()
         motion.set_propagation_phase(Gtk.PropagationPhase.CAPTURE)
         motion.connect("motion", self._on_tab_bar_motion)
         self.tab_bar_box.add_controller(motion)
-
-        # Button release must not depend on GestureClick: starting move mode
-        # mutates the tab widgets and GTK often cancels the click gesture.
-        legacy = Gtk.EventControllerLegacy.new()
-        legacy.set_propagation_phase(Gtk.PropagationPhase.CAPTURE)
-        legacy.connect("event", self._on_tab_bar_legacy_event)
-        self.tab_bar_box.add_controller(legacy)
 
     def _unpack_translate(
         self, translated
@@ -318,32 +311,26 @@ class TabManager:
         self._update_move_highlight(target, side)
         self._drop_insert_index = insert_idx
 
-    def _on_tab_bar_motion(self, _controller, x: float, y: float) -> None:
+    def _on_tab_bar_motion(self, controller, x: float, y: float) -> None:
         """Bar-level motion: begin press-drag and update drop highlights."""
         if self._tab_press and not self._tab_press.get("dragging"):
             self._maybe_begin_press_drag_at_bar(x, y)
         if self._tab_press and self._tab_press.get("dragging"):
+            # Fallback: if click gesture was cancelled, finish when motion
+            # reports the primary button is no longer held.
+            try:
+                cur = controller.get_current_event()
+                state = controller.get_current_event_state() if cur else None
+            except Exception:
+                state = None
+            if state is not None and not (state & Gdk.ModifierType.BUTTON1_MASK):
+                self._finish_press_drag()
+                return
             self._tab_press["bar_x"] = x
             self._tab_press["bar_y"] = y
         # Press-drag and context-menu move mode both need live drop feedback.
         if self._tab_being_moved is not None:
             self._update_drop_from_bar_point(x, y)
-
-    def _on_tab_bar_legacy_event(self, _controller, event) -> bool:
-        """Finish press-drag on primary button release (survives click cancellation)."""
-        if event.get_event_type() != Gdk.EventType.BUTTON_RELEASE:
-            return Gdk.EVENT_PROPAGATE
-        try:
-            button = event.get_button()
-        except Exception:
-            return Gdk.EVENT_PROPAGATE
-        if button != Gdk.BUTTON_PRIMARY:
-            return Gdk.EVENT_PROPAGATE
-        if self._tab_press and self._tab_press.get("dragging"):
-            self._finish_press_drag()
-        elif self._tab_press and not self._tab_press.get("dragging"):
-            self._tab_press = None
-        return Gdk.EVENT_PROPAGATE
 
     def _finish_press_drag(self) -> None:
         """Commit or cancel a press-drag reorder and clear press state."""
@@ -794,9 +781,11 @@ class TabManager:
         left_click = Gtk.GestureClick.new()
         left_click.set_button(Gdk.BUTTON_PRIMARY)
         left_click.connect("pressed", self._on_tab_clicked, tab_widget)
-        # Release/cancel are unreliable once move mode mutates the tab; bar legacy
-        # controller commits the press-drag. Still clear non-drag presses here.
         left_click.connect("released", self._on_tab_click_released, tab_widget)
+        # After GestureClick cancel, release arrives as unpaired-release.
+        left_click.connect(
+            "unpaired-release", self._on_tab_click_unpaired_release, tab_widget
+        )
         left_click.connect("cancel", self._on_tab_click_cancelled, tab_widget)
         tab_widget.add_controller(left_click)
 
@@ -845,8 +834,19 @@ class TabManager:
         self.set_active_tab(tab_widget)
 
     def _on_tab_click_released(self, _gesture, _n_press, _x, _y, tab_widget):
-        # Press-drag commit is handled by the bar legacy controller. If the click
-        # gesture still gets a release (no layout mutation), finish here too.
+        if not self._tab_press or self._tab_press.get("tab") is not tab_widget:
+            return
+        if self._tab_press.get("dragging"):
+            self._finish_press_drag()
+        else:
+            self._tab_press = None
+
+    def _on_tab_click_unpaired_release(
+        self, _gesture, _x, _y, button, _sequence, tab_widget
+    ):
+        """Commit press-drag when release arrives after the click gesture cancelled."""
+        if button != Gdk.BUTTON_PRIMARY:
+            return
         if not self._tab_press or self._tab_press.get("tab") is not tab_widget:
             return
         if self._tab_press.get("dragging"):
@@ -855,9 +855,7 @@ class TabManager:
             self._tab_press = None
 
     def _on_tab_click_cancelled(self, _gesture, _sequence, tab_widget):
-        # Do not abort an in-progress press-drag: GTK cancels GestureClick when
-        # the tab's children change under the pointer. Release is handled by
-        # EventControllerLegacy on the tab bar.
+        # Keep press-drag alive; unpaired-release / motion commits it.
         if not self._tab_press or self._tab_press.get("tab") is not tab_widget:
             return
         if self._tab_press.get("dragging"):
