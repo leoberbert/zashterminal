@@ -34,6 +34,7 @@ from .settings.config import (
 )
 from .settings.manager import SettingsManager, get_settings_manager
 # Lazy import: from .terminal.spawner import cleanup_spawner  # Only needed at shutdown
+from .utils.cli_args import parse_launch_cli_args
 from .utils.updater import UpdateManager
 from .utils.exceptions import handle_exception
 from .utils.logger import enable_debug_mode, get_logger, log_app_shutdown, log_app_start
@@ -562,56 +563,16 @@ class CommTerminalApp(Adw.Application):
 
     def _process_and_execute_args(self, arguments: list, cwd_uri: Optional[str] = None):
         """Parse arguments and decide what action to take."""
-        working_directory, execute_command, ssh_target, close_after_execute = (
-            None,
-            None,
-            None,
-            False,
+        parsed = parse_launch_cli_args(
+            arguments,
+            cwd_uri=cwd_uri,
+            normalize_cwd=self._normalize_working_directory_arg,
         )
-        force_new_window = False
-
-        # First pass: find flags that don't consume remaining args
-        i = 1
-        execute_index = None
-        while i < len(arguments):
-            arg = arguments[i]
-            if arg in ["-w", "--working-directory"] and i + 1 < len(arguments):
-                working_directory = self._normalize_working_directory_arg(
-                    arguments[i + 1]
-                )
-                i += 2
-                continue
-            elif arg.startswith("--working-directory="):
-                working_directory = self._normalize_working_directory_arg(
-                    arg.split("=", 1)[1]
-                )
-            elif arg in ["-e", "-x", "--execute"]:
-                # Mark where the execute command starts - capture all remaining args
-                execute_index = i + 1
-                break  # Stop here, remaining args are the command
-            elif arg.startswith("--execute="):
-                execute_command = arg.split("=", 1)[1]
-            elif arg == "--close-after-execute":
-                close_after_execute = True
-            elif arg == "--ssh" and i + 1 < len(arguments):
-                ssh_target = arguments[i + 1]
-                i += 1
-            elif arg.startswith("--ssh="):
-                ssh_target = arg.split("=", 1)[1]
-            elif arg == "--new-window":
-                force_new_window = True
-            elif not arg.startswith("-") and working_directory is None:
-                working_directory = self._normalize_working_directory_arg(arg)
-            i += 1
-
-        if not working_directory:
-            working_directory = self._normalize_working_directory_arg(cwd_uri)
-
-        # If we found -e/-x/--execute, capture all remaining arguments as the command
-        if execute_index is not None and execute_index < len(arguments):
-            remaining = arguments[execute_index:]
-            if remaining:
-                execute_command = " ".join(remaining)
+        working_directory = parsed["working_directory"]
+        execute_command = parsed["execute_command"]
+        ssh_target = parsed["ssh_target"]
+        close_after_execute = parsed["close_after_execute"]
+        force_new_window = parsed["force_new_window"]
 
         behavior = self.settings_manager.get("new_instance_behavior", "new_tab")
 

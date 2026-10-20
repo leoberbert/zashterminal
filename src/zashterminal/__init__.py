@@ -155,12 +155,20 @@ def main() -> int:
         "-x",
         metavar="COMMAND",
         nargs=argparse.REMAINDER,
-        help=_("Execute command in the terminal (takes all remaining arguments)"),
+        help=_(
+            "Execute command in the terminal (takes all remaining arguments); "
+            "closes the terminal when the command finishes by default"
+        ),
     )
     parser.add_argument(
         "--close-after-execute",
         action="store_true",
-        help=_("Close terminal after executing command (only with --execute)"),
+        help=_("Close terminal after executing command (default with --execute)"),
+    )
+    parser.add_argument(
+        "--no-close-after-execute",
+        action="store_true",
+        help=_("Keep the shell open after --execute finishes"),
     )
     parser.add_argument(
         "--ssh",
