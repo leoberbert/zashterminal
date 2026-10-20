@@ -181,6 +181,12 @@ class ImageTests(unittest.TestCase):
                 extract_palette(path)
 
     def test_real_decoder_and_corrupt_image(self):
+        try:
+            import pywal  # noqa: F401
+            from pywal import colors  # noqa: F401
+        except ImportError:
+            self.skipTest("pywal16 is required for real palette extraction")
+
         import gi
         gi.require_version("GdkPixbuf", "2.0")
         from gi.repository import GdkPixbuf

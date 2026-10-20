@@ -125,7 +125,7 @@ install_system_dependencies() {
       )
       python_runtime_packages=(
         python-requests python-psutil python-regex python-pygments
-        python-py7zr python-setproctitle python-cryptography
+        python-py7zr python-setproctitle python-pycryptodomex
       )
       ;;
     debian)
@@ -139,7 +139,7 @@ install_system_dependencies() {
         python3-requests python3-psutil python3-regex python3-pygments
       )
       optional_python_packages=(
-        python3-py7zr python3-setproctitle python3-cryptography
+        python3-py7zr python3-setproctitle
       )
       ;;
     fedora)
@@ -150,7 +150,6 @@ install_system_dependencies() {
       )
       python_runtime_packages=(
         python3-requests python3-psutil python3-pygments
-        python3-cryptography
       )
       optional_python_packages=(
         python3-regex python3-py7zr python3-setproctitle
@@ -167,7 +166,7 @@ install_system_dependencies() {
         python3-requests python3-psutil python3-regex python3-Pygments
       )
       optional_python_packages=(
-        python3-py7zr python3-setproctitle python3-cryptography
+        python3-py7zr python3-setproctitle
       )
       ;;
     *)
@@ -388,8 +387,9 @@ install_python_app() {
 
   # Default extras in the venv (py7zr + setproctitle requested as default).
   # They may already be available via system packages on some distros.
+  # pycryptodomex provides Cryptodome (SecureCRT Password V2 compatibility).
   sudo "${VENV_DIR}/bin/python" -m pip install \
-    requests psutil regex Pygments cryptography py7zr setproctitle >/dev/null || \
+    requests psutil regex Pygments pycryptodomex py7zr setproctitle >/dev/null || \
     warn "Some Python packages could not be installed in the venv (continuing)."
 }
 

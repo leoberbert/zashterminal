@@ -27,6 +27,8 @@ python3Packages.buildPythonApplication {
     pycairo
     setproctitle
     requests
+    psutil
+    pycryptodomex
     py7zr
     (toPythonModule pywal16)
   ];
