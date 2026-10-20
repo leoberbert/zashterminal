@@ -261,8 +261,9 @@ zashterminal [options] [directory]
 | Option | Description |
 |--------|-------------|
 | `-w, --working-directory DIR` | Set initial working directory |
-| `-e, -x, --execute COMMAND` | Execute command on startup (all remaining args are included) |
-| `--close-after-execute` | Close the terminal tab after the command finishes |
+| `-e, -x, --execute COMMAND` | Execute command on startup (all remaining args are included); closes when the command finishes by default |
+| `--close-after-execute` | Close the terminal tab after the command finishes (default with `--execute`) |
+| `--no-close-after-execute` | Keep the shell open after `--execute` finishes |
 | `--ssh [USER@]HOST` | Immediately connect to an SSH host |
 | `--new-window` | Force opening a new window instead of a tab |
 
@@ -272,14 +273,14 @@ zashterminal [options] [directory]
 # Open terminal in a specific directory
 zashterminal ~/projects
 
-# Execute a command
+# Execute a command (terminal closes when the command exits)
 zashterminal -e htop
 
 # SSH connection
 zashterminal --ssh user@server.example.com
 
-# Execute command and close after completion
-zashterminal --close-after-execute -e "ls -la"
+# Execute command but keep the shell open afterwards
+zashterminal --no-close-after-execute -e "ls -la"
 ```
 
 ## Configuration
