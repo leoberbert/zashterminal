@@ -97,8 +97,8 @@ class HostnameValidator:
     def resolve_hostname(hostname: str, timeout: float = 5.0) -> Optional[str]:
         """Resolve a hostname to an IP address.
 
-        Uses a separate socket with timeout instead of socket.setdefaulttimeout()
-        to avoid affecting global socket behavior for other parts of the application.
+        Uses a worker thread with getaddrinfo so GTK/main-thread signal handlers
+        are never installed (avoids SIGALRM).
 
         Args:
             hostname: The hostname to resolve
@@ -107,28 +107,25 @@ class HostnameValidator:
         Returns:
             The resolved IP address or None if resolution fails
         """
+        from concurrent.futures import ThreadPoolExecutor
+        from concurrent.futures import TimeoutError as FuturesTimeoutError
+
         logger = get_logger("zashterminal.security")
+
+        def _resolve() -> Optional[str]:
+            infos = socket.getaddrinfo(hostname, None, type=socket.SOCK_STREAM)
+            if not infos:
+                return None
+            return infos[0][4][0]
+
         try:
-            # Use getaddrinfo with a timeout via socket options instead of
-            # setdefaulttimeout() which affects ALL sockets globally
-            import signal
-
-            def timeout_handler(signum, frame):
-                raise socket.timeout(f"Hostname resolution timed out for {hostname}")
-
-            # Set up signal-based timeout (works on Unix)
-            old_handler = signal.signal(signal.SIGALRM, timeout_handler)
-            signal.setitimer(signal.ITIMER_REAL, timeout)
-
-            try:
-                result = socket.gethostbyname(hostname)
-                return result
-            finally:
-                # Cancel the timer and restore old handler
-                signal.setitimer(signal.ITIMER_REAL, 0)
-                signal.signal(signal.SIGALRM, old_handler)
-
-        except (socket.gaierror, socket.timeout) as e:
+            with ThreadPoolExecutor(max_workers=1) as pool:
+                future = pool.submit(_resolve)
+                return future.result(timeout=timeout)
+        except FuturesTimeoutError:
+            logger.debug(f"Hostname resolution timed out for {hostname}")
+            return None
+        except (socket.gaierror, socket.timeout, OSError) as e:
             logger.debug(f"Hostname resolution failed for {hostname}: {e}")
             return None
         except Exception as e:

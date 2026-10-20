@@ -265,6 +265,7 @@ class SettingsManager:
                 self.custom_schemes = self._load_custom_schemes()
                 self._validate_and_repair()
                 self._merge_with_defaults()
+                self._migrate_api_key_to_keyring()
                 self._apply_log_settings()
                 # If we loaded a legacy settings file or performed repairs/default merges,
                 # persist the canonical wrapper format proactively.
@@ -501,11 +502,52 @@ class SettingsManager:
 
         threading.Thread(target=save_task, daemon=True).start()
 
+    def _migrate_api_key_to_keyring(self) -> None:
+        """One-shot move of plaintext AI API key from settings.json into libsecret."""
+        from ..utils import crypto
+
+        raw = self._settings.get("ai_assistant_api_key", "")
+        if not isinstance(raw, str):
+            return
+        value = raw.strip()
+        if not value or value == crypto.API_KEY_SETTINGS_SENTINEL:
+            return
+        try:
+            if not crypto.is_encryption_available():
+                self.logger.warning(
+                    "Cannot migrate AI API key to keyring: Secret Service unavailable."
+                )
+                return
+            crypto.store_api_key(crypto.AI_ASSISTANT_API_KEY_NAME, value)
+            self._settings["ai_assistant_api_key"] = crypto.API_KEY_SETTINGS_SENTINEL
+            self._dirty = True
+            self.logger.info("Migrated AI API key from settings.json to libsecret.")
+        except Exception as e:
+            self.logger.error(f"Failed to migrate AI API key to keyring: {e}")
+
     def set(self, key: str, value: Any, save_immediately: bool = True) -> None:
         with self._lock:
             try:
                 old_value = self.get(key)
                 self._validate_setting_value(key, value)
+
+                if key == "ai_assistant_api_key":
+                    from ..utils import crypto
+
+                    api_key = (value or "").strip() if isinstance(value, str) else ""
+                    if api_key:
+                        if not crypto.is_encryption_available():
+                            raise ConfigValidationError(
+                                key,
+                                "[redacted]",
+                                "Secret Service is unavailable; cannot store API key.",
+                            )
+                        crypto.store_api_key(crypto.AI_ASSISTANT_API_KEY_NAME, api_key)
+                        value = crypto.API_KEY_SETTINGS_SENTINEL
+                    else:
+                        crypto.clear_api_key(crypto.AI_ASSISTANT_API_KEY_NAME)
+                        value = ""
+
                 if "." in key:
                     keys = key.split(".")
                     current = self._settings
@@ -530,6 +572,8 @@ class SettingsManager:
                     GLib.idle_add(self._update_app_theme_css)
                 if save_immediately:
                     self.save_settings()
+            except ConfigValidationError:
+                raise
             except Exception as e:
                 self.logger.error(f"Failed to set setting '{key}': {e}")
                 raise ConfigValidationError(key, value, str(e))
@@ -541,6 +585,13 @@ class SettingsManager:
                     wallpaper = self._get_wallpaper()
                     if wallpaper and wallpaper["apply_to_interface"]:
                         return "terminal"
+                if key == "ai_assistant_api_key":
+                    from ..utils import crypto
+
+                    stored = self._settings.get(key, default)
+                    return crypto.resolve_ai_assistant_api_key(
+                        stored if isinstance(stored, str) else ""
+                    )
                 if "." in key:
                     keys = key.split(".")
                     value = self._settings

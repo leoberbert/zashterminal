@@ -1557,8 +1557,10 @@ class SSHConnectionChecker:
                     # Timeout means it's probably stale
                     socket_file.unlink(missing_ok=True)
                     cleaned += 1
-                except Exception:
-                    pass
+                except Exception as e:
+                    self.logger.debug(
+                        f"Error while cleaning SSH control socket {socket_file}: {e}"
+                    )
 
         if cleaned > 0:
             self.logger.info(f"Cleaned up {cleaned} stale SSH control sockets")
@@ -1600,8 +1602,10 @@ def cleanup_spawner() -> None:
     if _checker_instance is not None:
         try:
             _checker_instance.cleanup_stale_sockets()
-        except Exception:
-            pass
+        except Exception as e:
+            get_logger("zashterminal.terminal.spawner").warning(
+                f"Failed to clean stale SSH sockets during spawner cleanup: {e}"
+            )
 
     if _spawner_instance is not None:
         with _spawner_lock:

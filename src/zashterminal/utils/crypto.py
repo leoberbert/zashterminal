@@ -17,7 +17,17 @@ SECRET_SCHEMA = Secret.Schema.new(
     Secret.SchemaFlags.NONE,
     {"session_name": Secret.SchemaAttributeType.STRING},
 )
+API_KEY_SCHEMA = Secret.Schema.new(
+    "org.leoberbert.zashterminal.ApiKey",
+    Secret.SchemaFlags.NONE,
+    {"key_name": Secret.SchemaAttributeType.STRING},
+)
 SECURECRT_V2_PREFIX = "02:"
+# Sentinel stored in settings.json when the real API key lives in libsecret.
+API_KEY_SETTINGS_SENTINEL = "__libsecret__"
+AI_ASSISTANT_API_KEY_NAME = "ai_assistant_api_key"
+
+_secret_service_available: Optional[bool] = None
 
 
 def _get_securecrt_v2_crypto_backend() -> Tuple[Optional[object], Optional[object]]:
@@ -30,17 +40,33 @@ def _get_securecrt_v2_crypto_backend() -> Tuple[Optional[object], Optional[objec
         from Cryptodome.Hash import SHA256
 
         return AES, SHA256
-    except Exception:
+    except Exception as e:
+        get_logger("zashterminal.crypto").debug(
+            f"SecureCRT V2 crypto backend unavailable: {e}"
+        )
         return None, None
 
 
+def reset_encryption_availability_cache() -> None:
+    """Clear cached Secret Service probe result (for tests)."""
+    global _secret_service_available
+    _secret_service_available = None
+
+
 def is_encryption_available() -> bool:
-    """Checks if the libsecret library is available."""
+    """Checks whether the Secret Service API (libsecret) is usable."""
+    global _secret_service_available
+    if _secret_service_available is not None:
+        return _secret_service_available
     try:
-        # A successful import is already a good indication.
-        return True
-    except (ImportError, ValueError):
-        return False
+        Secret.Service.get_sync(Secret.ServiceFlags.NONE, None)
+        _secret_service_available = True
+    except Exception as e:
+        get_logger("zashterminal.crypto").debug(
+            f"Secret Service unavailable: {e}"
+        )
+        _secret_service_available = False
+    return _secret_service_available
 
 
 def is_session_password_encryption_available() -> bool:
@@ -194,6 +220,77 @@ def clear_password(session_name: str) -> bool:
             f"Failed to clear password for session '{session_name}': {e}"
         )
         return False
+
+
+def store_api_key(key_name: str, api_key: str) -> bool:
+    """Store an API key in the system keyring."""
+    if not is_encryption_available():
+        raise ZashterminalError("Secret Service API is not available.")
+    if not key_name:
+        raise ZashterminalError("API key name is required.")
+
+    try:
+        attributes = {"key_name": key_name}
+        Secret.password_store_sync(
+            API_KEY_SCHEMA,
+            attributes,
+            Secret.COLLECTION_DEFAULT,
+            f"Zashterminal API key '{key_name}'",
+            api_key,
+            None,
+        )
+        get_logger().info(f"Stored API key '{key_name}' securely.")
+        return True
+    except Exception as e:
+        get_logger().error(f"Failed to store API key '{key_name}': {e}")
+        raise ZashterminalError(f"Failed to store API key: {e}") from e
+
+
+def lookup_api_key(key_name: str) -> Optional[str]:
+    """Look up an API key from the system keyring."""
+    if not is_encryption_available():
+        return None
+    if not key_name:
+        return None
+
+    try:
+        attributes = {"key_name": key_name}
+        value = Secret.password_lookup_sync(API_KEY_SCHEMA, attributes, None)
+        return value or None
+    except Exception as e:
+        get_logger().error(f"Failed to lookup API key '{key_name}': {e}")
+        raise ZashterminalError(f"Failed to lookup API key: {e}") from e
+
+
+def clear_api_key(key_name: str) -> bool:
+    """Remove an API key from the system keyring."""
+    if not is_encryption_available():
+        return False
+    if not key_name:
+        return False
+
+    try:
+        attributes = {"key_name": key_name}
+        return Secret.password_clear_sync(API_KEY_SCHEMA, attributes, None)
+    except Exception as e:
+        get_logger().error(f"Failed to clear API key '{key_name}': {e}")
+        return False
+
+
+def resolve_ai_assistant_api_key(settings_value: Optional[str]) -> str:
+    """
+    Resolve the AI API key from settings value + libsecret.
+
+    Legacy plaintext in settings is returned as-is (caller should migrate).
+    Sentinel / empty means look up libsecret.
+    """
+    value = (settings_value or "").strip()
+    if value and value != API_KEY_SETTINGS_SENTINEL:
+        return value
+    try:
+        return lookup_api_key(AI_ASSISTANT_API_KEY_NAME) or ""
+    except ZashterminalError:
+        return ""
 
 
 def export_all_passwords(sessions_store: Gio.ListStore) -> Dict[str, str]:
