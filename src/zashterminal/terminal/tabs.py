@@ -196,24 +196,6 @@ class TabManager:
             return float(translated[0]), float(translated[1])
         return None
 
-    def _pointer_over_close_button(self, tab_widget: Gtk.Box, x: float, y: float) -> bool:
-        """Return True when (x, y) in tab coordinates is over the close button."""
-        close_btn = self._get_tab_close_button(tab_widget)
-        if close_btn is None or not close_btn.get_visible():
-            return False
-        try:
-            point = self._unpack_translate(
-                tab_widget.translate_coordinates(close_btn, x, y)
-            )
-            if point is None:
-                return False
-            bx, by = point
-            return bool(
-                0 <= bx <= close_btn.get_width() and 0 <= by <= close_btn.get_height()
-            )
-        except Exception:
-            return False
-
     def _setup_tab_drag_and_drop(
         self, tab_widget: Gtk.Box, handle: Gtk.Widget
     ) -> None:
