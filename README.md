@@ -1,254 +1,206 @@
 # Zashterminal
 
 <p align="center">
-  <img src="https://github.com/leoberbert/zashterminal/blob/main/usr/share/icons/hicolor/scalable/apps/zashterminal.svg" alt="Logo Zashterminal" width="128" height="128">
+  <img src="usr/share/icons/hicolor/scalable/apps/zashterminal.svg" alt="Zashterminal" width="96" height="96">
 </p>
 
 <p align="center">
-  <strong>A modern terminal for developers, infrastructure, and system administration</strong>
+  <b>A modern GTK4 terminal for developers, infrastructure, and system administration</b>
 </p>
+
 <p align="center">
-  <a href="https://github.com/leoberbert/zashterminal/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-GPL--3.0-green.svg" alt="Licença"/></a>
-  <a href="https://www.gtk.org/"><img src="https://img.shields.io/badge/GTK-4.0+-orange.svg" alt="Versão GTK"/></a>
-  <a href="https://gnome.pages.gitlab.gnome.org/libadwaita/"><img src="https://img.shields.io/badge/libadwaita-1.0+-purple.svg" alt="Versão libadwaita"/></a>
-  <a href="https://ko-fi.com/leoberbert"><img src="https://img.shields.io/badge/Support-Ko--fi-ff5f5f.svg" alt="Support on Ko-fi"/></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-GPL--3.0-green.svg" alt="License"></a>
+  <a href="https://www.gtk.org/"><img src="https://img.shields.io/badge/GTK-4.0+-orange.svg" alt="GTK"></a>
+  <a href="https://gnome.pages.gitlab.gnome.org/libadwaita/"><img src="https://img.shields.io/badge/libadwaita-1.0+-purple.svg" alt="libadwaita"></a>
+  <a href="https://ko-fi.com/leoberbert"><img src="https://img.shields.io/badge/Support-Ko--fi-ff5f5f.svg" alt="Ko-fi"></a>
 </p>
 
-**Zashterminal** is a modern, intuitive, and innovative terminal built with GTK4 and Adwaita. It blends powerful features for developers and system administrators with a welcoming experience for newcomers. Simplified session management, an integrated file manager, automatic color highlighting, and workflow-focused tools make the command line more productive on any Linux distribution..
+Zashterminal combines a VTE terminal with session management, an integrated file manager, optional AI assistance, and workflow tools — built on GTK4 and libadwaita for a native Linux desktop experience.
 
-## Why Zashterminal
+**Supported installs:** Arch/Manjaro (AUR), Debian/Ubuntu, Fedora, openSUSE, Gentoo, NixOS. WSL (Ubuntu) is experimental.
 
-- **Focused on real workflows**: Manage SSH/SFTP sessions, panes, and layouts without leaving the terminal.
-- **Accessible by design**: Clear UI, smart defaults, and discoverable actions help beginners get started faster.
-- **Optional AI assistance**: Only the text you explicitly select is sent, keeping control and privacy in your hands.
-- **Built on modern Linux UI**: GTK4 + libadwaita for a native, responsive desktop experience.
+---
 
-## SecureCRT Migration & PAM Compatibility
+## Table of contents
 
-No more excuses to postpone your migration to Zashterminal:
+- [Gallery](#gallery)
+- [Features](#features)
+- [SecureCRT & PAM](#securecrt--pam)
+- [Requirements](#requirements)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Configuration](#configuration)
+- [Contributing](#contributing)
+- [License & support](#license--support)
 
-- **Import SecureCRT sessions directly from the main menu** (`Import SecureCRT Sessions`).
-- **Bulk import from full directory trees** (folders + `.ini` sessions).
-- **SecureCRT Password V2 compatibility**: Zashterminal can import and use `Password V2` entries (`02:<hex>`), keeping credentials compatible with the Zashterminal session format.
-- **Balabit/One Identity gateway compatibility**: Zashterminal supports keyboard-interactive privileged access gateway flows commonly used in Balabit environments.
+---
 
-About Balabit and One Identity:
+## Gallery
 
-- Balabit products were integrated into **One Identity** and the Balabit brand was gradually discontinued.
-- Example: *Balabit Shell Control Box* became **One Identity Safeguard for Privileged Sessions**.
-- One Identity links:
-  - Company: https://www.oneidentity.com/
-  - Privileged Access Management (PAM): https://www.oneidentity.com/br-pt/privileged-access-management/
+### Terminal + file manager
 
-One Identity Privileged Access Management (PAM) solutions help reduce security risk and support compliance, available both on-prem and SaaS. They provide control, monitoring, analysis, and governance for privileged access across multiple environments and platforms, including Zero Trust and least-privilege operational models.
+Split view with a live shell above and a browsable file list below.
 
-## Screenshots
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/4c264548-909e-4edb-95be-a5dc6a6756bb" alt="Terminal with integrated file manager" width="920">
+</p>
 
-<img width="1457" height="699" alt="image" src="https://github.com/user-attachments/assets/4c264548-909e-4edb-95be-a5dc6a6756bb" />
+### Multi-pane layouts
 
-<img width="1457" height="699" alt="image" src="https://github.com/user-attachments/assets/6aba3c63-a181-4e3c-8870-d58ceae11daa" />
+Tile terminals for monitoring, status, and interactive shells in one window.
 
-<img width="1457" height="699" alt="image" src="https://github.com/user-attachments/assets/46e41739-7c28-47d7-b4ba-26e9320b0061" />
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/6aba3c63-a181-4e3c-8870-d58ceae11daa" alt="Four-pane terminal layout" width="920">
+</p>
 
+### Color schemes
 
-## Key Features
+Built-in palettes with live previews; edit or create custom schemes from Preferences.
 
-### 🤖 AI Assistant Integration
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/46e41739-7c28-47d7-b4ba-26e9320b0061" alt="Terminal color scheme picker" width="920">
+</p>
 
-<img width="1457" height="699" alt="image" src="https://github.com/user-attachments/assets/762fa599-a266-41c3-83c2-f28fe825f0f6" />
+### AI assistant — configuration
 
-<img width="1457" height="699" alt="image" src="https://github.com/user-attachments/assets/4dd9482b-420d-4170-878d-e9a652493ec9" />
+Optional AI with Groq, Gemini, OpenRouter, or local models (Ollama / LM Studio). Only text you explicitly send is shared.
 
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/762fa599-a266-41c3-83c2-f28fe825f0f6" alt="AI assistant configuration dialog" width="920">
+</p>
 
-Zashterminal creates a bridge between your shell and Large Language Models (LLMs), offering an **optional** and fully **non-intrusive** AI experience. The assistant only processes the content that **you explicitly select and choose to send**, ensuring full control over your privacy.
-* **Multi-Provider Support**: Native integration with **Groq**, **Google Gemini**, **OpenRouter**, and **Local LLMs** (Ollama/LM Studio).
-* **Context Aware**: The AI understands your OS and distribution context to provide accurate and relevant commands.
-* **Chat Panel**: A dedicated side panel for persistent conversations, command suggestions, and "Click-to-Run" code snippets.
-* **Smart Suggestions**: Ask how to perform tasks and receive ready-to-execute commands directly in the UI.
+### AI assistant — chat panel
 
+Side or docked panel with explanations, suggested commands, and one-click run / copy.
 
-### 📂 Advanced File Manager & Remote Editing
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/4dd9482b-420d-4170-878d-e9a652493ec9" alt="AI assistant chat with suggested commands" width="920">
+</p>
 
-<img width="1457" height="699" alt="image" src="https://github.com/user-attachments/assets/a40bd623-eb31-4a8b-9fe2-e327d8b7de0c" />
+### AI assistant — quick prompts
 
+Starter prompts for common shell tasks when you open the panel.
 
--   **Integrated Side Panel**: Browse local and remote file systems without leaving the terminal.
--   **Remote Editing**: Click to edit remote files (SSH/SFTP) in your favorite local editor. Zashterm watches the file and automatically uploads changes on save.
--   **Drag & Drop Transfer**: Upload files to remote servers simply by dragging them into the terminal window over (SFTP/Rsync)
--   **Transfer Manager**: Track uploads and downloads with a detailed progress manager and history.
-<img width="1355" height="675" alt="image" src="https://github.com/user-attachments/assets/f340ac07-3408-488c-a4a8-d26ac1b7cdab" />
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/97aae8ed-6466-46b9-b7e4-ca1256f425ff" alt="AI quick prompts under the terminal" width="920">
+</p>
 
+### File manager
 
+Browse local directories with size, permissions, and ownership columns — without leaving the terminal.
 
-### ⚡ Productivity Tools
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/a40bd623-eb31-4a8b-9fe2-e327d8b7de0c" alt="Integrated file manager listing" width="920">
+</p>
 
-<img width="1457" height="699" alt="image" src="https://github.com/user-attachments/assets/97aae8ed-6466-46b9-b7e4-ca1256f425ff" />
+### Session context menu
 
+Connect with SFTP, edit, duplicate, rename, or delete saved sessions from the sidebar.
 
--   **Input Broadcasting**: Type commands in one terminal and execute them simultaneously across multiple selected tabs/panes.
--   **Quick Prompts**: One-click AI prompts for common tasks (e.g., "Explain this error", "Optimize this command").
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/f340ac07-3408-488c-a4a8-d26ac1b7cdab" alt="Session context menu for SSH/SFTP" width="920">
+</p>
 
+---
 
-### 🖥️ Core Terminal Functionality
--   **Session Management**: Save, organize (with folders), and launch Local, SSH, and SFTP sessions.
--   **Flexible Layouts**: Split panes horizontally and vertically; save and restore complex window layouts.
--   **Directory Tracking**: Updates tab titles automatically based on the current working directory (OSC7 support).
--   **Deep Customization**: Visual theme editor, font sizing, transparency (window and headerbar), and extensive keyboard shortcuts.
+## Features
 
-### 🎨 Color Schemes
+| Area | What you get |
+|------|----------------|
+| **Sessions** | Local, SSH, and SFTP sessions with folders, restore, and layouts |
+| **Layouts** | Horizontal/vertical splits; save and restore multi-pane setups |
+| **File manager** | Local and remote browsing, drag-and-drop transfer, remote edit + upload on save |
+| **Highlighting** | Output rules for 50+ commands; optional Pygments for `cat` / input |
+| **AI (optional)** | Multi-provider chat, quick prompts, click-to-run snippets — selection only |
+| **Broadcast** | Type once; run across selected tabs/panes |
+| **Appearance** | 30 built-in schemes (default: GitHub Dark), transparency, shortcuts |
 
-Zashterminal includes built-in palettes ranging from classic terminals to modern editor-inspired themes.
+### Color schemes
 
-- **Current default theme**: `GitHub Dark`
-- **All available built-in schemes (30):**
-  - `Ayu Mirage` (`ayu_mirage`)
-  - `Catppuccin Mocha` (`catppuccin`)
-  - `Catppuccin Latte` (`catppuccin_latte`)
-  - `Dark` (`dark`)
-  - `Dracula` (`dracula`)
-  - `Everforest Green` (`everforest`)
-  - `Everforest Dark` (`everforest_dark`)
-  - `Everforest Light` (`everforest_light`)
-  - `GitHub Dark` (`github_dark`)
-  - `GitHub Light` (`github_light`)
-  - `Gruvbox Dark Hard` (`gruvbox_dark_hard`)
-  - `Gruvbox Light` (`gruvbox_light`)
-  - `Horizon Dark` (`horizon_dark`)
-  - `Kanagawa Wave` (`kanagawa_wave`)
-  - `Light` (`light`)
-  - `Material Ocean` (`material_ocean`)
-  - `Monokai` (`monokai`)
-  - `Moonfly` (`moonfly`)
-  - `Night Owl` (`night_owl`)
-  - `Nord` (`nord`)
-  - `One Dark Pro` (`onedark_pro`)
-  - `Oxocarbon Dark` (`oxocarbon_dark`)
-  - `Palenight` (`palenight`)
-  - `Pink Light` (`pink_light`)
-  - `Rosé Pine` (`rose_pine`)
-  - `Solarized Dark` (`solarized_dark`)
-  - `Solarized Light` (`solarized_light`)
-  - `System Default` (`system_default`)
-  - `Tokyo Night` (`tokyonight`)
-  - `VS Code Dark+` (`vscode_dark_plus`)
+Default: **GitHub Dark**. Also included: Ayu Mirage, Catppuccin (Mocha / Latte), Dracula, Everforest, Gruvbox, Horizon, Kanagawa, Material Ocean, Monokai, Moonfly, Night Owl, Nord, One Dark Pro, Oxocarbon, Palenight, Rosé Pine, Solarized, Tokyo Night, VS Code Dark+, System Default, and light variants.
 
-You can switch themes and create your own custom palettes from the appearance/preferences dialog.
+Switch or customize from **Preferences → Terminal colors**.
 
+---
 
-## Dependencies
-To build and run Zashterminal, you will need:
+## SecureCRT & PAM
 
--   **Python 3.9+**
--   **GTK4** and **Adwaita 1.0+** (`libadwaita`)
--   **VTE for GTK4** (`vte4` >= 0.76 recommended)
--   **Python Libraries**:
-    -   `PyGObject` (GTK bindings)
-    -   `pycryptodomex` (SecureCRT-compatible password encryption/decryption)
-    -   `requests` (For AI API connectivity)
-    -   `pygments` (For syntax highlighting)
-    -   `psutil` (Optional, for advanced process tracking)
-    -   `regex` (Optional, for high-performance highlighting patterns)
+Migrate from SecureCRT without leaving sessions behind:
+
+- Import sessions from the main menu (**Import SecureCRT Sessions**), including full directory trees
+- **Password V2** support (`02:<hex>`) mapped into Zashterminal’s session format
+- Keyboard-interactive flows used with **Balabit / One Identity** privileged session gateways
+
+One Identity (formerly Balabit) PAM docs: [Privileged Access Management](https://www.oneidentity.com/br-pt/privileged-access-management/)
+
+---
+
+## Requirements
+
+| Component | Notes |
+|-----------|--------|
+| Python | 3.9+ |
+| GTK / Adwaita | GTK4, libadwaita 1.0+ |
+| VTE | VTE for GTK4 (`vte4` ≥ 0.76 recommended) |
+| PyGObject, pycairo | GTK bindings |
+| pycryptodomex | SecureCRT-compatible crypto |
+| requests | AI API calls |
+| pygments | Optional syntax highlighting |
+| psutil, regex | Optional |
+
+---
 
 ## Installation
 
-Supported via `install.sh` (or AUR on Arch): **Arch/Manjaro**, **Debian/Ubuntu**, **Fedora**, **openSUSE**, **Gentoo**, and **NixOS**. WSL (Ubuntu) is experimental.
+### Arch / Manjaro
 
-### Arch/Manjaro
-
-AUR (recommended on Arch-based systems):
 ```bash
-yay -S zashterminal        # or
-paru -S zashterminal
+yay -S zashterminal   # or: paru -S zashterminal
 ```
 
-Local installer (system-wide with venv):
+Or system-wide via installer:
+
 ```bash
 curl -fsSL https://raw.githubusercontent.com/leoberbert/zashterminal/refs/heads/main/install.sh | bash
 ```
 
 ### Debian / Ubuntu / Fedora / openSUSE
 
-The installer detects the distro, installs the required system packages, and installs Zashterminal system-wide using a virtual environment in `/opt/zashterminal/venv`.
+`install.sh` detects the distro, installs system packages, and places a venv under `/opt/zashterminal/venv`.
 
 ```bash
-# Quick install (no clone required)
 curl -fsSL https://raw.githubusercontent.com/leoberbert/zashterminal/refs/heads/main/install.sh | bash
-
-# Alternatively, download and run
-curl -fsSLO https://raw.githubusercontent.com/leoberbert/zashterminal/refs/heads/main/install.sh
-bash install.sh
 ```
 
 ### Gentoo
 
-Same `install.sh` flow as above (`emerge`). The script writes the needed `package.use` entries, prefers the official amd64 binhost when available (`GENTOO_USE_BINHOST=0` forces source builds), installs `gsettings-desktop-schemas`, and installs `pycryptodomex` into the venv (Gentoo packages `pycryptodome` / `Crypto`, while Zashterminal needs the `Cryptodome` namespace).
+Same installer (`emerge`). It writes `package.use`, prefers the amd64 binhost when available (`GENTOO_USE_BINHOST=0` for source builds), installs `gsettings-desktop-schemas`, and puts `pycryptodomex` in the venv (Gentoo’s `pycryptodome` exposes `Crypto`, not `Cryptodome`).
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/leoberbert/zashterminal/refs/heads/main/install.sh | bash
 ```
 
-The launcher forces `GDK_BACKEND=x11` when GTK was built without Wayland but Distrobox still exports `WAYLAND_DISPLAY` / `GDK_BACKEND=wayland`.
+The launcher sets `GDK_BACKEND=x11` when GTK was built without Wayland but Distrobox still exports `WAYLAND_DISPLAY` / `GDK_BACKEND=wayland`.
 
 ### NixOS
 
-On NixOS, `install.sh` uses the project's flake (`default.nix` / `flake.nix`) and installs Zashterminal into the current user profile with menu/icon integration.
-
-Recommended permanent NixOS setting:
-
-```nix
-nix.settings.experimental-features = [ "nix-command" "flakes" ];
-```
-
-Also ensure `git` is available in your system packages:
-
-```nix
-environment.systemPackages = with pkgs; [
-  git
-];
-```
-
-Then:
+Uses the project flake into the user profile. Enable flakes and ensure `git` is installed, then:
 
 ```bash
 sudo nixos-rebuild switch
 curl -fsSL https://raw.githubusercontent.com/leoberbert/zashterminal/refs/heads/main/install.sh | bash
 ```
 
-### WSL on Windows (Experimental)
-
-Zashterminal can run on WSL, but this is still **experimental** and may present issues depending on your WSLg/graphics/input setup.
-
-- Tested environment: **Ubuntu 24.04 on WSL**
-- Installation method: same Debian/Ubuntu flow using `install.sh`
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/leoberbert/zashterminal/refs/heads/main/install.sh | bash
+```nix
+nix.settings.experimental-features = [ "nix-command" "flakes" ];
+environment.systemPackages = with pkgs; [ git ];
 ```
 
-If you use a language other than English (default), configure locale and keyboard (example for Brazilian Portuguese):
+### WSL (experimental)
 
-```bash
-# ~/.bashrc
-export LANG=pt_BR.UTF-8
-export LC_ALL=pt_BR.UTF-8
-export LANGUAGE=pt_BR:pt
-```
+Tested on **Ubuntu 24.04 + WSLg**. Same `install.sh` flow as Debian/Ubuntu. For non-English locales, set `LANG` / `LC_ALL` and, if needed, `setxkbmap` in `~/.bashrc`, then restart WSL.
 
-```bash
-sudo apt update
-sudo apt install x11-xkb-utils
-setxkbmap br
-```
-
-Also add to `~/.bashrc`:
-
-```bash
-if [ -n "$DISPLAY" ]; then
-    setxkbmap br
-fi
-```
-
-After changing your `~/.bashrc`, close WSL completely and open it again.
+---
 
 ## Usage
 
@@ -256,77 +208,62 @@ After changing your `~/.bashrc`, close WSL completely and open it again.
 zashterminal [options] [directory]
 ```
 
-#### Arguments
-
 | Option | Description |
 |--------|-------------|
-| `-w, --working-directory DIR` | Set initial working directory |
-| `-e, -x, --execute COMMAND` | Execute command on startup (all remaining args are included); closes when the command finishes by default |
-| `--close-after-execute` | Close the terminal tab after the command finishes (default with `--execute`) |
-| `--no-close-after-execute` | Keep the shell open after `--execute` finishes |
-| `--ssh [USER@]HOST` | Immediately connect to an SSH host |
-| `--new-window` | Force opening a new window instead of a tab |
-
-#### Examples
+| `-w, --working-directory DIR` | Initial working directory |
+| `-e, -x, --execute COMMAND` | Run command on startup (remaining args included); **closes when the command exits** by default |
+| `--close-after-execute` | Close after execute (default with `--execute`) |
+| `--no-close-after-execute` | Keep the shell open after `--execute` |
+| `--ssh [USER@]HOST` | Open an SSH session |
+| `--new-window` | Force a new window |
 
 ```bash
-# Open terminal in a specific directory
 zashterminal ~/projects
-
-# Execute a command (terminal closes when the command exits)
 zashterminal -e htop
-
-# SSH connection
 zashterminal --ssh user@server.example.com
-
-# Execute command but keep the shell open afterwards
 zashterminal --no-close-after-execute -e "ls -la"
 ```
 
+---
+
 ## Configuration
 
-Configuration files are stored in `~/.config/zashterminal/`:
+Files under `~/.config/zashterminal/`:
 
-| File/Directory | Description |
-|----------------|-------------|
-| `settings.json` | General preferences, appearance, terminal behavior, shortcuts, and AI configuration |
-| `sessions.json` | Saved SSH/SFTP connections and session folders |
-| `session_state.json` | Window state and session restore data |
-| `layouts/` | Saved window layouts (split panes configuration) |
-| `logs/` | Application logs (when logging to file is enabled) |
-| `backups/` | Manual encrypted backup archives |
+| Path | Purpose |
+|------|---------|
+| `settings.json` | Preferences, appearance, shortcuts, AI |
+| `sessions.json` | Saved SSH/SFTP sessions and folders |
+| `session_state.json` | Window / restore state |
+| `layouts/` | Saved split layouts |
+| `logs/` | Optional file logs |
+| `backups/` | Encrypted backup archives |
 
-**Note**: Syntax highlighting rules are bundled with the application in `data/highlights/` and include rules for 50+ commands (docker, git, systemctl, kubectl, and more).
-
-## Contributing
-
-Contributions are welcome\!
-
-1.  Fork the repository.
-2.  Create your feature branch (`git checkout -b feature/amazing-feature`).
-3.  Commit your changes.
-4.  Push to the branch.
-5.  Open a Pull Request.
-
-## License
-
-This project is licensed under the GNU GPL v3 (or later) - see the [LICENSE](LICENSE) file for details.
-
-## Support the Project
-
-If you enjoy Zashterminal and it improves your workflow, a contribution helps cover development time and ongoing costs. Any support is appreciated and goes directly into making the project better:
-
-- Ko-fi: https://ko-fi.com/leoberbert
-
-## Contact
-
-- Email: leo4berbert@gmail.com
-- LinkedIn: https://linkedin.com/in/leoberbert
-
-## Acknowledgments
-
-  - Developers of **GNOME**, **GTK**, **VTE**, and **Pygments**.
+Highlight rules ship in `data/highlights/` (docker, git, systemctl, kubectl, and more).
 
 ---
 
-Made with code, coffee, and curiosity through long nights of lines of code, by Leonardo Berbert.
+## Contributing
+
+1. Fork the repository  
+2. Create a branch (`git checkout -b feature/your-change`)  
+3. Commit and push  
+4. Open a pull request  
+
+---
+
+## License & support
+
+Licensed under **GNU GPL v3 or later** — see [LICENSE](LICENSE).
+
+If Zashterminal helps your workflow, support development on [Ko-fi](https://ko-fi.com/leoberbert).
+
+**Contact:** [leo4berbert@gmail.com](mailto:leo4berbert@gmail.com) · [LinkedIn](https://linkedin.com/in/leoberbert)
+
+**Thanks** to the GNOME, GTK, VTE, and Pygments communities.
+
+---
+
+<p align="center">
+  <sub>Leonardo Berbert</sub>
+</p>
