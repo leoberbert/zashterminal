@@ -148,11 +148,13 @@ install_system_dependencies() {
         gtk4 libadwaita vte291-gtk4 libsecret gobject-introspection
         python3-gobject python3-cairo
       )
+      # python3-pycryptodomex is required (SecureCRT V2 / session crypto).
+      # python3-py7zr is not packaged on Fedora; install via pip in the venv.
       python_runtime_packages=(
-        python3-requests python3-psutil python3-pygments
+        python3-requests python3-psutil python3-pygments python3-pycryptodomex
       )
       optional_python_packages=(
-        python3-regex python3-py7zr python3-setproctitle
+        python3-regex python3-setproctitle
       )
       ;;
     suse)
@@ -382,15 +384,32 @@ install_python_app() {
   sudo "${pybin}" -m venv --system-site-packages "${VENV_DIR}"
 
   sudo "${VENV_DIR}/bin/python" -m pip install --upgrade pip >/dev/null
-  sudo "${VENV_DIR}/bin/python" -m pip install --no-deps "${src_dir}" >/dev/null
-  sudo "${VENV_DIR}/bin/python" -m pip install 'pywal16>=3.8,<4' >/dev/null
 
-  # Default extras in the venv (py7zr + setproctitle requested as default).
-  # They may already be available via system packages on some distros.
-  # pycryptodomex provides Cryptodome (SecureCRT Password V2 compatibility).
+  # Install pure-Python deps BEFORE the app package. The venv uses
+  # --system-site-packages for PyGObject/pycairo, so the project is installed
+  # with --no-deps; installing deps first avoids pip's conflict ERROR about
+  # missing pycryptodomex right after a --no-deps install.
+  #
+  # Required (fail the install if these cannot be satisfied):
+  #   pywal16, requests, psutil, Pygments, pycryptodomex, setproctitle
+  # Best-effort extras (may already come from distro packages):
+  #   regex, py7zr
+  log "Installing required Python packages into the venv..."
   sudo "${VENV_DIR}/bin/python" -m pip install \
-    requests psutil regex Pygments pycryptodomex py7zr setproctitle >/dev/null || \
-    warn "Some Python packages could not be installed in the venv (continuing)."
+    'pywal16>=3.8,<4' requests psutil Pygments pycryptodomex setproctitle \
+    || die "Failed to install required Python packages into ${VENV_DIR}."
+
+  sudo "${VENV_DIR}/bin/python" -m pip install regex py7zr >/dev/null 2>&1 || \
+    warn "Optional Python packages (regex/py7zr) could not be installed in the venv (continuing)."
+
+  log "Installing ${PACKAGE_NAME} package (no PyPI deps; using system GI + venv packages)..."
+  sudo "${VENV_DIR}/bin/python" -m pip install --no-deps "${src_dir}" \
+    || die "Failed to install ${PACKAGE_NAME} into ${VENV_DIR}."
+
+  # Sanity check: crypto backend must import (system site or venv).
+  if ! sudo "${VENV_DIR}/bin/python" -c "from Cryptodome.Cipher import AES" >/dev/null 2>&1; then
+    die "pycryptodomex is not importable in ${VENV_DIR} (Cryptodome.Cipher.AES)."
+  fi
 }
 
 install_launcher() {
