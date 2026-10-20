@@ -327,7 +327,9 @@ class CommTerminalApp(Adw.Application):
             remote_version = result.get("remote_version", "")
             remote_ref = result.get("remote_ref", "main")
 
-            if self._update_manager and self._update_manager.has_prompted_today():
+            if self._update_manager and self._update_manager.has_prompted_today(
+                remote_version
+            ):
                 return False
 
             self._show_update_available_dialog(local_version, remote_version, remote_ref)
