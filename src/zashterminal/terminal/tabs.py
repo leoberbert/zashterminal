@@ -195,89 +195,131 @@ class TabManager:
         # since we handle everything at the tab level.
 
     def _setup_tab_drag_and_drop(self, tab_widget: Gtk.Box) -> None:
-        """Enable click-hold-drag reordering for a tab (left mouse button)."""
-        drag_source = Gtk.DragSource.new()
-        drag_source.set_actions(Gdk.DragAction.MOVE)
-        drag_source.connect("prepare", self._on_tab_drag_prepare, tab_widget)
-        drag_source.connect("drag-begin", self._on_tab_drag_begin, tab_widget)
-        drag_source.connect("drag-end", self._on_tab_drag_end, tab_widget)
-        tab_widget.add_controller(drag_source)
+        """Enable click-hold-drag reordering via GestureDrag (in-process, no DnD protocol)."""
+        gesture = Gtk.GestureDrag.new()
+        gesture.set_button(Gdk.BUTTON_PRIMARY)
+        # drag-begin fires only after GTK's drag threshold, so a plain click still selects.
+        gesture.connect("drag-begin", self._on_tab_gesture_drag_begin, tab_widget)
+        gesture.connect("drag-update", self._on_tab_gesture_drag_update, tab_widget)
+        gesture.connect("drag-end", self._on_tab_gesture_drag_end, tab_widget)
+        tab_widget.add_controller(gesture)
 
-        drop_target = Gtk.DropTarget.new(Gtk.Widget, Gdk.DragAction.MOVE)
-        drop_target.set_preload(True)
-        drop_target.connect("motion", self._on_tab_drop_motion, tab_widget)
-        drop_target.connect("drop", self._on_tab_drop, tab_widget)
-        drop_target.connect("leave", self._on_tab_drop_leave, tab_widget)
-        tab_widget.add_controller(drop_target)
-
-    def _on_tab_drag_prepare(self, _source, x, y, tab_widget: Gtk.Box):
-        """Start a tab drag only when not on the close button and ≥2 tabs exist."""
-        if len(self.tabs) < 2:
-            return None
-
+    def _pointer_over_close_button(self, tab_widget: Gtk.Box, x: float, y: float) -> bool:
+        """Return True when (x, y) in tab coordinates is over the close button."""
         close_btn = self._get_tab_close_button(tab_widget)
-        if close_btn is not None and close_btn.get_visible():
-            # Map pointer into close-button coordinates; skip drag if over it.
+        if close_btn is None or not close_btn.get_visible():
+            return False
+        try:
+            translated = tab_widget.translate_coordinates(close_btn, x, y)
+            if translated is None:
+                return False
+            if isinstance(translated, tuple) and len(translated) == 3:
+                ok, bx, by = translated
+            elif isinstance(translated, tuple) and len(translated) == 2:
+                ok, bx, by = True, translated[0], translated[1]
+            else:
+                return False
+            return bool(
+                ok
+                and 0 <= bx <= close_btn.get_width()
+                and 0 <= by <= close_btn.get_height()
+            )
+        except Exception:
+            return False
+
+    def _find_tab_at_bar_point(self, x: float, y: float) -> Optional[Gtk.Box]:
+        """Hit-test tabs using coordinates relative to tab_bar_box."""
+        for tab in self.tabs:
             try:
-                translated = tab_widget.translate_coordinates(close_btn, x, y)
-                if translated is not None:
-                    if isinstance(translated, tuple) and len(translated) == 3:
-                        ok, bx, by = translated
-                    elif isinstance(translated, tuple) and len(translated) == 2:
-                        ok, (bx, by) = True, translated
-                    else:
-                        ok, bx, by = True, translated[0], translated[1]
-                    if ok and 0 <= bx <= close_btn.get_width() and 0 <= by <= close_btn.get_height():
-                        return None
+                translated = self.tab_bar_box.translate_coordinates(tab, x, y)
             except Exception:
-                pass
+                continue
+            if translated is None:
+                continue
+            if isinstance(translated, tuple) and len(translated) == 3:
+                ok, lx, ly = translated
+            elif isinstance(translated, tuple) and len(translated) == 2:
+                ok, lx, ly = True, translated[0], translated[1]
+            else:
+                continue
+            if not ok:
+                continue
+            if 0 <= lx <= tab.get_width() and 0 <= ly <= tab.get_height():
+                return tab
+        return None
 
-        return Gdk.ContentProvider.new_for_value(tab_widget)
-
-    def _on_tab_drag_begin(self, source, _drag, tab_widget: Gtk.Box) -> None:
-        """Visual feedback while dragging a tab."""
+    def _on_tab_gesture_drag_begin(self, gesture, start_x, start_y, tab_widget: Gtk.Box) -> None:
+        """Begin reorder once the gesture passes the drag threshold."""
+        if len(self.tabs) < 2:
+            gesture.set_state(Gtk.EventSequenceState.DENIED)
+            return
+        if self._pointer_over_close_button(tab_widget, start_x, start_y):
+            gesture.set_state(Gtk.EventSequenceState.DENIED)
+            return
+        gesture.set_state(Gtk.EventSequenceState.CLAIMED)
         self._start_tab_move(tab_widget)
-        paintable = Gtk.WidgetPaintable.new(tab_widget)
-        source.set_icon(paintable, tab_widget.get_width() // 2, tab_widget.get_height() // 2)
 
-    def _on_tab_drag_end(self, _source, _drag, _delete_data, tab_widget: Gtk.Box) -> None:
-        """Clean up move mode if the drag was cancelled without a drop."""
-        if self._tab_being_moved is tab_widget:
-            self._cancel_tab_move()
-
-    def _on_tab_drop_motion(self, _drop, x, _y, tab_widget: Gtk.Box):
-        """Highlight left/right drop half while dragging over a tab."""
-        if self._tab_being_moved is None or tab_widget == self._tab_being_moved:
-            return Gdk.DragAction.MOVE
-
-        tab_width = max(tab_widget.get_width(), 1)
-        side = "left" if x < tab_width / 2 else "right"
-        self._update_move_highlight(tab_widget, side)
-        return Gdk.DragAction.MOVE
-
-    def _on_tab_drop_leave(self, _drop, tab_widget: Gtk.Box) -> None:
+    def _on_tab_gesture_drag_update(
+        self, gesture, offset_x, offset_y, tab_widget: Gtk.Box
+    ) -> None:
+        """Update left/right drop highlight under the pointer while dragging."""
         if self._tab_being_moved is None:
             return
-        if self._drop_target_tab is tab_widget:
+
+        ok, start_x, start_y = gesture.get_start_point()
+        if not ok:
+            return
+        local_x = start_x + offset_x
+        local_y = start_y + offset_y
+        try:
+            translated = tab_widget.translate_coordinates(
+                self.tab_bar_box, local_x, local_y
+            )
+        except Exception:
+            return
+        if translated is None:
+            return
+        if isinstance(translated, tuple) and len(translated) == 3:
+            tok, bar_x, bar_y = translated
+            if not tok:
+                return
+        elif isinstance(translated, tuple) and len(translated) == 2:
+            bar_x, bar_y = translated
+        else:
+            return
+
+        target = self._find_tab_at_bar_point(bar_x, bar_y)
+        if target is None or target == self._tab_being_moved:
             self._clear_tab_drop_highlights()
+            return
 
-    def _on_tab_drop(self, _drop, value, x, _y, tab_widget: Gtk.Box) -> bool:
-        """Reorder tabs when a dragged tab is dropped onto another tab."""
-        source_tab = value
-        if not isinstance(source_tab, Gtk.Widget) or source_tab not in self.tabs:
-            return False
-        if tab_widget not in self.tabs:
-            return False
+        try:
+            t_translated = self.tab_bar_box.translate_coordinates(target, bar_x, bar_y)
+        except Exception:
+            return
+        if t_translated is None:
+            return
+        if isinstance(t_translated, tuple) and len(t_translated) == 3:
+            ok2, tx, _ty = t_translated
+            if not ok2:
+                return
+        elif isinstance(t_translated, tuple) and len(t_translated) == 2:
+            tx, _ty = t_translated
+        else:
+            return
 
-        self._tab_being_moved = source_tab
-        tab_width = max(tab_widget.get_width(), 1)
-        self._drop_side = "left" if x < tab_width / 2 else "right"
-        self._drop_target_tab = tab_widget
+        side = "left" if tx < max(target.get_width(), 1) / 2 else "right"
+        self._update_move_highlight(target, side)
 
-        if source_tab != tab_widget:
+    def _on_tab_gesture_drag_end(
+        self, _gesture, _offset_x, _offset_y, tab_widget: Gtk.Box
+    ) -> None:
+        """Commit the reorder on mouse release, or cancel if no valid target."""
+        if self._tab_being_moved is not tab_widget:
+            return
+        if self._drop_target_tab is not None and self._drop_target_tab != tab_widget:
             self._perform_tab_move()
         self._cancel_tab_move()
-        return True
 
     def _update_move_highlight(self, target_tab: Gtk.Box, side: str):
         """Update the visual highlight for the drop target."""
