@@ -16,15 +16,8 @@ TARGETS = (
         r'(APP_VERSION\s*=\s*")([^"]+)(")',
         "group3",
     ),
-    (
-        "locale/src/zashterminal/settings/config.py",
-        r'(APP_VERSION\s*=\s*")([^"]+)(")',
-        "group3",
-    ),
     ("pyproject.toml", r'^(version\s*=\s*")([^"]+)(")\s*$', "group3"),
-    ("locale/pyproject.toml", r'^(version\s*=\s*")([^"]+)(")\s*$', "group3"),
     ("default.nix", r'^(  version\s*=\s*")([^"]+)(";\s*)$', "group3"),
-    ("locale/default.nix", r'^(  version\s*=\s*")([^"]+)(";\s*)$', "group3"),
     ("PKGBUILD", r"^(pkgver=)([^\n]+)$", "group2"),
 )
 
