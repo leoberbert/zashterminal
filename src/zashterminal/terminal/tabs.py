@@ -140,6 +140,9 @@ class TabManager:
         self._drop_side: str = "left"
         # In-process DnD source (ContentProvider cannot reliably carry Gtk.Widget).
         self._dnd_source_tab: Optional[Gtk.Box] = None
+        # Apply reorder only after drag-end so GTK can release the grab cursor.
+        self._pending_dnd_reorder: Optional[Tuple[Gtk.Box, Gtk.Box, str]] = None
+        self._pending_dnd_insert_index: Optional[int] = None
 
         self._setup_tab_bar_drop_target()
 
@@ -266,18 +269,78 @@ class TabManager:
 
     def _on_tab_drag_begin(self, source, _drag, tab_widget: Gtk.Box) -> None:
         self._dnd_source_tab = tab_widget
+        self._pending_dnd_reorder = None
+        self._pending_dnd_insert_index = None
         self.set_active_tab(tab_widget)
         tab_widget.add_css_class("tab-moving")
         self.tab_bar_box.add_css_class("tab-bar-move-mode")
-        # Use a simple icon; WidgetPaintable can look like a stuck "ghost" cursor.
         paintable = Gtk.WidgetPaintable.new(tab_widget)
         source.set_icon(paintable, 12, 12)
 
-    def _on_tab_drag_end(self, _source, _drag, _delete_data, tab_widget: Gtk.Box) -> None:
+    def _reset_dnd_cursor(self) -> None:
+        """Force the pointer back to the default after a tab drag."""
+        widgets = [self.tab_bar_box, *list(self.tabs)]
+        root = self.tab_bar_box.get_root()
+        if root is not None:
+            widgets.append(root)
+
+        def _clear() -> bool:
+            for widget in widgets:
+                try:
+                    widget.set_cursor(None)
+                except Exception:
+                    pass
+            return False
+
+        _clear()
+        # One idle tick after GTK finishes releasing the DnD grab.
+        GLib.idle_add(_clear)
+
+    def _apply_pending_dnd_reorder(self) -> None:
+        """Commit a drop that was deferred until drag-end."""
+        if self._pending_dnd_insert_index is not None and self._dnd_source_tab is not None:
+            source = self._dnd_source_tab
+            insert_idx = self._pending_dnd_insert_index
+            self._pending_dnd_insert_index = None
+            if source in self.tabs:
+                moving_idx = self.tabs.index(source)
+                new_idx = insert_idx - (1 if moving_idx < insert_idx else 0)
+                new_idx = max(0, min(new_idx, len(self.tabs) - 1))
+                if new_idx != moving_idx:
+                    self.tabs.remove(source)
+                    self.tabs.insert(new_idx, source)
+                    sibling = self.tabs[new_idx - 1] if new_idx > 0 else None
+                    self.tab_bar_box.reorder_child_after(source, sibling)
+                    self.logger.info(
+                        f"Tab '{source.label_widget.get_text()}' "
+                        f"moved from {moving_idx} to {new_idx}"
+                    )
+            return
+
+        pending = self._pending_dnd_reorder
+        self._pending_dnd_reorder = None
+        if not pending:
+            return
+        source, target, side = pending
+        if source not in self.tabs or target not in self.tabs:
+            return
+        self._tab_being_moved = source
+        self._drop_target_tab = target
+        self._drop_side = side
+        self._perform_tab_move()
+        self._tab_being_moved = None
+
+    def _on_tab_drag_end(self, source, _drag, _delete_data, tab_widget: Gtk.Box) -> None:
+        try:
+            source.set_icon(None, 0, 0)
+        except Exception:
+            pass
+        self._apply_pending_dnd_reorder()
         tab_widget.remove_css_class("tab-moving")
         self.tab_bar_box.remove_css_class("tab-bar-move-mode")
         self._clear_tab_drop_highlights()
         self._dnd_source_tab = None
+        self._reset_dnd_cursor()
 
     def _on_tab_drop_motion(self, _drop, x, _y, tab_widget: Gtk.Box):
         source = self._dnd_source_tab
@@ -299,13 +362,13 @@ class TabManager:
         if source is None or tab_widget not in self.tabs:
             return False
         if source is tab_widget:
+            self._pending_dnd_reorder = None
+            self._pending_dnd_insert_index = None
             return True
-        self._tab_being_moved = source
-        self._drop_target_tab = tab_widget
-        self._drop_side = "left" if x < max(tab_widget.get_width(), 1) / 2 else "right"
-        self._perform_tab_move()
-        self._tab_being_moved = None
-        self._clear_tab_drop_highlights()
+        side = "left" if x < max(tab_widget.get_width(), 1) / 2 else "right"
+        # Defer widget reorder until drag-end so the grab cursor can release.
+        self._pending_dnd_reorder = (source, tab_widget, side)
+        self._pending_dnd_insert_index = None
         return True
 
     def _tab_origin_in_bar(self, tab: Gtk.Box) -> Optional[Tuple[float, float]]:
@@ -346,19 +409,8 @@ class TabManager:
         source = self._resolve_dnd_source(value)
         if source is None or source not in self.tabs:
             return False
-        insert_idx = self._insert_index_at_bar_x(x)
-        moving_idx = self.tabs.index(source)
-        new_idx = insert_idx - (1 if moving_idx < insert_idx else 0)
-        new_idx = max(0, min(new_idx, len(self.tabs) - 1))
-        if new_idx == moving_idx:
-            return True
-        self.tabs.remove(source)
-        self.tabs.insert(new_idx, source)
-        self._rebuild_tab_bar_order()
-        self.logger.info(
-            f"Tab '{source.label_widget.get_text()}' moved from {moving_idx} to {new_idx}"
-        )
-        self._clear_tab_drop_highlights()
+        self._pending_dnd_insert_index = self._insert_index_at_bar_x(x)
+        self._pending_dnd_reorder = None
         return True
 
     def _update_move_highlight(self, target_tab: Gtk.Box, side: str):
@@ -412,14 +464,10 @@ class TabManager:
         if moving_idx == new_idx:
             return
 
-        # Remove from old position
         self.tabs.remove(moving_tab)
-
-        # Insert at new position
         self.tabs.insert(new_idx, moving_tab)
-
-        # Rebuild visual order
-        self._rebuild_tab_bar_order()
+        sibling = self.tabs[new_idx - 1] if new_idx > 0 else None
+        self.tab_bar_box.reorder_child_after(moving_tab, sibling)
 
         self.logger.info(
             f"Tab '{moving_tab.label_widget.get_text()}' moved from {moving_idx} to {new_idx}"
