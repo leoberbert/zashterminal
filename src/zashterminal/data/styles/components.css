@@ -106,37 +106,42 @@
    Moved from: tabs.py inline CSS
    ========================================================================== */
 
-.tab-moving {
+/* Higher specificity than .custom-tab-button.active so feedback is visible. */
+.custom-tab-button.tab-moving,
+.custom-tab-button.active.tab-moving {
     background-image: none;
-    background-color: @accent_bg_color;
+    background-color: alpha(@accent_bg_color, 0.55);
     border-radius: 6px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-    border: 2px dashed @theme_fg_color;
-    opacity: 0.85;
+    box-shadow: 0 4px 12px alpha(@theme_fg_color, 0.35);
+    border: 2px dashed @accent_bg_color;
+    opacity: 0.9;
 }
 
 .tab-bar-move-mode {
-    background-color: alpha(@accent_bg_color, 0.15);
+    background-color: alpha(@accent_bg_color, 0.12);
     border-radius: 8px;
-    padding: 2px;
+    outline: 1px dashed alpha(@accent_bg_color, 0.6);
+    outline-offset: 1px;
 }
 
-.tab-drop-target {
-    background-color: alpha(@theme_fg_color, 0.2);
+.custom-tab-button.tab-drop-target {
+    background-color: alpha(@accent_bg_color, 0.25);
     border-radius: 6px;
     box-shadow: inset 0 0 0 2px @accent_bg_color;
 }
 
-.tab-drop-left {
-    background-color: alpha(@theme_fg_color, 0.2);
+.custom-tab-button.tab-drop-left,
+.custom-tab-button.active.tab-drop-left {
+    background-color: alpha(@accent_bg_color, 0.2);
     border-radius: 6px;
-    box-shadow: inset 4px 0 0 0 @accent_bg_color;
+    box-shadow: inset 5px 0 0 0 @accent_bg_color;
 }
 
-.tab-drop-right {
-    background-color: alpha(@theme_fg_color, 0.2);
+.custom-tab-button.tab-drop-right,
+.custom-tab-button.active.tab-drop-right {
+    background-color: alpha(@accent_bg_color, 0.2);
     border-radius: 6px;
-    box-shadow: inset -4px 0 0 0 @accent_bg_color;
+    box-shadow: inset -5px 0 0 0 @accent_bg_color;
 }
 
 /* ==========================================================================

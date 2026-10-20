@@ -214,14 +214,20 @@ class TabManager:
         except Exception:
             return False
 
-    def _setup_tab_drag_and_drop(self, tab_widget: Gtk.Box) -> None:
-        """In-process reorder via GestureDrag (no system DnD / window-move grab)."""
+    def _setup_tab_drag_and_drop(
+        self, tab_widget: Gtk.Box, handle: Gtk.Widget
+    ) -> None:
+        """In-process reorder via GestureDrag (no system DnD / window-move grab).
+
+        Controllers are attached to ``handle`` (label/icon area) so the close
+        button keeps receiving clicks.
+        """
         gesture = Gtk.GestureDrag.new()
         gesture.set_button(Gdk.BUTTON_PRIMARY)
         gesture.connect("drag-begin", self._on_tab_gesture_drag_begin, tab_widget)
         gesture.connect("drag-update", self._on_tab_gesture_drag_update, tab_widget)
         gesture.connect("drag-end", self._on_tab_gesture_drag_end, tab_widget)
-        tab_widget.add_controller(gesture)
+        handle.add_controller(gesture)
 
     def _tab_origin_in_bar(self, tab: Gtk.Box) -> Optional[Tuple[float, float]]:
         try:
@@ -254,24 +260,25 @@ class TabManager:
         return None
 
     def _gesture_point_to_bar(
-        self, gesture, tab_widget: Gtk.Box, offset_x: float, offset_y: float
+        self, gesture, offset_x: float, offset_y: float
     ) -> Optional[Tuple[float, float]]:
+        """Map a GestureDrag point from the gesture widget into tab_bar coords."""
         ok, start_x, start_y = gesture.get_start_point()
         if not ok:
             return None
+        widget = gesture.get_widget()
+        if widget is None:
+            return None
         return self._unpack_translate(
-            tab_widget.translate_coordinates(
+            widget.translate_coordinates(
                 self.tab_bar_box, start_x + offset_x, start_y + offset_y
             )
         )
 
     def _on_tab_gesture_drag_begin(
-        self, gesture, start_x, start_y, tab_widget: Gtk.Box
+        self, gesture, _start_x, _start_y, tab_widget: Gtk.Box
     ) -> None:
         if len(self.tabs) < 2:
-            gesture.set_state(Gtk.EventSequenceState.DENIED)
-            return
-        if self._pointer_over_close_button(tab_widget, start_x, start_y):
             gesture.set_state(Gtk.EventSequenceState.DENIED)
             return
         # Claim so Adw.HeaderBar does not start interactive window move.
@@ -286,31 +293,29 @@ class TabManager:
     ) -> None:
         if self._dnd_source_tab is not tab_widget:
             return
-        bar = self._gesture_point_to_bar(gesture, tab_widget, offset_x, offset_y)
+        bar = self._gesture_point_to_bar(gesture, offset_x, offset_y)
         if bar is None:
             return
-        bar_x, bar_y = bar
-        target = self._find_tab_at_bar_point(bar_x, bar_y)
-        if target is None or target is tab_widget:
-            # Fall back to insert-gap highlight from X position.
-            insert_idx = self._insert_index_at_bar_x(bar_x)
-            if insert_idx >= len(self.tabs):
-                target = self.tabs[-1]
+        bar_x, _bar_y = bar
+        insert_idx = self._insert_index_at_bar_x(bar_x)
+        if insert_idx >= len(self.tabs):
+            target = self.tabs[-1]
+            side = "right"
+        else:
+            target = self.tabs[insert_idx]
+            side = "left"
+        if target is tab_widget:
+            # Prefer the neighbor on the drag side when still over the source.
+            moving_idx = self.tabs.index(tab_widget)
+            if side == "left" and moving_idx > 0 and insert_idx <= moving_idx:
+                target = self.tabs[moving_idx - 1]
                 side = "right"
-            else:
-                target = self.tabs[insert_idx]
+            elif side == "right" and moving_idx < len(self.tabs) - 1:
+                target = self.tabs[moving_idx + 1]
                 side = "left"
-            if target is tab_widget:
+            else:
                 self._clear_tab_drop_highlights()
                 return
-            self._update_move_highlight(target, side)
-            return
-        t_point = self._unpack_translate(
-            self.tab_bar_box.translate_coordinates(target, bar_x, bar_y)
-        )
-        if t_point is None:
-            return
-        side = "left" if t_point[0] < max(target.get_width(), 1) / 2 else "right"
         self._update_move_highlight(target, side)
 
     def _on_tab_gesture_drag_end(
@@ -748,6 +753,11 @@ class TabManager:
         tab_widget.add_css_class("custom-tab-button")
         tab_widget.add_css_class("raised")
 
+        # Drag/click handle excludes the close button so X keeps working.
+        handle = Gtk.Box(spacing=6)
+        handle.set_hexpand(True)
+        handle.add_css_class("custom-tab-handle")
+
         icon_name = None
         if session.name.startswith("SFTP-"):
             icon_name = "folder-remote-symbolic"
@@ -756,13 +766,14 @@ class TabManager:
 
         if icon_name:
             icon = icon_image(icon_name)
-            tab_widget.append(icon)
+            handle.append(icon)
 
         label = Gtk.Label(
             label=session.name, ellipsize=Pango.EllipsizeMode.START, xalign=1.0
         )
         label.set_width_chars(8)
-        tab_widget.append(label)
+        handle.append(label)
+        tab_widget.append(handle)
 
         close_button = icon_button(
             "window-close-symbolic", css_classes=["circular", "flat"]
@@ -770,17 +781,17 @@ class TabManager:
         tab_widget.append(close_button)
 
         # GestureDrag first; GestureClick added after so short clicks still select.
-        self._setup_tab_drag_and_drop(tab_widget)
+        self._setup_tab_drag_and_drop(tab_widget, handle)
 
         left_click = Gtk.GestureClick.new()
         left_click.set_button(Gdk.BUTTON_PRIMARY)
         left_click.connect("pressed", self._on_tab_clicked, tab_widget)
-        tab_widget.add_controller(left_click)
+        handle.add_controller(left_click)
 
         right_click = Gtk.GestureClick.new()
         right_click.set_button(Gdk.BUTTON_SECONDARY)
         right_click.connect("pressed", self._on_tab_right_click, tab_widget)
-        tab_widget.add_controller(right_click)
+        handle.add_controller(right_click)
 
         close_button.connect("clicked", self._on_tab_close_button_clicked, tab_widget)
 
