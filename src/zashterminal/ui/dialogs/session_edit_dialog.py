@@ -12,7 +12,11 @@ gi.require_version("Adw", "1")
 from gi.repository import Adw, Gdk, Gio, GLib, Gtk
 
 from ...sessions.models import SessionItem
-from ...utils.exceptions import HostnameValidationError, SSHKeyError
+from ...utils.exceptions import (
+    HostnameValidationError,
+    SessionValidationError,
+    SSHKeyError,
+)
 from ...utils.platform import get_ssh_directory
 from ...utils.security import (
     HostnameValidator,
@@ -1697,7 +1701,15 @@ class SessionEditDialog(BaseDialog):
 
         updated_session = SessionItem.from_dict(session_data)
         if updated_session.uses_password_auth() and raw_password:
-            updated_session.auth_value = raw_password
+            try:
+                updated_session.auth_value = raw_password
+            except SessionValidationError as e:
+                errors = e.details.get("errors") if e.details else [str(e)]
+                self._show_error_dialog(
+                    _("Validation Error"),
+                    _("Session validation failed:\n{}").format("\n".join(errors)),
+                )
+                return None
 
         if not updated_session.validate():
             errors = updated_session.get_validation_errors()

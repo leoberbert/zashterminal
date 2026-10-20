@@ -261,7 +261,7 @@ class SessionItem(BaseModel):
 
     @auth_value.setter
     def auth_value(self, value: str):
-        """Sets the auth value, storing it in the keyring if it's a password."""
+        """Sets the auth value, storing it encrypted or in the keyring if it's a password."""
         if self.uses_password_auth():
             crypto = _get_crypto()
             if value:
@@ -271,13 +271,37 @@ class SessionItem(BaseModel):
                     crypto.clear_password(self.name)
                 except Exception as e:
                     self.logger.error(
-                        f"Cannot encrypt password for '{self.name}', falling back to keyring: {e}"
+                        f"Cannot encrypt password for '{self.name}', trying keyring: {e}"
                     )
                     if crypto.is_encryption_available():
-                        crypto.store_password(self.name, value)
-                        self._auth_value = ""
+                        try:
+                            crypto.store_password(self.name, value)
+                            self._auth_value = ""
+                        except Exception as keyring_error:
+                            self.logger.error(
+                                f"Cannot store password in keyring for '{self.name}': {keyring_error}"
+                            )
+                            raise SessionValidationError(
+                                self.name,
+                                [
+                                    _(
+                                        "Cannot store password: encryption and keyring both failed."
+                                    )
+                                ],
+                            ) from keyring_error
                     else:
-                        self._auth_value = value
+                        self.logger.error(
+                            f"Refusing plaintext password storage for '{self.name}' "
+                            "(encryption backend and Secret Service unavailable)."
+                        )
+                        raise SessionValidationError(
+                            self.name,
+                            [
+                                _(
+                                    "Cannot store password: encryption and keyring unavailable."
+                                )
+                            ],
+                        ) from e
             else:
                 self._auth_value = ""
                 crypto.clear_password(self.name)

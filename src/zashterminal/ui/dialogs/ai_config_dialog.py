@@ -237,10 +237,22 @@ class AIConfigDialog(Adw.PreferencesWindow):
         self.emit("setting-changed", "ai_local_base_url", url)
 
     def _on_api_key_changed(self, entry_row) -> None:
-        """Handle API key change."""
+        """Handle API key change (stored in libsecret via SettingsManager)."""
         key = entry_row.get_text().strip()
-        self.settings_manager.set("ai_assistant_api_key", key)
-        self.emit("setting-changed", "ai_assistant_api_key", key)
+        try:
+            self.settings_manager.set("ai_assistant_api_key", key)
+            self.emit("setting-changed", "ai_assistant_api_key", key)
+        except Exception as e:
+            self.logger.error(f"Failed to store AI API key: {e}")
+            entry_row.add_css_class("error")
+            toast = Adw.Toast(
+                title=_("Could not store API key securely. Is the system keyring available?")
+            )
+            toast.set_timeout(5)
+            if hasattr(self, "add_toast"):
+                self.add_toast(toast)
+            elif self.get_root() and hasattr(self.get_root(), "add_toast"):
+                self.get_root().add_toast(toast)
 
     def _on_model_changed(self, entry_row) -> None:
         """Handle model change."""
