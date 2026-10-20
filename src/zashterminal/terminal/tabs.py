@@ -140,6 +140,8 @@ class TabManager:
         self._drop_side: str = (
             "left"  # "left" or "right" - which side of target to drop
         )
+        # Gap index 0..len(tabs) for press-drag reorder (more reliable than side-of-tab).
+        self._drop_insert_index: Optional[int] = None
         # Left-button press tracking for click-vs-drag reorder (never steals tab selection).
         self._tab_press: Optional[dict] = None
         self._TAB_DRAG_THRESHOLD_PX = 8
@@ -192,28 +194,51 @@ class TabManager:
             self._find_panes_recursive(child, panes_list)
 
     def _setup_tab_bar_move_handlers(self):
-        """Capture pointer motion on the tab bar for press-drag reorder."""
+        """Capture motion/release on the tab bar for press-drag reorder."""
         motion = Gtk.EventControllerMotion.new()
         motion.set_propagation_phase(Gtk.PropagationPhase.CAPTURE)
         motion.connect("motion", self._on_tab_bar_motion)
         self.tab_bar_box.add_controller(motion)
+
+        # Button release must not depend on GestureClick: starting move mode
+        # mutates the tab widgets and GTK often cancels the click gesture.
+        legacy = Gtk.EventControllerLegacy.new()
+        legacy.set_propagation_phase(Gtk.PropagationPhase.CAPTURE)
+        legacy.connect("event", self._on_tab_bar_legacy_event)
+        self.tab_bar_box.add_controller(legacy)
+
+    def _unpack_translate(
+        self, translated
+    ) -> Optional[Tuple[float, float]]:
+        """Normalize Gtk.Widget.translate_coordinates return shapes."""
+        if translated is None:
+            return None
+        if isinstance(translated, tuple) and len(translated) == 3:
+            ok, x, y = translated
+            return (float(x), float(y)) if ok else None
+        if isinstance(translated, tuple) and len(translated) == 2:
+            return float(translated[0]), float(translated[1])
+        return None
 
     def _widget_point_to_bar(
         self, widget: Gtk.Widget, x: float, y: float
     ) -> Optional[Tuple[float, float]]:
         """Translate a point from widget-local coords into tab_bar_box coords."""
         try:
-            translated = widget.translate_coordinates(self.tab_bar_box, x, y)
+            return self._unpack_translate(
+                widget.translate_coordinates(self.tab_bar_box, x, y)
+            )
         except Exception:
             return None
-        if translated is None:
+
+    def _tab_origin_in_bar(self, tab: Gtk.Box) -> Optional[Tuple[float, float]]:
+        """Return the top-left of a tab in tab_bar_box coordinates."""
+        try:
+            return self._unpack_translate(
+                tab.translate_coordinates(self.tab_bar_box, 0, 0)
+            )
+        except Exception:
             return None
-        if isinstance(translated, tuple) and len(translated) == 3:
-            ok, bx, by = translated
-            return (bx, by) if ok else None
-        if isinstance(translated, tuple) and len(translated) == 2:
-            return translated[0], translated[1]
-        return None
 
     def _pointer_over_close_button(self, tab_widget: Gtk.Box, x: float, y: float) -> bool:
         """Return True when (x, y) in tab coordinates is over the close button."""
@@ -221,22 +246,28 @@ class TabManager:
         if close_btn is None or not close_btn.get_visible():
             return False
         try:
-            translated = tab_widget.translate_coordinates(close_btn, x, y)
-            if translated is None:
+            point = self._unpack_translate(
+                tab_widget.translate_coordinates(close_btn, x, y)
+            )
+            if point is None:
                 return False
-            if isinstance(translated, tuple) and len(translated) == 3:
-                ok, bx, by = translated
-            elif isinstance(translated, tuple) and len(translated) == 2:
-                ok, bx, by = True, translated[0], translated[1]
-            else:
-                return False
+            bx, by = point
             return bool(
-                ok
-                and 0 <= bx <= close_btn.get_width()
-                and 0 <= by <= close_btn.get_height()
+                0 <= bx <= close_btn.get_width() and 0 <= by <= close_btn.get_height()
             )
         except Exception:
             return False
+
+    def _insert_index_at_bar_x(self, bar_x: float) -> int:
+        """Gap index 0..len(tabs) for inserting a tab at bar_x (by tab midpoints)."""
+        for i, tab in enumerate(self.tabs):
+            origin = self._tab_origin_in_bar(tab)
+            if origin is None:
+                continue
+            mid = origin[0] + max(tab.get_width(), 1) / 2.0
+            if bar_x < mid:
+                return i
+        return len(self.tabs)
 
     def _maybe_begin_press_drag_at_bar(self, bar_x: float, bar_y: float) -> None:
         """Start reorder when the held press moves past the drag threshold."""
@@ -253,71 +284,95 @@ class TabManager:
         if self._pointer_over_close_button(tab_widget, press["x"], press["y"]):
             return
         press["dragging"] = True
-        self._start_tab_move(tab_widget)
+        # Do not hide close buttons: that mutates children and cancels GestureClick.
+        self._start_tab_move(tab_widget, hide_close_buttons=False)
 
-    def _update_drop_from_bar_point(self, bar_x: float, bar_y: float) -> None:
-        """Highlight the drop target under a point in tab_bar_box coordinates."""
+    def _update_drop_from_bar_point(self, bar_x: float, _bar_y: float) -> None:
+        """Update insert index + highlight from a point in tab_bar_box coordinates."""
         if self._tab_being_moved is None:
             return
-        target = self._find_tab_at_bar_point(bar_x, bar_y)
-        if target is None or target is self._tab_being_moved:
+        insert_idx = self._insert_index_at_bar_x(bar_x)
+        self._drop_insert_index = insert_idx
+
+        moving_idx = self.tabs.index(self._tab_being_moved)
+        # Effective index after removing the moving tab.
+        effective = insert_idx - (1 if moving_idx < insert_idx else 0)
+        if effective == moving_idx:
             self._clear_tab_drop_highlights()
+            self._drop_insert_index = insert_idx
             return
-        try:
-            translated = self.tab_bar_box.translate_coordinates(target, bar_x, bar_y)
-        except Exception:
-            return
-        if translated is None:
-            return
-        if isinstance(translated, tuple) and len(translated) == 3:
-            ok, tx, _ty = translated
-            if not ok:
-                return
-        elif isinstance(translated, tuple) and len(translated) == 2:
-            tx, _ty = translated
+
+        if insert_idx >= len(self.tabs):
+            target = self.tabs[-1]
+            side = "right"
         else:
-            return
-        side = "left" if tx < max(target.get_width(), 1) / 2 else "right"
+            target = self.tabs[insert_idx]
+            if target is self._tab_being_moved and insert_idx + 1 < len(self.tabs):
+                target = self.tabs[insert_idx + 1]
+                side = "left"
+            elif target is self._tab_being_moved:
+                target = self.tabs[insert_idx - 1] if insert_idx > 0 else target
+                side = "right"
+            else:
+                side = "left"
         self._update_move_highlight(target, side)
+        self._drop_insert_index = insert_idx
 
     def _on_tab_bar_motion(self, _controller, x: float, y: float) -> None:
         """Bar-level motion: begin press-drag and update drop highlights."""
         if self._tab_press and not self._tab_press.get("dragging"):
             self._maybe_begin_press_drag_at_bar(x, y)
+        if self._tab_press and self._tab_press.get("dragging"):
+            self._tab_press["bar_x"] = x
+            self._tab_press["bar_y"] = y
+        # Press-drag and context-menu move mode both need live drop feedback.
         if self._tab_being_moved is not None:
             self._update_drop_from_bar_point(x, y)
 
-    def _find_tab_at_bar_point(self, x: float, y: float) -> Optional[Gtk.Box]:
-        """Hit-test tabs using coordinates relative to tab_bar_box."""
-        for tab in self.tabs:
-            try:
-                translated = self.tab_bar_box.translate_coordinates(tab, x, y)
-            except Exception:
-                continue
-            if translated is None:
-                continue
-            if isinstance(translated, tuple) and len(translated) == 3:
-                ok, lx, ly = translated
-            elif isinstance(translated, tuple) and len(translated) == 2:
-                ok, lx, ly = True, translated[0], translated[1]
-            else:
-                continue
-            if not ok:
-                continue
-            if 0 <= lx <= tab.get_width() and 0 <= ly <= tab.get_height():
-                return tab
-        return None
+    def _on_tab_bar_legacy_event(self, _controller, event) -> bool:
+        """Finish press-drag on primary button release (survives click cancellation)."""
+        if event.get_event_type() != Gdk.EventType.BUTTON_RELEASE:
+            return Gdk.EVENT_PROPAGATE
+        try:
+            button = event.get_button()
+        except Exception:
+            return Gdk.EVENT_PROPAGATE
+        if button != Gdk.BUTTON_PRIMARY:
+            return Gdk.EVENT_PROPAGATE
+        if self._tab_press and self._tab_press.get("dragging"):
+            self._finish_press_drag()
+        elif self._tab_press and not self._tab_press.get("dragging"):
+            self._tab_press = None
+        return Gdk.EVENT_PROPAGATE
 
     def _finish_press_drag(self) -> None:
         """Commit or cancel a press-drag reorder and clear press state."""
         if self._tab_press and self._tab_press.get("dragging") and self._tab_being_moved:
-            if (
-                self._drop_target_tab is not None
-                and self._drop_target_tab is not self._tab_being_moved
-            ):
-                self._perform_tab_move()
+            insert_idx = self._drop_insert_index
+            if insert_idx is None and "bar_x" in self._tab_press:
+                insert_idx = self._insert_index_at_bar_x(self._tab_press["bar_x"])
+            if insert_idx is not None:
+                self._move_tab_to_insert_index(self._tab_being_moved, insert_idx)
             self._cancel_tab_move()
         self._tab_press = None
+        self._drop_insert_index = None
+
+    def _move_tab_to_insert_index(self, moving_tab: Gtk.Box, insert_idx: int) -> None:
+        """Move tab to gap index insert_idx (0..len before removal)."""
+        try:
+            moving_idx = self.tabs.index(moving_tab)
+        except ValueError:
+            return
+        new_idx = insert_idx - (1 if moving_idx < insert_idx else 0)
+        new_idx = max(0, min(new_idx, len(self.tabs) - 1))
+        if new_idx == moving_idx:
+            return
+        self.tabs.remove(moving_tab)
+        self.tabs.insert(new_idx, moving_tab)
+        self._rebuild_tab_bar_order()
+        self.logger.info(
+            f"Tab '{moving_tab.label_widget.get_text()}' moved from {moving_idx} to {new_idx}"
+        )
 
     def _update_move_highlight(self, target_tab: Gtk.Box, side: str):
         """Update the visual highlight for the drop target."""
@@ -739,6 +794,8 @@ class TabManager:
         left_click = Gtk.GestureClick.new()
         left_click.set_button(Gdk.BUTTON_PRIMARY)
         left_click.connect("pressed", self._on_tab_clicked, tab_widget)
+        # Release/cancel are unreliable once move mode mutates the tab; bar legacy
+        # controller commits the press-drag. Still clear non-drag presses here.
         left_click.connect("released", self._on_tab_click_released, tab_widget)
         left_click.connect("cancel", self._on_tab_click_cancelled, tab_widget)
         tab_widget.add_controller(left_click)
@@ -788,21 +845,30 @@ class TabManager:
         self.set_active_tab(tab_widget)
 
     def _on_tab_click_released(self, _gesture, _n_press, _x, _y, tab_widget):
-        if self._tab_press and self._tab_press.get("tab") is tab_widget:
+        # Press-drag commit is handled by the bar legacy controller. If the click
+        # gesture still gets a release (no layout mutation), finish here too.
+        if not self._tab_press or self._tab_press.get("tab") is not tab_widget:
+            return
+        if self._tab_press.get("dragging"):
             self._finish_press_drag()
         else:
             self._tab_press = None
 
     def _on_tab_click_cancelled(self, _gesture, _sequence, tab_widget):
-        if self._tab_press and self._tab_press.get("tab") is tab_widget:
-            if self._tab_press.get("dragging") and self._tab_being_moved:
-                self._cancel_tab_move()
-            self._tab_press = None
+        # Do not abort an in-progress press-drag: GTK cancels GestureClick when
+        # the tab's children change under the pointer. Release is handled by
+        # EventControllerLegacy on the tab bar.
+        if not self._tab_press or self._tab_press.get("tab") is not tab_widget:
+            return
+        if self._tab_press.get("dragging"):
+            return
+        self._tab_press = None
 
     def _on_tab_right_click(self, _gesture, _n_press, x, y, tab_widget):
         # Cancel any ongoing move operation when right-clicking
         if self._tab_being_moved is not None:
             self._cancel_tab_move()
+            self._tab_press = None
 
         menu = Gio.Menu()
         menu.append(_("Move Tab"), "win.move-tab")
@@ -846,7 +912,9 @@ class TabManager:
         if self.on_detach_tab_requested:
             self.on_detach_tab_requested(page)
 
-    def _start_tab_move(self, tab_widget: Gtk.Box) -> None:
+    def _start_tab_move(
+        self, tab_widget: Gtk.Box, hide_close_buttons: bool = True
+    ) -> None:
         """Starts the tab move mode for the given tab widget."""
         if len(self.tabs) < 2:
             self.logger.debug("Cannot move tab: only one tab exists.")
@@ -854,15 +922,18 @@ class TabManager:
 
         self._tab_being_moved = tab_widget
         self._current_drop_index = -1
+        self._drop_insert_index = None
         tab_widget.add_css_class("tab-moving")
         self.tab_bar_box.add_css_class("tab-bar-move-mode")
 
-        # Hide and disable all close buttons during move mode to prevent accidental closing
-        for tab in self.tabs:
-            close_btn = self._get_tab_close_button(tab)
-            if close_btn:
-                close_btn.set_visible(False)
-                close_btn.set_sensitive(False)
+        # Context-menu move hides close buttons; press-drag must not — mutating
+        # children under the pointer cancels GestureClick and aborts the drag.
+        if hide_close_buttons:
+            for tab in self.tabs:
+                close_btn = self._get_tab_close_button(tab)
+                if close_btn:
+                    close_btn.set_visible(False)
+                    close_btn.set_sensitive(False)
 
         self.logger.info(f"Tab move started for: {tab_widget.label_widget.get_text()}")
 
@@ -872,6 +943,7 @@ class TabManager:
             self._tab_being_moved.remove_css_class("tab-moving")
             self.tab_bar_box.remove_css_class("tab-bar-move-mode")
             self._clear_tab_drop_highlights()
+            self._drop_insert_index = None
 
             # Restore all close buttons
             for tab in self.tabs:
