@@ -164,7 +164,7 @@ Local installer (system-wide with venv):
 curl -fsSL https://raw.githubusercontent.com/leoberbert/zashterminal/refs/heads/main/install.sh | bash
 ```
 
-### Debian / Ubuntu / Fedora / openSUSE
+### Debian / Ubuntu / Fedora / openSUSE / Gentoo
 
 The installer detects the distro, installs the required system packages, and installs Zashterminal system-wide using a virtual environment in `/opt/zashterminal/venv`.
 
@@ -176,6 +176,8 @@ curl -fsSL https://raw.githubusercontent.com/leoberbert/zashterminal/refs/heads/
 curl -fsSLO https://raw.githubusercontent.com/leoberbert/zashterminal/refs/heads/main/install.sh
 bash install.sh
 ```
+
+On **Gentoo**, `install.sh` writes the needed `package.use` entries, prefers the official amd64 binhost when available (`GENTOO_USE_BINHOST=0` forces source builds), installs `gsettings-desktop-schemas`, and installs `pycryptodomex` into the venv (Gentoo packages `pycryptodome` / `Crypto`, while Zashterminal needs the `Cryptodome` namespace). The launcher forces `GDK_BACKEND=x11` when GTK was built without Wayland but Distrobox still exports `WAYLAND_DISPLAY` / `GDK_BACKEND=wayland`.
 
 ### NixOS
 
