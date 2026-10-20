@@ -220,13 +220,27 @@ class SettingsTests(unittest.TestCase):
         cls.temp = tempfile.TemporaryDirectory()
         cls.environment = patch.dict(os.environ, {"XDG_CONFIG_HOME": cls.temp.name, "XDG_CACHE_HOME": cls.temp.name})
         cls.environment.start()
-        from zashterminal.settings.manager import SettingsManager
+        try:
+            import gi
+
+            gi.require_version("Gtk", "4.0")
+            gi.require_version("Adw", "1")
+            gi.require_version("Vte", "3.91")
+            from zashterminal.settings.manager import SettingsManager
+        except (ImportError, ValueError) as error:
+            cls.environment.stop()
+            cls.temp.cleanup()
+            raise unittest.SkipTest(
+                f"GTK4/Adwaita/VTE typelibs required for SettingsManager: {error}"
+            ) from error
         cls.manager_class = SettingsManager
 
     @classmethod
     def tearDownClass(cls):
-        cls.environment.stop()
-        cls.temp.cleanup()
+        if getattr(cls, "environment", None) is not None:
+            cls.environment.stop()
+        if getattr(cls, "temp", None) is not None:
+            cls.temp.cleanup()
 
     def setUp(self):
         self.manager = self.manager_class.__new__(self.manager_class)
