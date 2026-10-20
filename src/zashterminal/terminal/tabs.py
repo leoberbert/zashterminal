@@ -280,19 +280,14 @@ class TabManager:
         # Do not hide close buttons: that mutates children and cancels GestureClick.
         self._start_tab_move(tab_widget, hide_close_buttons=False)
 
-    def _update_drop_from_bar_point(self, bar_x: float, _bar_y: float) -> None:
-        """Update insert index + highlight from a point in tab_bar_box coordinates."""
-        if self._tab_being_moved is None:
+    def _highlight_insert_gap(self, insert_idx: int) -> None:
+        """Show drop-side highlight for gap insert_idx (0..len)."""
+        if self._tab_being_moved is None or not self.tabs:
             return
-        insert_idx = self._insert_index_at_bar_x(bar_x)
-        self._drop_insert_index = insert_idx
-
         moving_idx = self.tabs.index(self._tab_being_moved)
-        # Effective index after removing the moving tab.
         effective = insert_idx - (1 if moving_idx < insert_idx else 0)
         if effective == moving_idx:
             self._clear_tab_drop_highlights()
-            self._drop_insert_index = insert_idx
             return
 
         if insert_idx >= len(self.tabs):
@@ -309,15 +304,24 @@ class TabManager:
             else:
                 side = "left"
         self._update_move_highlight(target, side)
+
+    def _live_reorder_at_bar_x(self, bar_x: float) -> None:
+        """Reorder the moving tab under the pointer (Chrome-style live drag)."""
+        if self._tab_being_moved is None:
+            return
+        insert_idx = self._insert_index_at_bar_x(bar_x)
         self._drop_insert_index = insert_idx
+        self._move_tab_to_insert_index(
+            self._tab_being_moved, insert_idx, rebuild=False
+        )
+        self._highlight_insert_gap(self._insert_index_at_bar_x(bar_x))
 
     def _on_tab_bar_motion(self, controller, x: float, y: float) -> None:
-        """Bar-level motion: begin press-drag and update drop highlights."""
+        """Bar-level motion: begin press-drag and live-reorder while held."""
         if self._tab_press and not self._tab_press.get("dragging"):
             self._maybe_begin_press_drag_at_bar(x, y)
+
         if self._tab_press and self._tab_press.get("dragging"):
-            # Fallback: if click gesture was cancelled, finish when motion
-            # reports the primary button is no longer held.
             try:
                 cur = controller.get_current_event()
                 state = controller.get_current_event_state() if cur else None
@@ -328,23 +332,25 @@ class TabManager:
                 return
             self._tab_press["bar_x"] = x
             self._tab_press["bar_y"] = y
-        # Press-drag and context-menu move mode both need live drop feedback.
+            self._live_reorder_at_bar_x(x)
+            return
+
+        # Context-menu / click-to-place move mode: highlight only.
         if self._tab_being_moved is not None:
-            self._update_drop_from_bar_point(x, y)
+            insert_idx = self._insert_index_at_bar_x(x)
+            self._drop_insert_index = insert_idx
+            self._highlight_insert_gap(insert_idx)
 
     def _finish_press_drag(self) -> None:
-        """Commit or cancel a press-drag reorder and clear press state."""
+        """End press-drag: tabs are already live-reordered; just clear move chrome."""
         if self._tab_press and self._tab_press.get("dragging") and self._tab_being_moved:
-            insert_idx = self._drop_insert_index
-            if insert_idx is None and "bar_x" in self._tab_press:
-                insert_idx = self._insert_index_at_bar_x(self._tab_press["bar_x"])
-            if insert_idx is not None:
-                self._move_tab_to_insert_index(self._tab_being_moved, insert_idx)
             self._cancel_tab_move()
         self._tab_press = None
         self._drop_insert_index = None
 
-    def _move_tab_to_insert_index(self, moving_tab: Gtk.Box, insert_idx: int) -> None:
+    def _move_tab_to_insert_index(
+        self, moving_tab: Gtk.Box, insert_idx: int, rebuild: bool = True
+    ) -> None:
         """Move tab to gap index insert_idx (0..len before removal)."""
         try:
             moving_idx = self.tabs.index(moving_tab)
@@ -356,7 +362,12 @@ class TabManager:
             return
         self.tabs.remove(moving_tab)
         self.tabs.insert(new_idx, moving_tab)
-        self._rebuild_tab_bar_order()
+        if rebuild:
+            self._rebuild_tab_bar_order()
+        else:
+            # Keep controllers/gestures intact during live drag.
+            sibling = self.tabs[new_idx - 1] if new_idx > 0 else None
+            self.tab_bar_box.reorder_child_after(moving_tab, sibling)
         self.logger.info(
             f"Tab '{moving_tab.label_widget.get_text()}' moved from {moving_idx} to {new_idx}"
         )
@@ -807,7 +818,8 @@ class TabManager:
         return tab_widget
 
     def _on_tab_clicked(self, gesture, _n_press, x, y, tab_widget):
-        # Context-menu move mode: click another tab to drop.
+        # Move mode (context-menu or cancelled press-drag): click destination to drop.
+        # Ignore while a live button-held drag is still in progress.
         if self._tab_being_moved is not None and not (
             self._tab_press and self._tab_press.get("dragging")
         ):
@@ -855,10 +867,12 @@ class TabManager:
             self._tab_press = None
 
     def _on_tab_click_cancelled(self, _gesture, _sequence, tab_widget):
-        # Keep press-drag alive; unpaired-release / motion commits it.
+        # Convert a cancelled live drag into click-to-place move mode so the
+        # marked tab is not stuck: click another tab to drop, Esc to cancel.
         if not self._tab_press or self._tab_press.get("tab") is not tab_widget:
             return
-        if self._tab_press.get("dragging"):
+        if self._tab_press.get("dragging") and self._tab_being_moved is not None:
+            self._tab_press = None
             return
         self._tab_press = None
 
