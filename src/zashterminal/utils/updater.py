@@ -21,6 +21,9 @@ RAW_CONFIG_MAIN_URL = (
     f"https://raw.githubusercontent.com/{GITHUB_OWNER}/{GITHUB_REPO}/main/"
     "src/zashterminal/settings/config.py"
 )
+# Re-check the remote periodically so a same-day version bump on main is not missed.
+# (Previously a calendar-day lock cached the morning result for the whole day.)
+CHECK_INTERVAL_SECONDS = 4 * 60 * 60
 
 
 def _read_os_release() -> Dict[str, str]:
@@ -137,18 +140,22 @@ class UpdateManager:
         today = _today_key()
         state = self._read_state()
         first_run = not bool(state.get("initialized"))
+        local_norm = _normalize_version(local_version)
+        cached_remote = str(state.get("last_remote_version", "")).strip()
+        last_check = int(state.get("last_check") or 0)
 
-        # At most one remote check per calendar day.
-        if str(state.get("last_check_day", "")) == today:
-            cached_remote = str(state.get("last_remote_version", "")).strip()
-            if not cached_remote:
-                return {"checked": False, "reason": "already-checked-today"}
+        # Reuse cache within the interval. Prefer a time window over a calendar-day
+        # lock so a version bump on main later the same day is still detected.
+        within_interval = (
+            last_check > 0 and (now - last_check) < CHECK_INTERVAL_SECONDS
+        )
+        if within_interval and cached_remote:
             return {
                 "checked": False,
-                "reason": "already-checked-today",
-                "update_available": _is_remote_newer(local_version, cached_remote),
+                "reason": "recently-checked",
+                "update_available": _is_remote_newer(local_norm, cached_remote),
                 "first_run": first_run,
-                "local_version": _normalize_version(local_version),
+                "local_version": local_norm,
                 "remote_version": _normalize_version(cached_remote),
                 "remote_ref": str(state.get("last_remote_ref", "main")),
                 "remote_source": str(state.get("last_remote_source", "cached")),
@@ -168,12 +175,12 @@ class UpdateManager:
             return {"checked": True, "update_available": False, "first_run": first_run}
 
         remote_version = remote["version"]
-        update_available = _is_remote_newer(local_version, remote_version)
+        update_available = _is_remote_newer(local_norm, remote_version)
         return {
             "checked": True,
             "update_available": update_available,
             "first_run": first_run,
-            "local_version": _normalize_version(local_version),
+            "local_version": local_norm,
             "remote_version": remote_version,
             "remote_ref": remote["ref"],
             "remote_source": remote["source"],
@@ -185,9 +192,22 @@ class UpdateManager:
         state["last_update_target_version"] = _normalize_version(remote_version)
         self._write_state(state)
 
-    def has_prompted_today(self) -> bool:
+    def has_prompted_today(self, remote_version: Optional[str] = None) -> bool:
+        """Return True if we already prompted today for this remote version (or newer).
+
+        If ``remote_version`` is newer than the last prompted version, return False so
+        the user can see a new bump that landed after an earlier prompt the same day.
+        """
         state = self._read_state()
-        return str(state.get("last_prompt_day", "")) == _today_key()
+        if str(state.get("last_prompt_day", "")) != _today_key():
+            return False
+        if not remote_version:
+            return True
+        last_prompted = str(state.get("last_prompt_version", "")).strip()
+        if not last_prompted:
+            return True
+        # Already prompted for this exact version or a newer one.
+        return not _is_remote_newer(last_prompted, remote_version)
 
     def mark_prompted_today(self, remote_version: str) -> None:
         state = self._read_state()
