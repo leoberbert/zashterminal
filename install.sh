@@ -6,13 +6,17 @@ PACKAGE_NAME="zashterminal"
 DESKTOP_ID="org.leoberbert.zashterminal"
 REPO_URL="https://github.com/leoberbert/zashterminal.git"
 
-INSTALL_ROOT="/opt/${PACKAGE_NAME}"
-VENV_DIR="${INSTALL_ROOT}/venv"
-BIN_PATH="/usr/local/bin/${PACKAGE_NAME}"
-APP_DIR="/usr/share/applications"
-ICON_DIR="/usr/share/icons/hicolor/scalable/apps"
-PIXMAP_DIR="/usr/share/pixmaps"
-LOCALE_BASE_DIR="/usr/share/locale"
+# Overridable for local/container testing (e.g. INSTALL_ROOT=/tmp/zash-test).
+INSTALL_ROOT="${INSTALL_ROOT:-/opt/${PACKAGE_NAME}}"
+VENV_DIR="${VENV_DIR:-${INSTALL_ROOT}/venv}"
+BIN_PATH="${BIN_PATH:-/usr/local/bin/${PACKAGE_NAME}}"
+APP_DIR="${APP_DIR:-/usr/share/applications}"
+ICON_DIR="${ICON_DIR:-/usr/share/icons/hicolor/scalable/apps}"
+PIXMAP_DIR="${PIXMAP_DIR:-/usr/share/pixmaps}"
+LOCALE_BASE_DIR="${LOCALE_BASE_DIR:-/usr/share/locale}"
+# Gentoo: set GENTOO_USE_BINHOST=0 to force source builds.
+GENTOO_USE_BINHOST="${GENTOO_USE_BINHOST:-1}"
+GENTOO_BINHOST_DEFAULT="https://distfiles.gentoo.org/releases/amd64/binpackages/23.0/x86-64/"
 
 DISTRO_FAMILY=""
 PKG_MANAGER=""
@@ -55,6 +59,10 @@ detect_system() {
       DISTRO_FAMILY="nixos"
       PKG_MANAGER="nix"
       ;;
+    *" gentoo "*|*" calculate "*|*" funtoo "*)
+      DISTRO_FAMILY="gentoo"
+      PKG_MANAGER="emerge"
+      ;;
     *)
       die "Unsupported distro (${ID:-unknown}). Add package mapping in install.sh."
       ;;
@@ -67,9 +75,55 @@ pkg_update_once() {
   case "$PKG_MANAGER" in
     apt) sudo apt update ;;
     pacman) sudo pacman -Syu --noconfirm ;;
-    dnf|zypper) : ;;
+    dnf|zypper|emerge) : ;;
     *) die "Unsupported package manager: $PKG_MANAGER" ;;
   esac
+}
+
+ensure_gentoo_package_use() {
+  # USE flags required for the GTK4 / VTE / libsecret dependency tree.
+  local use_file="/etc/portage/package.use/zashterminal"
+  log "Writing Gentoo package.use: ${use_file}"
+  sudo mkdir -p /etc/portage/package.use
+  sudo tee "${use_file}" >/dev/null <<'EOF'
+# Managed by zashterminal install.sh — GTK4 / VTE / libsecret stack
+media-libs/freetype harfbuzz
+x11-libs/cairo X
+media-libs/libglvnd X
+app-crypt/gcr:0 gtk
+gui-libs/gtk X
+gui-libs/vte introspection
+app-crypt/libsecret introspection
+dev-libs/gobject-introspection introspection
+EOF
+}
+
+configure_gentoo_binhost() {
+  [ "${GENTOO_USE_BINHOST}" = "1" ] || return 0
+  case "$(uname -m)" in
+    x86_64|amd64) ;;
+    *)
+      warn "Gentoo binhost helper is only auto-configured for amd64; emerging from source."
+      return 0
+      ;;
+  esac
+  if [ -z "${PORTAGE_BINHOST:-}" ]; then
+    export PORTAGE_BINHOST="${GENTOO_BINHOST_DEFAULT}"
+    log "Using Gentoo binhost: ${PORTAGE_BINHOST}"
+  else
+    log "Using existing PORTAGE_BINHOST: ${PORTAGE_BINHOST}"
+  fi
+  # Prefer binary packages when the binhost has a matching build.
+  export FEATURES="${FEATURES:-} getbinpkg binpkg-multi-instance"
+}
+
+emerge_install_packages() {
+  local packages=("$@")
+  local emerge_opts=(--ask=n --quiet-build=y --noreplace --jobs="$(nproc)")
+  if [ "${GENTOO_USE_BINHOST}" = "1" ] && [ -n "${PORTAGE_BINHOST:-}" ]; then
+    emerge_opts+=(--getbinpkg)
+  fi
+  sudo emerge "${emerge_opts[@]}" "${packages[@]}"
 }
 
 install_pkg_group() {
@@ -89,6 +143,7 @@ install_pkg_group() {
         pacman) sudo pacman -S --needed --noconfirm "$pkg" >/dev/null 2>&1 || failed+=("$pkg") ;;
         dnf) sudo dnf install -y "$pkg" >/dev/null 2>&1 || failed+=("$pkg") ;;
         zypper) sudo zypper --non-interactive install "$pkg" >/dev/null 2>&1 || failed+=("$pkg") ;;
+        emerge) emerge_install_packages "$pkg" >/dev/null 2>&1 || failed+=("$pkg") ;;
         *) die "Unsupported package manager: $PKG_MANAGER" ;;
       esac
     done
@@ -103,6 +158,7 @@ install_pkg_group() {
     pacman) sudo pacman -S --needed --noconfirm "${packages[@]}" || failed=("${packages[@]}") ;;
     dnf) sudo dnf install -y "${packages[@]}" || failed=("${packages[@]}") ;;
     zypper) sudo zypper --non-interactive install "${packages[@]}" || failed=("${packages[@]}") ;;
+    emerge) emerge_install_packages "${packages[@]}" || failed=("${packages[@]}") ;;
     *) die "Unsupported package manager: $PKG_MANAGER" ;;
   esac
 
@@ -171,12 +227,47 @@ install_system_dependencies() {
         python3-py7zr python3-setproctitle
       )
       ;;
+    gentoo)
+      # gui-libs/vte is the GTK4 slot (2.91-gtk4). x11-libs/vte is GTK3 only.
+      # pycryptodomex is not packaged on Gentoo (only pycryptodome/Crypto);
+      # install.sh installs Cryptodome via pip into the venv.
+      # gsettings-desktop-schemas is required by libadwaita/GTK (wm.preferences).
+      base_packages=(
+        dev-lang/python
+        dev-vcs/git
+        net-misc/rsync
+        net-misc/sshpass
+        sys-devel/gettext
+        media-gfx/imagemagick
+        gui-libs/gtk
+        gui-libs/libadwaita
+        gui-libs/vte
+        app-crypt/libsecret
+        gnome-base/gsettings-desktop-schemas
+        dev-libs/gobject-introspection
+        dev-python/pygobject
+        dev-python/pycairo
+      )
+      python_runtime_packages=(
+        dev-python/requests
+        dev-python/psutil
+        dev-python/pygments
+      )
+      optional_python_packages=(
+        dev-python/regex
+        dev-python/setproctitle
+      )
+      ;;
     *)
       die "No dependency mapping for distro family: $DISTRO_FAMILY"
       ;;
   esac
 
   pkg_update_once
+  if [ "${DISTRO_FAMILY}" = "gentoo" ]; then
+    ensure_gentoo_package_use
+    configure_gentoo_binhost
+  fi
   install_pkg_group "required" "true" "${base_packages[@]}"
   install_pkg_group "python-runtime" "true" "${python_runtime_packages[@]}"
   install_pkg_group "python-optional" "false" "${optional_python_packages[@]}"
@@ -414,8 +505,30 @@ install_python_app() {
 
 install_launcher() {
   log "Installing launcher to ${BIN_PATH}..."
+  # Gentoo (and some minimal builds) ship GTK4 without the Wayland GDK backend.
+  # Distrobox still exports WAYLAND_DISPLAY from the host, which makes Gdk fail
+  # with "No such backend: wayland" and a NULL display. Prefer X11 in that case.
   sudo tee "${BIN_PATH}" >/dev/null <<EOF
 #!/bin/sh
+# Distrobox often exports GDK_BACKEND=wayland / WAYLAND_DISPLAY from the host.
+# Gentoo GTK builds frequently omit the Wayland GDK backend (USE=-wayland),
+# which yields "No such backend: wayland" and a NULL display. Fall back to X11.
+if [ -n "\${DISPLAY:-}" ]; then
+  _gdk_wayland=""
+  for _d in /usr/lib64 /usr/lib /usr/lib/x86_64-linux-gnu; do
+    if find "\${_d}" \\( -name '*gdk*wayland*' -o -name '*libgdk-4*wayland*' \\) 2>/dev/null | grep -q .; then
+      _gdk_wayland=1
+      break
+    fi
+  done
+  if [ -z "\${_gdk_wayland}" ]; then
+    case "\${GDK_BACKEND:-}" in
+      ""|wayland|wayland,*)
+        export GDK_BACKEND=x11
+        ;;
+    esac
+  fi
+fi
 exec "${VENV_DIR}/bin/${PACKAGE_NAME}" "\$@"
 EOF
   sudo chmod +x "${BIN_PATH}"

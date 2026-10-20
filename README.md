@@ -151,6 +151,8 @@ To build and run Zashterminal, you will need:
 
 ## Installation
 
+Supported via `install.sh` (or AUR on Arch): **Arch/Manjaro**, **Debian/Ubuntu**, **Fedora**, **openSUSE**, **Gentoo**, and **NixOS**. WSL (Ubuntu) is experimental.
+
 ### Arch/Manjaro
 
 AUR (recommended on Arch-based systems):
@@ -176,6 +178,16 @@ curl -fsSL https://raw.githubusercontent.com/leoberbert/zashterminal/refs/heads/
 curl -fsSLO https://raw.githubusercontent.com/leoberbert/zashterminal/refs/heads/main/install.sh
 bash install.sh
 ```
+
+### Gentoo
+
+Same `install.sh` flow as above (`emerge`). The script writes the needed `package.use` entries, prefers the official amd64 binhost when available (`GENTOO_USE_BINHOST=0` forces source builds), installs `gsettings-desktop-schemas`, and installs `pycryptodomex` into the venv (Gentoo packages `pycryptodome` / `Crypto`, while Zashterminal needs the `Cryptodome` namespace).
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/leoberbert/zashterminal/refs/heads/main/install.sh | bash
+```
+
+The launcher forces `GDK_BACKEND=x11` when GTK was built without Wayland but Distrobox still exports `WAYLAND_DISPLAY` / `GDK_BACKEND=wayland`.
 
 ### NixOS
 
