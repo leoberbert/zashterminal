@@ -50,7 +50,8 @@ jobs:
       - name: Install Python dependencies
         run: |
           python -m pip install --upgrade pip
-          # Core deps + coverage from pyproject; extras (regex/Pygments/py7zr) stay optional
+          # Core deps + coverage[toml] from pyproject (toml needed on Py<3.11)
+          # extras (regex/Pygments/py7zr) stay optional
           python -m pip install -e ".[dev]"
 
       - name: Verify package import smoke

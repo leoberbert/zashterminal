@@ -5,4 +5,4 @@
 #   PYTHONPATH=src python3 -m coverage report
 pycryptodomex>=3.20
 pywal16>=3.8,<4
-coverage>=7.0
+coverage[toml]>=7.0

@@ -43,7 +43,8 @@ performance = ["regex"]
 syntax-highlighting = ["Pygments"]
 backup = ["py7zr"]
 all = ["regex", "Pygments", "py7zr"]
-dev = ["coverage>=7.0"]
+# coverage[toml] is required on Python <3.11 to read [tool.coverage] from pyproject.toml
+dev = ["coverage[toml]>=7.0"]
 
 [build-system]
 requires = ["uv_build"]
