@@ -528,6 +528,20 @@ class PreferencesDialog(Adw.PreferencesWindow):
         word_chars_row.connect("changed", self._on_word_chars_changed)
         selection_group.add(word_chars_row)
 
+        updates_group = Adw.PreferencesGroup(title=_("Updates"))
+        advanced_page.add(updates_group)
+
+        auto_update_row = self._create_switch_row(
+            _("Check for updates on startup"),
+            _(
+                "Look for newer versions on GitHub when the app starts. "
+                "You can also disable this with ZASHTERMINAL_DISABLE_AUTO_UPDATE=1."
+            ),
+            "auto_update_check",
+            default_value=True,
+        )
+        updates_group.add(auto_update_row)
+
         log_group = Adw.PreferencesGroup()
         advanced_page.add(log_group)
 

@@ -310,7 +310,14 @@ class CommTerminalApp(Adw.Application):
 
         def _task():
             try:
-                result = self._update_manager.check_for_updates(APP_VERSION)
+                enabled = True
+                if self.settings_manager:
+                    enabled = bool(
+                        self.settings_manager.get("auto_update_check", True)
+                    )
+                result = self._update_manager.check_for_updates(
+                    APP_VERSION, enabled=enabled
+                )
             except Exception as e:
                 self.logger.warning(f"Update check failed: {e}")
                 result = {"checked": False, "reason": "exception"}
@@ -480,11 +487,13 @@ class CommTerminalApp(Adw.Application):
 
     def _show_update_restart_dialog(self, remote_version: str) -> None:
         parent = self.get_active_window() or (self.get_windows()[0] if self.get_windows() else None)
+        self._update_restart_cancelled = False
         dialog = Adw.MessageDialog(
             transient_for=parent,
             heading=_("Update Installed"),
             body=_(
-                "Zashterminal was updated to version {version}. You need to restart the application to apply all changes."
+                "Zashterminal was updated to version {version}.\n\n"
+                "The application will restart automatically in a few seconds to apply the changes."
             ).format(version=remote_version),
             close_response="later",
         )
@@ -495,25 +504,46 @@ class CommTerminalApp(Adw.Application):
 
         def on_response(dlg, response_id):
             try:
-                if response_id == "restart":
+                if response_id == "later":
+                    self._update_restart_cancelled = True
+                elif response_id == "restart":
+                    self._update_restart_cancelled = True
                     self._restart_application()
             finally:
                 dlg.close()
 
+        def _auto_restart():
+            if getattr(self, "_update_restart_cancelled", False):
+                return False
+            self.logger.info(
+                f"Auto-restarting after successful update to {remote_version}."
+            )
+            self._restart_application()
+            return False
+
         dialog.connect("response", on_response)
         dialog.present()
+        # Give the user a short window to cancel; then restart into the new binary.
+        GLib.timeout_add_seconds(3, _auto_restart)
 
     def _restart_application(self) -> None:
-        """Restart the app process and quit current instance."""
+        """Restart the app process and quit the current instance.
+
+        A short delay before exec avoids racing the single-instance D-Bus name:
+        the new process starts after this instance has begun shutting down.
+        """
         try:
             launcher = shutil.which("zashterminal")
             if launcher:
-                subprocess.Popen([launcher], start_new_session=True)
+                shell_cmd = f"sleep 0.8; exec {shlex.quote(launcher)}"
             else:
-                subprocess.Popen(
-                    [sys.executable, "-m", "zashterminal"],
-                    start_new_session=True,
+                shell_cmd = (
+                    f"sleep 0.8; exec {shlex.quote(sys.executable)} -m zashterminal"
                 )
+            subprocess.Popen(
+                ["/bin/sh", "-c", shell_cmd],
+                start_new_session=True,
+            )
             self.quit()
         except Exception as e:
             self.logger.error(f"Failed to restart application: {e}")
