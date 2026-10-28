@@ -3,6 +3,8 @@
 import json
 import os
 import re
+import shlex
+import shutil
 import time
 from pathlib import Path
 from typing import Any, Dict, Optional, Tuple
@@ -17,13 +19,30 @@ GITHUB_REPO = "zashterminal"
 RELEASES_LATEST_URL = (
     f"https://api.github.com/repos/{GITHUB_OWNER}/{GITHUB_REPO}/releases/latest"
 )
+TAGS_URL = (
+    f"https://api.github.com/repos/{GITHUB_OWNER}/{GITHUB_REPO}/tags?per_page=15"
+)
 RAW_CONFIG_MAIN_URL = (
     f"https://raw.githubusercontent.com/{GITHUB_OWNER}/{GITHUB_REPO}/main/"
     "src/zashterminal/settings/config.py"
 )
-# Re-check the remote periodically so a same-day version bump on main is not missed.
-# (Previously a calendar-day lock cached the morning result for the whole day.)
+# Re-check the remote periodically so a same-day version bump is not missed.
 CHECK_INTERVAL_SECONDS = 4 * 60 * 60
+
+_ARCH_FAMILY_IDS = frozenset(
+    {
+        "arch",
+        "archarm",
+        "manjaro",
+        "endeavouros",
+        "cachyos",
+        "garuda",
+        "artix",
+    }
+)
+_AUR_HELPERS = ("yay", "paru")
+_SEMVER_TAG = re.compile(r"^v?\d+(?:\.\d+)*", re.IGNORECASE)
+_TRUTHY = frozenset({"1", "true", "yes", "on"})
 
 
 def _read_os_release() -> Dict[str, str]:
@@ -63,12 +82,31 @@ def _today_key() -> str:
     return time.strftime("%Y-%m-%d", time.localtime())
 
 
+def is_arch_family(os_release: Optional[Dict[str, str]] = None) -> bool:
+    """Return True for Arch and Arch-based distros (Manjaro, CachyOS, …)."""
+    info = os_release if os_release is not None else _read_os_release()
+    distro_id = info.get("ID", "").strip().lower()
+    if distro_id in _ARCH_FAMILY_IDS:
+        return True
+    like = info.get("ID_LIKE", "").strip().lower().split()
+    return "arch" in like
+
+
+def is_auto_update_disabled_by_env(
+    environ: Optional[Dict[str, str]] = None,
+) -> bool:
+    env = environ if environ is not None else os.environ
+    return env.get("ZASHTERMINAL_DISABLE_AUTO_UPDATE", "").strip().lower() in _TRUTHY
+
+
 class UpdateManager:
     """Checks GitHub for new versions and builds update commands."""
 
-    def __init__(self):
+    def __init__(self, state_file: Optional[Path] = None):
         self.logger = get_logger("zashterminal.updater")
-        self.state_file = get_config_paths().CONFIG_DIR / "update_state.json"
+        self.state_file = state_file or (
+            get_config_paths().CONFIG_DIR / "update_state.json"
+        )
 
     def _read_state(self) -> Dict[str, Any]:
         if not self.state_file.exists():
@@ -88,53 +126,96 @@ class UpdateManager:
         except Exception as e:
             self.logger.warning(f"Failed to persist update state: {e}")
 
+    def _parse_release_payload(self, payload: Dict[str, Any]) -> Optional[Dict[str, str]]:
+        tag_name = str(payload.get("tag_name", "")).strip()
+        if not tag_name:
+            return None
+        return {
+            "version": _normalize_version(tag_name),
+            "ref": tag_name,
+            "source": "github-release",
+        }
+
+    def _parse_tags_payload(self, payload: Any) -> Optional[Dict[str, str]]:
+        if not isinstance(payload, list):
+            return None
+        for entry in payload:
+            if not isinstance(entry, dict):
+                continue
+            name = str(entry.get("name", "")).strip()
+            if not name or not _SEMVER_TAG.match(name):
+                continue
+            return {
+                "version": _normalize_version(name),
+                "ref": name,
+                "source": "github-tag",
+            }
+        return None
+
+    def _parse_raw_config_version(self, text: str) -> Optional[Dict[str, str]]:
+        match = re.search(r'APP_VERSION\s*=\s*["\']([^"\']+)["\']', text)
+        if not match:
+            return None
+        return {
+            "version": _normalize_version(match.group(1)),
+            "ref": "main",
+            "source": "github-main",
+        }
+
     def _fetch_remote_version(self) -> Optional[Dict[str, str]]:
+        """Resolve remote version: Releases → Tags → raw main APP_VERSION."""
         headers = {
             "Accept": "application/vnd.github+json",
             "User-Agent": "zashterminal-updater",
         }
+
         try:
             r = requests.get(RELEASES_LATEST_URL, headers=headers, timeout=8)
             if r.ok:
-                payload = r.json()
-                tag_name = str(payload.get("tag_name", "")).strip()
-                if tag_name:
-                    version = _normalize_version(tag_name)
-                    return {
-                        "version": version,
-                        "ref": tag_name,
-                        "source": "github-release",
-                    }
+                parsed = self._parse_release_payload(r.json())
+                if parsed:
+                    return parsed
+            elif r.status_code == 404:
+                self.logger.info(
+                    "No GitHub Releases found; trying repository tags next."
+                )
+            else:
+                self.logger.warning(
+                    f"Release API returned HTTP {r.status_code}; trying tags."
+                )
         except Exception as e:
             self.logger.warning(f"Release API check failed: {e}")
 
         try:
+            r = requests.get(TAGS_URL, headers=headers, timeout=8)
+            if r.ok:
+                parsed = self._parse_tags_payload(r.json())
+                if parsed:
+                    return parsed
+                self.logger.info("No semver tags found; falling back to main config.")
+            else:
+                self.logger.warning(
+                    f"Tags API returned HTTP {r.status_code}; falling back to main."
+                )
+        except Exception as e:
+            self.logger.warning(f"Tags API check failed: {e}")
+
+        try:
             r = requests.get(RAW_CONFIG_MAIN_URL, timeout=8)
             if r.ok:
-                match = re.search(
-                    r'APP_VERSION\s*=\s*["\']([^"\']+)["\']',
-                    r.text,
-                )
-                if match:
-                    version = _normalize_version(match.group(1))
-                    return {
-                        "version": version,
-                        "ref": "main",
-                        "source": "github-main",
-                    }
+                return self._parse_raw_config_version(r.text)
         except Exception as e:
             self.logger.warning(f"Raw config version check failed: {e}")
 
         return None
 
-    def check_for_updates(self, local_version: str) -> Dict[str, Any]:
-        if os.environ.get("ZASHTERMINAL_DISABLE_AUTO_UPDATE", "").strip().lower() in {
-            "1",
-            "true",
-            "yes",
-            "on",
-        }:
+    def check_for_updates(
+        self, local_version: str, *, enabled: bool = True
+    ) -> Dict[str, Any]:
+        if is_auto_update_disabled_by_env():
             return {"checked": False, "reason": "disabled-by-env"}
+        if not enabled:
+            return {"checked": False, "reason": "disabled-by-setting"}
 
         now = int(time.time())
         today = _today_key()
@@ -144,8 +225,6 @@ class UpdateManager:
         cached_remote = str(state.get("last_remote_version", "")).strip()
         last_check = int(state.get("last_check") or 0)
 
-        # Reuse cache within the interval. Prefer a time window over a calendar-day
-        # lock so a version bump on main later the same day is still detected.
         within_interval = (
             last_check > 0 and (now - last_check) < CHECK_INTERVAL_SECONDS
         )
@@ -193,11 +272,7 @@ class UpdateManager:
         self._write_state(state)
 
     def has_prompted_today(self, remote_version: Optional[str] = None) -> bool:
-        """Return True if we already prompted today for this remote version (or newer).
-
-        If ``remote_version`` is newer than the last prompted version, return False so
-        the user can see a new bump that landed after an earlier prompt the same day.
-        """
+        """Return True if we already prompted today for this remote version (or newer)."""
         state = self._read_state()
         if str(state.get("last_prompt_day", "")) != _today_key():
             return False
@@ -206,7 +281,6 @@ class UpdateManager:
         last_prompted = str(state.get("last_prompt_version", "")).strip()
         if not last_prompted:
             return True
-        # Already prompted for this exact version or a newer one.
         return not _is_remote_newer(last_prompted, remote_version)
 
     def mark_prompted_today(self, remote_version: str) -> None:
@@ -220,8 +294,15 @@ class UpdateManager:
         info = _read_os_release()
         return info.get("ID", "").strip().lower()
 
-    def build_update_command(self, remote_ref: str) -> str:
-        distro_id = self._detect_distro_id()
+    def build_update_command(
+        self,
+        remote_ref: str,
+        *,
+        os_release: Optional[Dict[str, str]] = None,
+        which=shutil.which,
+    ) -> str:
+        info = os_release if os_release is not None else _read_os_release()
+        distro_id = info.get("ID", "").strip().lower()
         safe_ref = remote_ref.strip() or "main"
 
         if distro_id == "nixos":
@@ -230,7 +311,18 @@ class UpdateManager:
                 f'profile add --refresh "github:{GITHUB_OWNER}/{GITHUB_REPO}/{safe_ref}#zashterminal"'
             )
 
-        # Distros with install.sh flow.
+        if is_arch_family(info):
+            for helper in _AUR_HELPERS:
+                helper_path = which(helper)
+                if helper_path:
+                    # AUR helpers pull the packaged release; avoid silent prompts in VTE.
+                    return (
+                        f"{shlex.quote(helper_path)} -S --needed --noconfirm zashterminal"
+                    )
+            self.logger.info(
+                "Arch-based distro without yay/paru; falling back to install.sh."
+            )
+
         return (
             'TMP_DIR="$(mktemp -d)" && '
             f'(git clone --depth 1 --branch "{safe_ref}" '

@@ -1,4 +1,3 @@
-import argparse
 import signal
 import sys
 
@@ -64,8 +63,8 @@ def main() -> int:
         from .utils.platform import apply_graphics_safety_fallbacks
 
         apply_graphics_safety_fallbacks()
-    except Exception:
-        pass
+    except Exception as e:
+        print(f"Warning: graphics safety fallbacks failed: {e}", file=sys.stderr)
 
     # Ensure accent/diacritics work on Wayland without IBUS/FCITX.
     # Must run before any GTK import.
@@ -73,30 +72,33 @@ def main() -> int:
         from .utils.platform import ensure_wayland_input_method
 
         ensure_wayland_input_method()
-    except Exception:
-        pass
+    except Exception as e:
+        print(f"Warning: Wayland input-method setup failed: {e}", file=sys.stderr)
 
     logger_mod = _get_logger_funcs()
     _ = _get_translation()
 
-    # Use a separate parser to handle debug/log flags before the main app starts
-    pre_parser = argparse.ArgumentParser(add_help=False)
-    pre_parser.add_argument("--debug", "-d", action="store_true")
-    pre_parser.add_argument("--log-level")
-    pre_args, _unused_args = pre_parser.parse_known_args()
+    # CLI options live in utils.cli_args (shared with Gio do_command_line).
+    from .utils.cli_args import handle_help_or_version, parse_early_cli_args
 
-    # Apply pre-launch log settings if provided
-    if pre_args.debug:
+    early_exit = handle_help_or_version(sys.argv, gettext=_)
+    if early_exit is not None:
+        return early_exit
+
+    early = parse_early_cli_args(sys.argv)
+    if early["debug"]:
         logger_mod.enable_debug_mode()
-    elif pre_args.log_level:
+    elif early["log_level"]:
         try:
-            logger_mod.set_console_log_level(pre_args.log_level)
+            logger_mod.set_console_log_level(early["log_level"])
         except KeyError:
-            print(f"Warning: Invalid log level '{pre_args.log_level}' provided.")
+            print(
+                f"Warning: Invalid log level '{early['log_level']}' provided.",
+                file=sys.stderr,
+            )
 
     logger = logger_mod.get_logger("zashterminal.main")
 
-    # Tries to set the process title and logs failures
     try:
         import setproctitle
 
@@ -105,94 +107,14 @@ def main() -> int:
     except Exception as e:
         logger.error(f"Failed to set process title: {e}", exc_info=True)
 
-    # Main parser for the application's command-line interface
-    parser = argparse.ArgumentParser(
-        prog="zashterminal",
-        description=_(
-            "Zashterminal - A modern terminal emulator with session management"
-        ),
-        epilog=_("For more information, visit: https://github.com/leoberbert/zashterminal/"),
-    )
-
-    # Custom version action to load APP_VERSION lazily (avoids loading GTK for --version)
-    class LazyVersionAction(argparse.Action):
-        def __call__(self, parser, _namespace, values, _option_string=None):
-            from .settings.config import APP_VERSION
-
-            print(f"zashterminal {APP_VERSION}")
-            parser.exit()
-
-    parser.add_argument(
-        "--version",
-        "-v",
-        nargs=0,
-        action=LazyVersionAction,
-        help=_("Show version and exit"),
-    )
-    parser.add_argument(
-        "--debug", "-d", action="store_true", help=_("Enable debug mode")
-    )
-    parser.add_argument(
-        "--log-level",
-        choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
-        help=_("Set logging level"),
-    )
-    parser.add_argument(
-        "--working-directory",
-        "-w",
-        metavar="DIR",
-        help=_("Set the working directory for the initial terminal"),
-    )
-    parser.add_argument(
-        "directory",
-        nargs="?",
-        default=None,
-        help=_("Working directory (positional argument)"),
-    )
-    parser.add_argument(
-        "--execute",
-        "-e",
-        "-x",
-        metavar="COMMAND",
-        nargs=argparse.REMAINDER,
-        help=_(
-            "Execute command in the terminal (takes all remaining arguments); "
-            "closes the terminal when the command finishes by default"
-        ),
-    )
-    parser.add_argument(
-        "--close-after-execute",
-        action="store_true",
-        help=_("Close terminal after executing command (default with --execute)"),
-    )
-    parser.add_argument(
-        "--no-close-after-execute",
-        action="store_true",
-        help=_("Keep the shell open after --execute finishes"),
-    )
-    parser.add_argument(
-        "--ssh",
-        metavar="[USER@]HOST[:PORT][:/PATH]",
-        help=_("Connect to SSH host with optional user, port, and remote path"),
-    )
-    parser.add_argument(
-        "--convert-to-ssh", help=_("Convert KIO/GVFS URI path to SSH format")
-    )
-    parser.add_argument(
-        "--new-window", action="store_true", help=_("Force opening a new window")
-    )
-
-    try:
-        parser.parse_known_args()
-    except SystemExit:
-        return 0
-
     setup_signal_handlers()
 
     try:
         logger.info("Creating application instance")
 
-        # Lazy import: only load the heavy GTK/Adw/VTE modules when actually running
+        # Lazy import: only load the heavy GTK/Adw/VTE modules when actually running.
+        # Launch flags (-e/--ssh/…) are parsed in CommTerminalApp.do_command_line via
+        # parse_launch_cli_args — the single runtime source of truth.
         from .app import CommTerminalApp
 
         app = CommTerminalApp()
@@ -207,7 +129,6 @@ def main() -> int:
         gi.require_version("Gtk", "4.0")
         from gi.repository import Gtk
 
-        # GTK4 uses GtkAlertDialog instead of GtkMessageDialog.run() (GTK3 pattern)
         alert = Gtk.AlertDialog()
         alert.set_message(_("Fatal Application Error"))
         alert.set_detail(_("Could not start Zashterminal.\n\nError: {}").format(e))

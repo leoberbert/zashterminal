@@ -3,10 +3,22 @@
 import os
 import shutil
 from pathlib import Path
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Mapping, Optional, Union
 
 from .exceptions import ConfigError
 from .logger import get_logger
+
+# Desktop-provided IM frameworks we must never override.
+_EXPLICIT_IM_MODULES = frozenset(
+    {
+        "ibus",
+        "fcitx",
+        "fcitx5",
+        "xim",
+        "wayland",
+        "broadway",
+    }
+)
 
 
 class PlatformInfo:
@@ -239,6 +251,64 @@ def apply_graphics_safety_fallbacks() -> None:
         logger.warning(
             "Detected Ubuntu 25.10+; forcing GSK_RENDERER=cairo for stability."
         )
+
+
+def _is_wayland_session(environ: Mapping[str, str]) -> bool:
+    """Return True when the process is expected to talk to a Wayland display."""
+    gdk_backend = environ.get("GDK_BACKEND", "").strip().lower()
+    # Distrobox/Gentoo launcher may force X11 even when WAYLAND_DISPLAY is set.
+    if gdk_backend == "x11" or gdk_backend.startswith("x11,"):
+        return False
+
+    if environ.get("WAYLAND_DISPLAY", "").strip():
+        return True
+
+    session_type = environ.get("XDG_SESSION_TYPE", "").strip().lower()
+    return session_type == "wayland"
+
+
+def should_set_wayland_im_module(environ: Mapping[str, str]) -> bool:
+    """
+    Decide whether to set GTK_IM_MODULE=wayland for compose/dead-key support.
+
+    Pure helper (no side effects) so unit tests can cover the policy without
+    mutating process environment.
+    """
+    if not _is_wayland_session(environ):
+        return False
+
+    current = environ.get("GTK_IM_MODULE", "").strip().lower()
+    if current in _EXPLICIT_IM_MODULES:
+        return False
+
+    # Unset or GTK's "simple" backend (no text-input-v3) → enable Wayland IM.
+    return current in {"", "simple"}
+
+
+def ensure_wayland_input_method() -> None:
+    """
+    Ensure accent/diacritic compose works on Wayland without IBus/Fcitx.
+
+    Must run before any GTK import. On Wayland, GTK4 often defaults to the
+    ``simple`` IM module, which does not bind ``zwp_text_input_manager_v3`` and
+    breaks dead-key accents when no desktop IM framework is installed. Prefer
+    the built-in ``wayland`` module unless the user/desktop already selected one.
+    """
+    logger = get_logger("zashterminal.platform.input")
+
+    if not should_set_wayland_im_module(os.environ):
+        current = os.environ.get("GTK_IM_MODULE", "").strip()
+        if current:
+            logger.debug(
+                f"Leaving GTK_IM_MODULE={current} unchanged (Wayland IM policy)."
+            )
+        return
+
+    os.environ["GTK_IM_MODULE"] = "wayland"
+    logger.info(
+        "Wayland session detected; setting GTK_IM_MODULE=wayland for "
+        "accent/compose support without IBus/Fcitx."
+    )
 
 
 def should_use_native_tooltips() -> bool:

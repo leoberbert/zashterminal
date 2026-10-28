@@ -217,6 +217,8 @@ class DefaultSettings:
             "new_instance_behavior": "new_tab",
             "use_login_shell": False,
             "session_restore_policy": "never",
+            # Check GitHub for newer versions on startup (env ZASHTERMINAL_DISABLE_AUTO_UPDATE=1 overrides).
+            "auto_update_check": True,
             # VTE Features
             "scrollback_lines": 5000,
             "mouse_scroll_sensitivity": 30.0,
