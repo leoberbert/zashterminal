@@ -1,5 +1,8 @@
-# Optional deps for a full local unittest run (CI installs these too).
-#   python3 -m pip install -r requirements-dev.txt
-#   PYTHONPATH=src python3 -m unittest discover -s tests -v
+# Optional deps for a full local unittest + coverage run (CI uses pyproject [dev]).
+#   python3 -m pip install -e ".[dev]"
+#   # or: python3 -m pip install -r requirements-dev.txt
+#   PYTHONPATH=src python3 -m coverage run -m unittest discover -s tests -v
+#   PYTHONPATH=src python3 -m coverage report
 pycryptodomex>=3.20
 pywal16>=3.8,<4
+coverage[toml]>=7.0

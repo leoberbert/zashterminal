@@ -4,17 +4,32 @@ classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Operating System :: POSIX :: Linux",
     "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Topic :: Terminals :: Terminal Emulators/X Terminals",
 ]
-version = "0.8.18"
+version = "0.8.19"
 authors = [
     { name = "Leonardo Berbert", email = "leo4berbert@gmail.com" },
 ]
 license = "GPL-3.0-or-later"
 license-files = ["LICENSE"]
 readme = "README.md"
-requires-python = ">=3.9"
-dependencies = ["pywal16>=3.8,<4", "PyGObject", "pycairo", "setproctitle", "requests", "psutil", "pycryptodomex", "regex; extra == 'performance'", "Pygments; extra == 'syntax-highlighting'", "py7zr; extra == 'backup'"]
+# dataclass(slots=True) and other runtime features require 3.10+
+requires-python = ">=3.10"
+# Core runtime only. Optional features live under [project.optional-dependencies]
+# (Arch PKGBUILD may still hard-depend the extras for a full system install).
+dependencies = [
+    "pywal16>=3.8,<4",
+    "PyGObject",
+    "pycairo",
+    "setproctitle",
+    "requests",
+    "psutil",
+    "pycryptodomex",
+]
 
 [project.gui-scripts]
 zashterminal = "zashterminal:main"
@@ -28,6 +43,8 @@ performance = ["regex"]
 syntax-highlighting = ["Pygments"]
 backup = ["py7zr"]
 all = ["regex", "Pygments", "py7zr"]
+# coverage[toml] is required on Python <3.11 to read [tool.coverage] from pyproject.toml
+dev = ["coverage[toml]>=7.0"]
 
 [build-system]
 requires = ["uv_build"]
@@ -46,3 +63,25 @@ zashterminal = ["**/*"]
 "share/applications" = ["usr/share/applications/org.leoberbert.zashterminal.desktop"]
 "share/icons/hicolor/scalable/apps" = ["usr/share/icons/hicolor/scalable/apps/zashterminal.svg"]
 "share/pixmaps" = ["usr/share/icons/hicolor/scalable/apps/zashterminal.svg"]
+
+[tool.coverage.run]
+source = ["src/zashterminal"]
+branch = false
+omit = [
+    "*/ui/dialogs/*",
+    "*/ui/widgets/*",
+    "*/filemanager/*",
+]
+
+[tool.coverage.report]
+precision = 1
+show_missing = false
+skip_empty = true
+# Floor against total measured source (UI dialogs/widgets/filemanager omitted).
+# Raise deliberately as more modules gain tests — do not lower without cause.
+fail_under = 15
+exclude_lines = [
+    "pragma: no cover",
+    "if TYPE_CHECKING:",
+    "raise NotImplementedError",
+]
