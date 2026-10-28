@@ -42,6 +42,14 @@ class LaunchParseTests(unittest.TestCase):
         self.assertEqual(parsed["execute_command"], "htop")
         self.assertFalse(parsed["close_after_execute"])
 
+    def test_flags_after_execute_are_absorbed_into_command(self):
+        # Documented argparse rem behavior: tokens after -e join the command.
+        parsed = parse_launch_cli_args(
+            ["zashterminal", "-e", "echo", "hello", "--close-after-execute"]
+        )
+        self.assertEqual(parsed["execute_command"], "echo hello --close-after-execute")
+        self.assertTrue(parsed["close_after_execute"])
+
     def test_explicit_close_after_still_works(self):
         parsed = parse_launch_cli_args(
             ["zashterminal", "--close-after-execute", "-e", "ls"]
