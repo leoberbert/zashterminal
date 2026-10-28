@@ -139,7 +139,7 @@ One Identity (formerly Balabit) PAM docs: [Privileged Access Management](https:/
 
 | Component | Notes |
 |-----------|--------|
-| Python | 3.9+ |
+| Python | 3.10+ |
 | GTK / Adwaita | GTK4, libadwaita 1.0+ |
 | VTE | VTE for GTK4 (`vte4` ≥ 0.76 recommended) |
 | PyGObject, pycairo | GTK bindings |
