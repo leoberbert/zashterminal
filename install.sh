@@ -509,7 +509,7 @@ install_launcher() {
   # Shared Distrobox/Gentoo/Nix policy lives in scripts/gdk_backend_env.sh —
   # embed a copy so the installed launcher stays self-contained.
   local probe_src="${src_dir}/scripts/gdk_backend_env.sh"
-  [ -f "${probe_src}" ] || die "Missing GDK probe script: ${probe_src}"
+  [[ -f "${probe_src}" ]] || die "Missing GDK probe script: ${probe_src}"
 
   {
     echo '#!/bin/sh'

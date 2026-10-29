@@ -985,14 +985,17 @@ class TerminalManager(
                 if auto_reconnect_active and not is_auth_error:
                     self.lifecycle_manager.unmark_terminal_closing(terminal_id)
                 else:
-                    GLib.idle_add(
-                        self._show_ssh_connection_error_dialog,
-                        terminal_name,
-                        identifier,
-                        terminal,
-                        terminal_id,
-                        child_status,
-                    )
+                    def _present_ssh_error():
+                        self._show_ssh_connection_error_dialog(
+                            terminal_name,
+                            identifier,
+                            terminal,
+                            terminal_id,
+                            child_status,
+                        )
+                        return GLib.SOURCE_REMOVE
+
+                    GLib.idle_add(_present_ssh_error)
             else:
                 # Normal/successful exit
                 # Hide banner if exists (connection was successful and user closed it)

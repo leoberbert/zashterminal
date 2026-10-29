@@ -31,9 +31,9 @@ class TerminalUrlMixin:
                     terminal.zashterminal_handler_ids = []
                 terminal.zashterminal_handler_ids.append(handler_id)
 
+            # Detect clickable https/http and mailto only (plain ftp:// is insecure).
             url_patterns = [
                 r"https?://[^\s<>()\"{}|\\^`\[\]]+[^\s<>()\"{}|\\^`\[\].,;:!?]",
-                r"ftp://[^\s<>()\"{}|\\^`\[\]]+[^\s<>()\"{}|\\^`\[\].,;:!?]",
                 r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}",
             ]
 

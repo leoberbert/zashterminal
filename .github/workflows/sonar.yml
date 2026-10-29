@@ -61,7 +61,10 @@ jobs:
 
       - name: Install Python dependencies
         run: |
-          python -m pip install --upgrade pip
+          python -m pip install --upgrade "pip==25.2"
+          # Editable install needs build tooling; pin and prefer wheels for the rest.
+          python -m pip install --only-binary=:all: "coverage[toml]==7.10.6" || \
+            python -m pip install "coverage[toml]==7.10.6"
           python -m pip install -e ".[dev]"
 
       - name: Run tests with coverage XML
@@ -72,8 +75,9 @@ jobs:
           python -m coverage xml -o coverage.xml
           python -m coverage report
 
+      # Pin full commit SHA (Sonar rule); v6 is the supported scanner action line.
       - name: SonarQube Scan
-        uses: SonarSource/sonarqube-scan-action@v5
+        uses: SonarSource/sonarqube-scan-action@fd88b7d7ccbaefd23d8f36f73b59db7a3d246602 # v6
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:

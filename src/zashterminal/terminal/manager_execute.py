@@ -22,23 +22,28 @@ class TerminalExecuteMixin:
         terminal._pending_execute_command = (command, close_after_execute)
 
         if terminal.get_current_directory_uri():
-            GLib.idle_add(self._run_pending_execute_command, terminal)
+            GLib.idle_add(self._run_pending_execute_command_idle, terminal)
             return
 
         if getattr(terminal, "_execute_command_timer_id", None):
             return
 
         terminal._execute_command_timer_id = GLib.timeout_add(
-            500, lambda: self._run_pending_execute_command(terminal)
+            500, self._run_pending_execute_command_idle, terminal
         )
 
-    def _run_pending_execute_command(self, terminal: Vte.Terminal) -> bool:
+    def _run_pending_execute_command_idle(self, terminal: Vte.Terminal) -> bool:
+        """GLib one-shot wrapper around execute scheduling."""
+        self._run_pending_execute_command(terminal)
+        return GLib.SOURCE_REMOVE
+
+    def _run_pending_execute_command(self, terminal: Vte.Terminal) -> None:
         if getattr(terminal, "_execute_command_ran", False):
-            return False
+            return
 
         pending = getattr(terminal, "_pending_execute_command", None)
         if not pending:
-            return False
+            return
 
         command, close_after_execute = pending
         self._execute_command_in_terminal(
@@ -59,7 +64,6 @@ class TerminalExecuteMixin:
             except Exception:
                 pass
             terminal._execute_command_timer_id = None
-        return False
 
     def _execute_command_in_terminal(
         self, terminal: Vte.Terminal, command: str, close_after_execute: bool = False

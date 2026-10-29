@@ -89,7 +89,11 @@ class TerminalBalabitMixin:
                 return
 
         self._balabit_gateway_prompt_shown.add(terminal_id)
-        GLib.idle_add(self._show_balabit_gateway_auth_dialog, terminal, terminal_id)
+        def _present_gateway_dialog():
+            self._show_balabit_gateway_auth_dialog(terminal, terminal_id)
+            return GLib.SOURCE_REMOVE
+
+        GLib.idle_add(_present_gateway_dialog)
 
     def _advance_balabit_gateway_auth_sequence(
         self, terminal: Vte.Terminal, terminal_id: int
@@ -159,11 +163,14 @@ class TerminalBalabitMixin:
             if not (pending.get("target_password") or ""):
                 if not pending.get("target_password_prompt_open"):
                     pending["target_password_prompt_open"] = "1"
-                    GLib.idle_add(
-                        self._show_balabit_target_password_dialog,
-                        terminal,
-                        terminal_id,
-                    )
+
+                    def _present_target_dialog():
+                        self._show_balabit_target_password_dialog(
+                            terminal, terminal_id
+                        )
+                        return GLib.SOURCE_REMOVE
+
+                    GLib.idle_add(_present_target_dialog)
                 return
             self._send_text_to_terminal(
                 terminal, pending.get("target_password", ""), terminal_id, "target_password"
@@ -213,7 +220,7 @@ class TerminalBalabitMixin:
 
     def _fallback_send_gateway_password(
         self, terminal: Vte.Terminal, terminal_id: int
-    ) -> bool:
+    ) -> None:
         """
         Fallback for gateways that never render a visible password prompt.
 
@@ -222,7 +229,7 @@ class TerminalBalabitMixin:
         """
         pending = self._balabit_gateway_pending_auth.get(terminal_id)
         if not pending:
-            return False
+            return
         if pending.get("gateway_password_pending"):
             self.logger.info(
                 f"Gateway password prompt not visible for terminal {terminal_id}; sending proactive fallback."
@@ -236,7 +243,6 @@ class TerminalBalabitMixin:
             pending["gateway_password_pending"] = ""
             if not pending.get("target_password_pending"):
                 self._balabit_gateway_pending_auth.pop(terminal_id, None)
-        return False
 
     def _send_text_to_terminal(
         self, terminal: Vte.Terminal, value: str, terminal_id: int, label: str
@@ -258,13 +264,13 @@ class TerminalBalabitMixin:
 
     def _show_balabit_gateway_auth_dialog(
         self, terminal: Vte.Terminal, terminal_id: int
-    ) -> bool:
+    ) -> None:
         """Show a local dialog and send Balabit gateway credentials to the PTY."""
         try:
             if terminal is None or terminal.get_parent() is None:
-                return False
+                return
         except Exception:
-            return False
+            return
 
         info = self.registry.get_terminal_info(terminal_id) or {}
         identifier = info.get("identifier")
@@ -412,22 +418,21 @@ class TerminalBalabitMixin:
         dialog.connect("response", on_response)
         dialog.present()
         user_entry.grab_focus()
-        return False
 
     def _show_balabit_target_password_dialog(
         self, terminal: Vte.Terminal, terminal_id: int
-    ) -> bool:
+    ) -> None:
         """Ask for the destination SSH password when it is not available in the session store."""
         pending = self._balabit_gateway_pending_auth.get(terminal_id)
         if not pending:
-            return False
+            return
         try:
             if terminal is None or terminal.get_parent() is None:
                 pending["target_password_prompt_open"] = ""
-                return False
+                return
         except Exception:
             pending["target_password_prompt_open"] = ""
-            return False
+            return
 
         dialog = Gtk.Dialog(
             title=_("Server Password"),
@@ -516,5 +521,4 @@ class TerminalBalabitMixin:
         dialog.connect("response", on_response)
         dialog.present()
         password_entry.grab_focus()
-        return False
 

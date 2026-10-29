@@ -77,7 +77,7 @@ class ScheduleExecuteTests(unittest.TestCase):
                 self.mgr, self.terminal, "true", True
             )
             glib.idle_add.assert_called_once_with(
-                self.mgr._run_pending_execute_command, self.terminal
+                self.mgr._run_pending_execute_command_idle, self.terminal
             )
             glib.timeout_add.assert_not_called()
         self.assertEqual(
@@ -93,6 +93,8 @@ class ScheduleExecuteTests(unittest.TestCase):
             glib.timeout_add.assert_called_once()
             args, _kwargs = glib.timeout_add.call_args
             self.assertEqual(args[0], 500)
+            self.assertEqual(args[1], self.mgr._run_pending_execute_command_idle)
+            self.assertIs(args[2], self.terminal)
         self.assertEqual(
             self.terminal._pending_execute_command, ("uptime", False)
         )
@@ -101,10 +103,9 @@ class ScheduleExecuteTests(unittest.TestCase):
         self.terminal._pending_execute_command = ("seq 1 3", True)
         self.terminal._execute_command_timer_id = 99
         with patch("zashterminal.terminal.manager_execute.GLib") as glib:
-            result = TerminalExecuteMixin._run_pending_execute_command(
+            TerminalExecuteMixin._run_pending_execute_command(
                 self.mgr, self.terminal
             )
-        self.assertFalse(result)
         self.mgr._execute_command_in_terminal.assert_called_once_with(
             self.terminal, "seq 1 3", True
         )
@@ -116,11 +117,18 @@ class ScheduleExecuteTests(unittest.TestCase):
     def test_run_pending_skips_if_already_ran(self):
         self.terminal._execute_command_ran = True
         self.terminal._pending_execute_command = ("true", True)
-        result = TerminalExecuteMixin._run_pending_execute_command(
-            self.mgr, self.terminal
-        )
-        self.assertFalse(result)
+        TerminalExecuteMixin._run_pending_execute_command(self.mgr, self.terminal)
         self.mgr._execute_command_in_terminal.assert_not_called()
+
+    def test_idle_wrapper_stops_glib_source(self):
+        self.mgr._run_pending_execute_command = MagicMock()
+        with patch("zashterminal.terminal.manager_execute.GLib") as glib:
+            glib.SOURCE_REMOVE = False
+            result = TerminalExecuteMixin._run_pending_execute_command_idle(
+                self.mgr, self.terminal
+            )
+        self.mgr._run_pending_execute_command.assert_called_once_with(self.terminal)
+        self.assertIs(result, glib.SOURCE_REMOVE)
 
 
 class SpawnCallbackExecuteTests(unittest.TestCase):

@@ -65,7 +65,7 @@ class TerminalSSHLifecycleMixin:
 
     def _show_ssh_connection_error_dialog(
         self, session_name, identifier, terminal, terminal_id, child_status
-    ):
+    ) -> None:
         """
         Show SSH connection error using non-blocking inline banner.
 
@@ -82,17 +82,17 @@ class TerminalSSHLifecycleMixin:
                     f"Skipping error dialog - terminal not realized for '{session_name}'"
                 )
                 self.lifecycle_manager.unmark_terminal_closing(terminal_id)
-                return False
+                return
             if terminal.get_parent() is None:
                 self.logger.debug(
                     f"Skipping error dialog - terminal orphaned for '{session_name}'"
                 )
                 self.lifecycle_manager.unmark_terminal_closing(terminal_id)
-                return False
+                return
         except Exception as e:
             self.logger.debug(f"Terminal widget check failed: {e}")
             self.lifecycle_manager.unmark_terminal_closing(terminal_id)
-            return False
+            return
 
         # Skip if a retry is in progress - avoid showing banner during retry
         if getattr(terminal, "_retry_in_progress", False):
@@ -100,7 +100,7 @@ class TerminalSSHLifecycleMixin:
                 f"Skipping error banner - retry in progress for '{session_name}'"
             )
             self.lifecycle_manager.unmark_terminal_closing(terminal_id)
-            return False
+            return
 
         # Skip if banner is already showing
         if self.tab_manager and self.tab_manager.has_error_banner(terminal):
@@ -108,7 +108,7 @@ class TerminalSSHLifecycleMixin:
                 f"Skipping error banner - banner already showing for '{session_name}'"
             )
             self.lifecycle_manager.unmark_terminal_closing(terminal_id)
-            return False
+            return
 
         try:
             # Decode the wait status to get the actual exit code
@@ -199,7 +199,6 @@ class TerminalSSHLifecycleMixin:
             self.logger.debug(traceback.format_exc())
             # In case of error, still unmark so the terminal stays open
             self.lifecycle_manager.unmark_terminal_closing(terminal_id)
-        return False
 
     def _retry_ssh_connection_with_timeout(
         self, session: SessionItem, timeout: int
@@ -287,14 +286,17 @@ class TerminalSSHLifecycleMixin:
             terminal._auto_reconnect_timer_id = None
 
             # Show the connection error dialog to give user options
-            GLib.idle_add(
-                self._show_ssh_connection_error_dialog,
-                session.name,
-                session,
-                terminal,
-                terminal_id,
-                1,  # Non-zero status to indicate failure
-            )
+            def _present_ssh_error():
+                self._show_ssh_connection_error_dialog(
+                    session.name,
+                    session,
+                    terminal,
+                    terminal_id,
+                    1,  # Non-zero status to indicate failure
+                )
+                return GLib.SOURCE_REMOVE
+
+            GLib.idle_add(_present_ssh_error)
 
         def attempt_reconnect() -> bool:
             """Attempt a single reconnection."""

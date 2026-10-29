@@ -4,10 +4,14 @@ from __future__ import annotations
 
 import re
 
-# Pre-compiled pattern for ANSI escape sequences used in command detection
-# Matches: Standard CSI, OSC sequences, and malformed CSI sequences
+# Pre-compiled pattern for ANSI escape sequences used in command detection.
+# Quantifiers are bounded to avoid catastrophic backtracking (ReDoS).
 ANSI_ESCAPE_PATTERN = re.compile(
-    r"\x1b\[\??[0-9;]*[A-Za-z]|\x1b\].*?\x07|\[+\??(?:\d*[;]?)*[ABCDEFGHJKPSTfmnsuhl]"
+    r"(?:"
+    r"\x1b\[[0-9;?]{0,64}[A-Za-z]"  # CSI
+    r"|\x1b\][^\x07]{0,512}\x07"  # OSC … BEL
+    r"|\[{1,8}\??(?:\d{1,4};?){0,16}[ABCDEFGHJKPSTfmnsuhl]"  # malformed CSI
+    r")"
 )
 
 _spawner = None
