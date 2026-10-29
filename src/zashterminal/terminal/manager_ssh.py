@@ -298,22 +298,21 @@ class TerminalSSHLifecycleMixin:
 
             GLib.idle_add(_present_ssh_error)
 
-        def attempt_reconnect() -> bool:
-            """Attempt a single reconnection."""
-            # Clear timer reference since we're executing
+        def _perform_reconnect_attempt() -> None:
+            """Run one reconnect attempt; next tick is scheduled separately."""
             terminal._auto_reconnect_timer_id = None
 
             if getattr(terminal, "_auto_reconnect_cancelled", False):
                 display_status(_("Cancelled by user."))
                 terminal._auto_reconnect_active = False
-                return False
+                return
 
             now = time.time()
             if now >= end_time:
                 display_status(_("Time limit reached. Giving up."), is_error=True)
                 display_status(_("Showing connection options..."))
                 show_connection_options()
-                return False
+                return
 
             state["attempt"] += 1
             remaining = int(end_time - now)
@@ -329,43 +328,42 @@ class TerminalSSHLifecycleMixin:
                 )
             )
 
-            # Re-spawn SSH in the same terminal
             try:
                 original_timeout = self.settings_manager.get("ssh_connect_timeout", 30)
                 self.settings_manager.set(
                     "ssh_connect_timeout", timeout_secs, save_immediately=False
                 )
-
-                # Re-spawn the SSH session in the existing terminal
                 self._respawn_ssh_in_terminal(terminal, terminal_id, session)
 
-                # Restore timeout
-                GLib.timeout_add(
-                    1000,
-                    lambda: self.settings_manager.set(
-                        "ssh_connect_timeout", original_timeout, save_immediately=False
+                def _restore_timeout():
+                    self.settings_manager.set(
+                        "ssh_connect_timeout",
+                        original_timeout,
+                        save_immediately=False,
                     )
-                    or False,
-                )
+                    return GLib.SOURCE_REMOVE
 
+                GLib.timeout_add(1000, _restore_timeout)
             except Exception as e:
                 self.logger.error(f"Auto-reconnect spawn error: {e}")
                 display_status(
                     _("Spawn error: {error}").format(error=str(e)), is_error=True
                 )
 
-            # Schedule next attempt (the child-exited handler will check auto_reconnect state)
             if now + interval_secs < end_time:
-                timer_id = GLib.timeout_add_seconds(interval_secs, attempt_reconnect)
+                timer_id = GLib.timeout_add_seconds(
+                    interval_secs, _attempt_reconnect_idle
+                )
                 terminal._auto_reconnect_timer_id = timer_id
             else:
                 display_status(_("Maximum attempts reached."), is_error=True)
                 display_status(_("Showing connection options..."))
                 show_connection_options()
 
-            return False  # Don't repeat this call
+        def _attempt_reconnect_idle() -> bool:
+            _perform_reconnect_attempt()
+            return GLib.SOURCE_REMOVE
 
-        # Display initial message
         display_status(
             _(
                 "Starting auto-reconnect: {attempts} attempts over {mins} minute(s), every {secs}s"
@@ -377,8 +375,7 @@ class TerminalSSHLifecycleMixin:
         )
         display_status(_("Close this tab to cancel."))
 
-        # Start first attempt after a short delay
-        timer_id = GLib.timeout_add(500, attempt_reconnect)
+        timer_id = GLib.timeout_add(500, _attempt_reconnect_idle)
         terminal._auto_reconnect_timer_id = timer_id
 
     def _respawn_ssh_in_terminal(
