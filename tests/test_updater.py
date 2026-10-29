@@ -142,6 +142,37 @@ class UpdateManagerCheckTests(unittest.TestCase):
         self.assertEqual(remote["version"], "0.9.99")
         self.assertEqual(remote["source"], "github-main")
         self.assertEqual(get_mock.call_count, 3)
+
+    def test_default_allow_main_reads_env_and_tags_http_error(self):
+        """Cover None→env resolution and non-OK Tags API branches."""
+        release_resp = mock.Mock(ok=False, status_code=404)
+        tags_resp = mock.Mock(ok=False, status_code=500)
+        main_resp = mock.Mock(ok=True)
+        main_resp.text = 'APP_VERSION = "0.9.99"'
+
+        with mock.patch.dict(
+            "os.environ", {"ZASHTERMINAL_UPDATE_ALLOW_MAIN": "1"}, clear=False
+        ):
+            with mock.patch(
+                "zashterminal.utils.updater.requests.get",
+                side_effect=[release_resp, tags_resp, main_resp],
+            ) as get_mock:
+                # allow_main_fallback=None → allow_main_version_fallback()
+                remote = self.manager._fetch_remote_version()
+
+        self.assertEqual(remote["version"], "0.9.99")
+        self.assertEqual(remote["source"], "github-main")
+        self.assertEqual(get_mock.call_count, 3)
+
+        with mock.patch(
+            "zashterminal.utils.updater.requests.get",
+            side_effect=[release_resp, tags_resp],
+        ) as get_mock:
+            remote = self.manager._fetch_remote_version(allow_main_fallback=False)
+
+        self.assertIsNone(remote)
+        self.assertEqual(get_mock.call_count, 2)
+
     def test_check_writes_state_and_detects_update(self):
         with mock.patch.object(
             self.manager,
