@@ -21,7 +21,7 @@ from ..utils.translation_utils import _
 # from .menus import MainApplicationMenu
 
 if TYPE_CHECKING:
-    from ..window import CommTerminalWindow
+    from ..window import ZashTerminalWindow
 
 # Path to CSS styles directory
 _STYLES_DIR = Path(__file__).parent.parent / "data" / "styles"
@@ -32,10 +32,10 @@ class WindowUIBuilder:
     Builds and assembles the GTK/Adw widgets for the main application window.
 
     This class is responsible for the construction of the UI, separating the
-    'what' (the widgets) from the 'how' (the event logic in CommTerminalWindow).
+    'what' (the widgets) from the 'how' (the event logic in ZashTerminalWindow).
     """
 
-    def __init__(self, window: "CommTerminalWindow"):
+    def __init__(self, window: "ZashTerminalWindow"):
         self.window = window
         self.logger = get_logger("zashterminal.ui.builder")
         self.settings_manager = window.settings_manager

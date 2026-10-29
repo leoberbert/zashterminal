@@ -18,7 +18,7 @@ from ..utils.security import InputSanitizer
 from ..utils.translation_utils import _
 
 if TYPE_CHECKING:
-    from ..window import CommTerminalWindow
+    from ..window import ZashTerminalWindow
 
 
 class WindowStateManager:
@@ -27,7 +27,7 @@ class WindowStateManager:
     splits, and user-defined layouts.
     """
 
-    def __init__(self, window: "CommTerminalWindow"):
+    def __init__(self, window: "ZashTerminalWindow"):
         self.window = window
         self.settings_manager = window.settings_manager
         self.tab_manager = window.tab_manager

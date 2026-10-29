@@ -12,7 +12,7 @@ from ..utils.logger import get_logger, log_session_event
 from ..utils.translation_utils import _
 
 if TYPE_CHECKING:
-    from ..window import CommTerminalWindow
+    from ..window import ZashTerminalWindow
 
 
 class WindowActions:
@@ -22,7 +22,7 @@ class WindowActions:
     component management, and other responsibilities.
     """
 
-    def __init__(self, window: "CommTerminalWindow"):
+    def __init__(self, window: "ZashTerminalWindow"):
         self.window = window
         self.logger = get_logger("zashterminal.ui.actions")
 
@@ -575,7 +575,7 @@ class WindowActions:
             from .dialogs import MoveLayoutDialog
             MoveLayoutDialog(self.window, layout, self.window.folder_store).present()
 
-    # --- Helper Methods for Dialogs (Moved from CommTerminalWindow) ---
+    # --- Helper Methods for Dialogs (Moved from ZashTerminalWindow) ---
 
     def _show_session_edit_dialog(self, session: SessionItem, position: int) -> None:
         from .dialogs import SessionEditDialog

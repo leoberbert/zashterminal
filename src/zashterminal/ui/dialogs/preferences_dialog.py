@@ -534,8 +534,9 @@ class PreferencesDialog(Adw.PreferencesWindow):
         auto_update_row = self._create_switch_row(
             _("Check for updates on startup"),
             _(
-                "Look for newer versions on GitHub when the app starts. "
-                "You can also disable this with ZASHTERMINAL_DISABLE_AUTO_UPDATE=1."
+                "Look for newer Releases or tags on GitHub when the app starts "
+                "(unreleased main tip is ignored unless ZASHTERMINAL_UPDATE_ALLOW_MAIN=1). "
+                "Disable entirely with ZASHTERMINAL_DISABLE_AUTO_UPDATE=1."
             ),
             "auto_update_check",
             default_value=True,

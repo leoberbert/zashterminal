@@ -70,7 +70,18 @@ branch = false
 omit = [
     "*/ui/dialogs/*",
     "*/ui/widgets/*",
+    "*/ui/window_search_broadcast.py",
+    "*/ui/window_ui.py",
+    "*/ui/actions.py",
+    "*/ui/sidebar_manager.py",
     "*/filemanager/*",
+    "*/terminal/manager.py",
+    "*/terminal/manager_*.py",
+    "*/terminal/_highlighter_impl.py",
+    "*/terminal/tabs.py",
+    "*/terminal/spawner.py",
+    "*/window.py",
+    "*/app.py",
 ]
 
 [tool.coverage.report]

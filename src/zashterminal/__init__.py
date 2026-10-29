@@ -113,11 +113,11 @@ def main() -> int:
         logger.info("Creating application instance")
 
         # Lazy import: only load the heavy GTK/Adw/VTE modules when actually running.
-        # Launch flags (-e/--ssh/…) are parsed in CommTerminalApp.do_command_line via
+        # Launch flags (-e/--ssh/…) are parsed in ZashTerminalApp.do_command_line via
         # parse_launch_cli_args — the single runtime source of truth.
-        from .app import CommTerminalApp
+        from .app import ZashTerminalApp
 
-        app = CommTerminalApp()
+        app = ZashTerminalApp()
         return app.run(sys.argv)
     except KeyboardInterrupt:
         logger.info("Application interrupted by user.")

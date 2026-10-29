@@ -250,6 +250,18 @@ Highlight rules ship in `data/highlights/` (docker, git, systemctl, kubectl, and
 3. Commit and push  
 4. Open a pull request  
 
+CI runs unit tests on Python 3.10–3.13 with coverage. Pull requests also trigger a [SonarQube Cloud](https://sonarcloud.io) scan when the repository secret `SONAR_TOKEN` is set (optional `SONAR_ORGANIZATION` / `SONAR_PROJECT_KEY`). See `sonar-project.properties`.
+
+**Important:** in SonarQube Cloud → project → **Administration → Analysis Method**, disable **Automatic Analysis**. CI analysis and Automatic Analysis cannot run together.
+
+Local checks:
+
+```bash
+python3 -m pip install -e ".[dev]"
+PYTHONPATH=src python3 -m coverage run -m unittest discover -s tests -v
+PYTHONPATH=src python3 -m coverage report
+```
+
 ---
 
 ## License & support

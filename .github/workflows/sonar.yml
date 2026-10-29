@@ -1,0 +1,86 @@
+name: SonarQube
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: sonar-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  sonarcloud:
+    name: SonarQube Cloud analysis
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Require SONAR_TOKEN
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          if [ -z "${SONAR_TOKEN}" ]; then
+            echo "::error::SONAR_TOKEN is missing. Add it under Settings → Secrets → Actions (not Agents)."
+            exit 1
+          fi
+
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install system libraries for PyGObject / wallpaper
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libgirepository-2.0-dev \
+            gcc \
+            libcairo2-dev \
+            pkg-config \
+            python3-dev \
+            gir1.2-glib-2.0 \
+            gir1.2-freedesktop \
+            gir1.2-gdkpixbuf-2.0 \
+            gir1.2-gtk-4.0 \
+            gir1.2-adw-1 \
+            gir1.2-vte-3.91 \
+            gir1.2-pango-1.0 \
+            gir1.2-secret-1 \
+            libgtk-4-1 \
+            libadwaita-1-0 \
+            libvte-2.91-gtk4-0 \
+            libsecret-1-0 \
+            imagemagick
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade "pip==25.2"
+          # Editable install needs build tooling; pin and prefer wheels for the rest.
+          python -m pip install --only-binary=:all: "coverage[toml]==7.10.6" || \
+            python -m pip install "coverage[toml]==7.10.6"
+          python -m pip install -e ".[dev]"
+
+      - name: Run tests with coverage XML
+        env:
+          PYTHONPATH: src
+        run: |
+          python -m coverage run -m unittest discover -s tests -q
+          python -m coverage xml -o coverage.xml
+          python -m coverage report
+
+      # Pin full commit SHA (Sonar rule); v6 is the supported scanner action line.
+      - name: SonarQube Scan
+        uses: SonarSource/sonarqube-scan-action@fd88b7d7ccbaefd23d8f36f73b59db7a3d246602 # v6
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args: >
+            -Dsonar.organization=${{ vars.SONAR_ORGANIZATION || 'leoberbert' }}
+            -Dsonar.projectKey=${{ vars.SONAR_PROJECT_KEY || 'leoberbert_zashterminal' }}

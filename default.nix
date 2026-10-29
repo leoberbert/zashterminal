@@ -48,11 +48,12 @@ python3Packages.buildPythonApplication {
   ];
 
   # NixOS/Wayland stacks can hit EGL/ZINK crashes with some drivers.
-  # Keep conservative defaults for stability; users can override at runtime.
+  # GDK backend policy is shared with install.sh via scripts/gdk_backend_env.sh
+  # (prefer wayland,x11 when the backend exists; force x11 when it does not).
   makeWrapperArgs = [
     "--prefix PATH : ${imagemagick}/bin"
     "--set-default GSK_RENDERER cairo"
-    "--set-default GDK_BACKEND wayland,x11"
+    "--run source ${./scripts/gdk_backend_env.sh}"
   ];
 
   postInstall = ''
