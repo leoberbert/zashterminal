@@ -7,7 +7,6 @@ on:
   pull_request:
   workflow_dispatch:
 
-# Cancel older analyses on the same PR/branch.
 concurrency:
   group: sonar-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -16,10 +15,17 @@ jobs:
   sonarcloud:
     name: SonarQube Cloud analysis
     runs-on: ubuntu-latest
-    # Skip when the token is not configured (forks / local mirrors).
-    if: ${{ secrets.SONAR_TOKEN != '' }}
 
     steps:
+      - name: Require SONAR_TOKEN
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          if [ -z "${SONAR_TOKEN}" ]; then
+            echo "::error::SONAR_TOKEN is missing. Add it under Settings → Secrets → Actions (not Agents)."
+            exit 1
+          fi
+
       - name: Checkout
         uses: actions/checkout@v5
         with:
@@ -72,5 +78,5 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
           args: >
-            -Dsonar.organization=${{ secrets.SONAR_ORGANIZATION || 'leoberbert' }}
-            -Dsonar.projectKey=${{ secrets.SONAR_PROJECT_KEY || 'leoberbert_zashterminal' }}
+            -Dsonar.organization=${{ vars.SONAR_ORGANIZATION || 'leoberbert' }}
+            -Dsonar.projectKey=${{ vars.SONAR_PROJECT_KEY || 'leoberbert_zashterminal' }}
