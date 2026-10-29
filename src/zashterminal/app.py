@@ -45,7 +45,7 @@ from .utils.translation_utils import _
 # from .utils.security import create_security_auditor  # Loaded on first access via property
 
 if TYPE_CHECKING:
-    from .window import CommTerminalWindow
+    from .window import ZashTerminalWindow
 
 _DESKTOP_WORKING_DIRECTORY_PLACEHOLDERS = {
     "%d",
@@ -57,7 +57,7 @@ _DESKTOP_WORKING_DIRECTORY_PLACEHOLDERS = {
 }
 
 
-class CommTerminalApp(Adw.Application):
+class ZashTerminalApp(Adw.Application):
     """Main application class for Zashterminal."""
 
     def __init__(self):
@@ -69,7 +69,7 @@ class CommTerminalApp(Adw.Application):
         self.logger.info(f"Initializing {APP_TITLE} v{APP_VERSION}")
 
         self.settings_manager: Optional[SettingsManager] = None
-        self._main_window: Optional["CommTerminalWindow"] = None
+        self._main_window: Optional["ZashTerminalWindow"] = None
         self._backup_manager = None
         self._security_auditor = None
         self._platform_info = None  # Lazy loaded via property
@@ -1105,10 +1105,10 @@ class CommTerminalApp(Adw.Application):
         if window == self._main_window:
             self._main_window = None
 
-    def create_new_window(self, **kwargs) -> "CommTerminalWindow":
+    def create_new_window(self, **kwargs) -> "ZashTerminalWindow":
         """Create a new main window, passing through any initial arguments."""
         try:
-            from .window import CommTerminalWindow
+            from .window import ZashTerminalWindow
 
             init_args = {
                 "initial_working_directory": kwargs.get("initial_working_directory"),
@@ -1122,7 +1122,7 @@ class CommTerminalApp(Adw.Application):
                 "detached_terminals_data": kwargs.get("detached_terminals_data"),
                 "detached_file_manager": kwargs.get("detached_file_manager"),
             }
-            window = CommTerminalWindow(
+            window = ZashTerminalWindow(
                 application=self, settings_manager=self.settings_manager, **init_args
             )
             self.add_window(window)

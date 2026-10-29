@@ -99,6 +99,19 @@ def is_auto_update_disabled_by_env(
     return env.get("ZASHTERMINAL_DISABLE_AUTO_UPDATE", "").strip().lower() in _TRUTHY
 
 
+def allow_main_version_fallback(
+    environ: Optional[Dict[str, str]] = None,
+) -> bool:
+    """Whether update checks may use raw ``main`` APP_VERSION as last resort.
+
+    Default is False so installed builds only prompt on Releases/tags and avoid
+    surprise bumps from an unreleased ``main``. Opt in with
+    ``ZASHTERMINAL_UPDATE_ALLOW_MAIN=1`` (useful for developers tracking tip).
+    """
+    env = environ if environ is not None else os.environ
+    return env.get("ZASHTERMINAL_UPDATE_ALLOW_MAIN", "").strip().lower() in _TRUTHY
+
+
 class UpdateManager:
     """Checks GitHub for new versions and builds update commands."""
 
@@ -162,8 +175,13 @@ class UpdateManager:
             "source": "github-main",
         }
 
-    def _fetch_remote_version(self) -> Optional[Dict[str, str]]:
-        """Resolve remote version: Releases → Tags → raw main APP_VERSION."""
+    def _fetch_remote_version(
+        self, *, allow_main_fallback: Optional[bool] = None
+    ) -> Optional[Dict[str, str]]:
+        """Resolve remote version: Releases → Tags → (optional) raw main."""
+        if allow_main_fallback is None:
+            allow_main_fallback = allow_main_version_fallback()
+
         headers = {
             "Accept": "application/vnd.github+json",
             "User-Agent": "zashterminal-updater",
@@ -192,13 +210,29 @@ class UpdateManager:
                 parsed = self._parse_tags_payload(r.json())
                 if parsed:
                     return parsed
-                self.logger.info("No semver tags found; falling back to main config.")
+                if allow_main_fallback:
+                    self.logger.info(
+                        "No semver tags found; falling back to main config."
+                    )
+                else:
+                    self.logger.info(
+                        "No semver tags found; skipping main fallback "
+                        "(set ZASHTERMINAL_UPDATE_ALLOW_MAIN=1 to enable)."
+                    )
             else:
                 self.logger.warning(
-                    f"Tags API returned HTTP {r.status_code}; falling back to main."
+                    f"Tags API returned HTTP {r.status_code}"
+                    + (
+                        "; falling back to main."
+                        if allow_main_fallback
+                        else "; not using main fallback."
+                    )
                 )
         except Exception as e:
             self.logger.warning(f"Tags API check failed: {e}")
+
+        if not allow_main_fallback:
+            return None
 
         try:
             r = requests.get(RAW_CONFIG_MAIN_URL, timeout=8)
@@ -210,7 +244,11 @@ class UpdateManager:
         return None
 
     def check_for_updates(
-        self, local_version: str, *, enabled: bool = True
+        self,
+        local_version: str,
+        *,
+        enabled: bool = True,
+        allow_main_fallback: Optional[bool] = None,
     ) -> Dict[str, Any]:
         if is_auto_update_disabled_by_env():
             return {"checked": False, "reason": "disabled-by-env"}
@@ -240,7 +278,9 @@ class UpdateManager:
                 "remote_source": str(state.get("last_remote_source", "cached")),
             }
 
-        remote = self._fetch_remote_version()
+        remote = self._fetch_remote_version(
+            allow_main_fallback=allow_main_fallback
+        )
         state["initialized"] = True
         state["last_check"] = now
         state["last_check_day"] = today

@@ -18,7 +18,7 @@ from ...utils.logger import get_logger
 from ...utils.translation_utils import _
 
 if TYPE_CHECKING:
-    from ...window import CommTerminalWindow
+    from ...window import ZashTerminalWindow
 
 
 class InlineContextMenu(Gtk.Box):
@@ -30,7 +30,7 @@ class InlineContextMenu(Gtk.Box):
     a "Go Back" button to return to the session list.
     """
 
-    def __init__(self, parent_window: "CommTerminalWindow"):
+    def __init__(self, parent_window: "ZashTerminalWindow"):
         super().__init__(orientation=Gtk.Orientation.VERTICAL, spacing=0)
         self.logger = get_logger("zashterminal.ui.inline_context_menu")
         self.parent_window = parent_window

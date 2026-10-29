@@ -17,7 +17,7 @@ from ..utils.translation_utils import _
 if TYPE_CHECKING:
     from ..sessions.tree import SessionTreeView
     from ..settings.manager import SettingsManager
-    from ..window import CommTerminalWindow
+    from ..window import ZashTerminalWindow
     from .window_ui import WindowUIBuilder
 
 
@@ -27,7 +27,7 @@ class SidebarManager:
     including the flap, popover for auto-hide mode, search, and sizing.
     """
 
-    def __init__(self, window: "CommTerminalWindow", ui: "WindowUIBuilder"):
+    def __init__(self, window: "ZashTerminalWindow", ui: "WindowUIBuilder"):
         self.window = window
         self.settings_manager: "SettingsManager" = window.settings_manager
         self.session_tree: "SessionTreeView" = window.session_tree

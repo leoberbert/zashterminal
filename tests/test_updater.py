@@ -15,6 +15,7 @@ from zashterminal.utils.updater import (
     UpdateManager,
     _is_remote_newer,
     _normalize_version,
+    allow_main_version_fallback,
     is_arch_family,
     is_auto_update_disabled_by_env,
 )
@@ -42,6 +43,12 @@ class DistroAndEnvTests(unittest.TestCase):
         self.assertTrue(is_auto_update_disabled_by_env({"ZASHTERMINAL_DISABLE_AUTO_UPDATE": "1"}))
         self.assertTrue(is_auto_update_disabled_by_env({"ZASHTERMINAL_DISABLE_AUTO_UPDATE": "true"}))
         self.assertFalse(is_auto_update_disabled_by_env({}))
+
+    def test_main_fallback_opt_in(self):
+        self.assertFalse(allow_main_version_fallback({}))
+        self.assertTrue(
+            allow_main_version_fallback({"ZASHTERMINAL_UPDATE_ALLOW_MAIN": "1"})
+        )
 
 
 class UpdateManagerParseTests(unittest.TestCase):
@@ -93,7 +100,7 @@ class UpdateManagerCheckTests(unittest.TestCase):
             result = self.manager.check_for_updates("0.8.10", enabled=True)
         self.assertEqual(result["reason"], "disabled-by-env")
 
-    def test_fetch_order_release_then_tags_then_main(self):
+    def test_fetch_order_release_then_tags_skips_main_by_default(self):
         release_resp = mock.Mock(ok=False, status_code=404)
         tags_resp = mock.Mock(ok=True)
         tags_resp.json.return_value = [{"name": "v0.8.16"}]
@@ -104,12 +111,37 @@ class UpdateManagerCheckTests(unittest.TestCase):
             "zashterminal.utils.updater.requests.get",
             side_effect=[release_resp, tags_resp, main_resp],
         ) as get_mock:
-            remote = self.manager._fetch_remote_version()
+            remote = self.manager._fetch_remote_version(allow_main_fallback=False)
 
         self.assertEqual(remote["version"], "0.8.16")
         self.assertEqual(remote["source"], "github-tag")
         self.assertEqual(get_mock.call_count, 2)
 
+    def test_no_tags_skips_main_unless_opted_in(self):
+        release_resp = mock.Mock(ok=False, status_code=404)
+        tags_resp = mock.Mock(ok=True)
+        tags_resp.json.return_value = [{"name": "nightly"}]
+        main_resp = mock.Mock(ok=True)
+        main_resp.text = 'APP_VERSION = "0.9.99"'
+
+        with mock.patch(
+            "zashterminal.utils.updater.requests.get",
+            side_effect=[release_resp, tags_resp, main_resp],
+        ) as get_mock:
+            remote = self.manager._fetch_remote_version(allow_main_fallback=False)
+
+        self.assertIsNone(remote)
+        self.assertEqual(get_mock.call_count, 2)
+
+        with mock.patch(
+            "zashterminal.utils.updater.requests.get",
+            side_effect=[release_resp, tags_resp, main_resp],
+        ) as get_mock:
+            remote = self.manager._fetch_remote_version(allow_main_fallback=True)
+
+        self.assertEqual(remote["version"], "0.9.99")
+        self.assertEqual(remote["source"], "github-main")
+        self.assertEqual(get_mock.call_count, 3)
     def test_check_writes_state_and_detects_update(self):
         with mock.patch.object(
             self.manager,

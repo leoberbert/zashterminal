@@ -11,8 +11,9 @@ import unittest
 from unittest.mock import MagicMock, patch
 
 from zashterminal.terminal.manager import TerminalManager
+from zashterminal.terminal.manager_execute import TerminalExecuteMixin
 from zashterminal.terminal.tabs import TabManager
-from zashterminal.window import CommTerminalWindow
+from zashterminal.window import ZashTerminalWindow
 
 
 class ExecuteFeedChildTests(unittest.TestCase):
@@ -24,14 +25,14 @@ class ExecuteFeedChildTests(unittest.TestCase):
         self.terminal.feed_child.side_effect = lambda data: self.feeds.append(data)
 
     def test_close_after_feeds_command_then_exit(self):
-        ok = TerminalManager._execute_command_in_terminal(
+        ok = TerminalExecuteMixin._execute_command_in_terminal(
             self.mgr, self.terminal, "echo a\necho b", True
         )
         self.assertTrue(ok)
         self.assertEqual(self.feeds, [b"echo a\n", b"echo b\n", b"exit\n"])
 
     def test_no_close_after_skips_exit(self):
-        ok = TerminalManager._execute_command_in_terminal(
+        ok = TerminalExecuteMixin._execute_command_in_terminal(
             self.mgr, self.terminal, "htop", False
         )
         self.assertTrue(ok)
@@ -40,7 +41,7 @@ class ExecuteFeedChildTests(unittest.TestCase):
 
     def test_falsy_command_is_noop(self):
         self.assertFalse(
-            TerminalManager._execute_command_in_terminal(
+            TerminalExecuteMixin._execute_command_in_terminal(
                 self.mgr, self.terminal, "", True
             )
         )
@@ -48,14 +49,14 @@ class ExecuteFeedChildTests(unittest.TestCase):
 
     def test_whitespace_only_with_close_still_sends_exit(self):
         # Matches current manager behavior: blank lines are filtered, then exit.
-        ok = TerminalManager._execute_command_in_terminal(
+        ok = TerminalExecuteMixin._execute_command_in_terminal(
             self.mgr, self.terminal, "  \n  ", True
         )
         self.assertTrue(ok)
         self.assertEqual(self.feeds, [b"exit\n"])
 
     def test_blank_lines_are_skipped(self):
-        TerminalManager._execute_command_in_terminal(
+        TerminalExecuteMixin._execute_command_in_terminal(
             self.mgr, self.terminal, "one\n\n\ntwo\n", False
         )
         self.assertEqual(self.feeds, [b"one\n", b"two\n"])
@@ -71,8 +72,8 @@ class ScheduleExecuteTests(unittest.TestCase):
 
     def test_idle_when_cwd_uri_ready(self):
         self.terminal.get_current_directory_uri.return_value = "file:///tmp"
-        with patch("zashterminal.terminal.manager.GLib") as glib:
-            TerminalManager._schedule_execute_command(
+        with patch("zashterminal.terminal.manager_execute.GLib") as glib:
+            TerminalExecuteMixin._schedule_execute_command(
                 self.mgr, self.terminal, "true", True
             )
             glib.idle_add.assert_called_once_with(
@@ -85,8 +86,8 @@ class ScheduleExecuteTests(unittest.TestCase):
 
     def test_timeout_when_cwd_uri_missing(self):
         self.terminal.get_current_directory_uri.return_value = None
-        with patch("zashterminal.terminal.manager.GLib") as glib:
-            TerminalManager._schedule_execute_command(
+        with patch("zashterminal.terminal.manager_execute.GLib") as glib:
+            TerminalExecuteMixin._schedule_execute_command(
                 self.mgr, self.terminal, "uptime", False
             )
             glib.timeout_add.assert_called_once()
@@ -99,8 +100,8 @@ class ScheduleExecuteTests(unittest.TestCase):
     def test_run_pending_marks_ran_and_clears(self):
         self.terminal._pending_execute_command = ("seq 1 3", True)
         self.terminal._execute_command_timer_id = 99
-        with patch("zashterminal.terminal.manager.GLib") as glib:
-            result = TerminalManager._run_pending_execute_command(
+        with patch("zashterminal.terminal.manager_execute.GLib") as glib:
+            result = TerminalExecuteMixin._run_pending_execute_command(
                 self.mgr, self.terminal
             )
         self.assertFalse(result)
@@ -115,7 +116,7 @@ class ScheduleExecuteTests(unittest.TestCase):
     def test_run_pending_skips_if_already_ran(self):
         self.terminal._execute_command_ran = True
         self.terminal._pending_execute_command = ("true", True)
-        result = TerminalManager._run_pending_execute_command(
+        result = TerminalExecuteMixin._run_pending_execute_command(
             self.mgr, self.terminal
         )
         self.assertFalse(result)
@@ -186,7 +187,7 @@ class CreateExecuteTabWiringTests(unittest.TestCase):
     def test_window_create_execute_tab_forwards_close_after(self):
         window = MagicMock()
         window.tab_manager = MagicMock()
-        CommTerminalWindow.create_execute_tab(window, "ls -la", "/tmp", True)
+        ZashTerminalWindow.create_execute_tab(window, "ls -la", "/tmp", True)
         window.tab_manager.create_local_tab.assert_called_once_with(
             working_directory="/tmp",
             execute_command="ls -la",
@@ -196,7 +197,7 @@ class CreateExecuteTabWiringTests(unittest.TestCase):
     def test_window_create_execute_tab_keeps_shell_open(self):
         window = MagicMock()
         window.tab_manager = MagicMock()
-        CommTerminalWindow.create_execute_tab(window, "htop", None, False)
+        ZashTerminalWindow.create_execute_tab(window, "htop", None, False)
         window.tab_manager.create_local_tab.assert_called_once_with(
             working_directory=None,
             execute_command="htop",

@@ -32,7 +32,7 @@ def main():
             from zashterminal.settings.manager import SettingsManager
             from zashterminal.ui.color_scheme_dialog import ColorSchemeDialog
             from zashterminal.utils.theme_engine import ThemeEngine
-            from zashterminal.window import CommTerminalWindow
+            from zashterminal.window import ZashTerminalWindow
 
             Adw.init()
 
@@ -75,7 +75,7 @@ def main():
                     _update_tooltip_colors=Mock(),
                     _update_file_manager_transparency=Mock(),
                 )
-                listener = lambda *args: CommTerminalWindow._on_setting_changed(fake_window, *args) if args[0] == "wallpaper_theme" else None
+                listener = lambda *args: ZashTerminalWindow._on_setting_changed(fake_window, *args) if args[0] == "wallpaper_theme" else None
                 settings.add_change_listener(listener)
                 image_path = Path(directory) / "wallpaper.png"
                 image = GdkPixbuf.Pixbuf.new(GdkPixbuf.Colorspace.RGB, False, 8, 1024, 768)
