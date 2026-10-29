@@ -56,6 +56,18 @@ class PackUnpackTests(unittest.TestCase):
         self.assertIsNone(command)
         self.assertFalse(close_after)
 
+    def test_unpack_rejects_non_dict_payload(self):
+        command, close_after = unpack_execute_user_data((1, "not-a-dict"))
+        self.assertIsNone(command)
+        self.assertFalse(close_after)
+
+    def test_unpack_empty_string_command_becomes_none(self):
+        command, close_after = unpack_execute_user_data(
+            {"execute_command": "", "close_after_execute": True}
+        )
+        self.assertIsNone(command)
+        self.assertTrue(close_after)
+
 
 if __name__ == "__main__":
     unittest.main()
