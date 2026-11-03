@@ -179,6 +179,14 @@ class MainApplicationMenu:
                 "action": "win.import-securecrt-sessions",
             },
             {
+                "label": _("Import PuTTY Sessions"),
+                "action": "win.import-putty-sessions",
+            },
+            {
+                "label": _("Import mRemoteNG Sessions"),
+                "action": "win.import-mremoteng-sessions",
+            },
+            {
                 "label": _("Start TFTP Server"),
                 "action": "win.toggle-tftp-server",
                 "dynamic_label": "tftp_server",
@@ -190,6 +198,8 @@ class MainApplicationMenu:
         actions_that_close_menu = {
             "win.new-window",
             "win.import-securecrt-sessions",
+            "win.import-putty-sessions",
+            "win.import-mremoteng-sessions",
             "win.toggle-tftp-server",
             "win.preferences",
             "win.highlight-settings",

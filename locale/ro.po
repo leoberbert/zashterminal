@@ -8561,3 +8561,23 @@ msgstr "Eroare la ștergerea layout-ului"
 #: NEEDS WORK
 msgid "Error Moving Layout"
 msgstr "Eroare la mutarea layout-ului"
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "All tabs"
+msgstr "Toate filele"
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "Search in all tabs and panes; Next/Previous jumps between them"
+msgstr "Caută în toate filele și panourile; Următor/Anterior sare între ele"
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "Import PuTTY Sessions"
+msgstr "Importă sesiuni PuTTY"
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "Import mRemoteNG Sessions"
+msgstr "Importă sesiuni mRemoteNG"

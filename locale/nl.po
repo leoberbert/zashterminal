@@ -8553,3 +8553,23 @@ msgstr "Fout bij het verwijderen van lay-out"
 #: NEEDS WORK
 msgid "Error Moving Layout"
 msgstr "Fout bij het verplaatsen van de lay-out"
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "All tabs"
+msgstr "Alle tabbladen"
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "Search in all tabs and panes; Next/Previous jumps between them"
+msgstr "Zoeken in alle tabbladen en panelen; Volgende/Vorige springt ertussen"
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "Import PuTTY Sessions"
+msgstr "PuTTY-sessies importeren"
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "Import mRemoteNG Sessions"
+msgstr "mRemoteNG-sessies importeren"

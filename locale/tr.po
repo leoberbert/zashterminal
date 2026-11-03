@@ -8542,3 +8542,23 @@ msgstr "Düzen Silme Hatası"
 #: NEEDS WORK
 msgid "Error Moving Layout"
 msgstr "Düzen Taşıma Hatası"
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "All tabs"
+msgstr "Tüm sekmeler"
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "Search in all tabs and panes; Next/Previous jumps between them"
+msgstr "Tüm sekmelerde ve bölmelerde ara; Sonraki/Önceki aralarında geçer"
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "Import PuTTY Sessions"
+msgstr "PuTTY Oturumlarını İçe Aktar"
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "Import mRemoteNG Sessions"
+msgstr "mRemoteNG Oturumlarını İçe Aktar"

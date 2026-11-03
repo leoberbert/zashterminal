@@ -8502,3 +8502,23 @@ msgstr "レイアウトの削除中にエラーが発生しました"
 #: NEEDS WORK
 msgid "Error Moving Layout"
 msgstr "レイアウトの移動エラー"
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "All tabs"
+msgstr "すべてのタブ"
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "Search in all tabs and panes; Next/Previous jumps between them"
+msgstr "すべてのタブとペインを検索；次へ/前へで切り替え"
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "Import PuTTY Sessions"
+msgstr "PuTTYセッションをインポート"
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "Import mRemoteNG Sessions"
+msgstr "mRemoteNGセッションをインポート"

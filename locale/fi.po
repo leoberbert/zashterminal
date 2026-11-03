@@ -8549,3 +8549,23 @@ msgstr "Virhe asettelun poistamisessa"
 #: NEEDS WORK
 msgid "Error Moving Layout"
 msgstr "Virhe siirrettäessä asettelua"
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "All tabs"
+msgstr "Kaikki välilehdet"
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "Search in all tabs and panes; Next/Previous jumps between them"
+msgstr "Hae kaikista välilehdistä ja ruuduista; Seuraava/Edellinen siirtyy niiden välillä"
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "Import PuTTY Sessions"
+msgstr "Tuo PuTTY-istunnot"
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "Import mRemoteNG Sessions"
+msgstr "Tuo mRemoteNG-istunnot"

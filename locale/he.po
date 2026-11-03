@@ -8518,3 +8518,23 @@ msgstr "שגיאה במחיקת פריסה"
 #: NEEDS WORK
 msgid "Error Moving Layout"
 msgstr "שגיאה בהעברת פריסה"
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "All tabs"
+msgstr "כל הלשוניות"
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "Search in all tabs and panes; Next/Previous jumps between them"
+msgstr "חיפוש בכל הלשוניות והחלוניות; הבא/הקודם קופץ ביניהן"
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "Import PuTTY Sessions"
+msgstr "ייבוא הפעלות PuTTY"
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "Import mRemoteNG Sessions"
+msgstr "ייבוא הפעלות mRemoteNG"

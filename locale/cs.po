@@ -8539,3 +8539,23 @@ msgstr "Chyba při odstraňování rozložení"
 #: NEEDS WORK
 msgid "Error Moving Layout"
 msgstr "Chyba při přesouvání rozložení"
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "All tabs"
+msgstr "Všechny karty"
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "Search in all tabs and panes; Next/Previous jumps between them"
+msgstr "Hledat ve všech kartách a panelech; Další/Předchozí přeskakuje mezi nimi"
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "Import PuTTY Sessions"
+msgstr "Importovat relace PuTTY"
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "Import mRemoteNG Sessions"
+msgstr "Importovat relace mRemoteNG"

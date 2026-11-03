@@ -257,6 +257,7 @@ class DefaultSettings:
             # Search Settings
             "search_case_sensitive": False,
             "search_use_regex": False,
+            "search_all_tabs": False,
             # Highlighting Settings
             "ignored_highlight_commands": [
                 "grep",

@@ -8560,3 +8560,23 @@ msgstr "Hiba a elrendezés törlésekor"
 #: NEEDS WORK
 msgid "Error Moving Layout"
 msgstr "Hiba a elrendezés áthelyezésekor"
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "All tabs"
+msgstr "Összes lap"
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "Search in all tabs and panes; Next/Previous jumps between them"
+msgstr "Keresés az összes lapon és panelen; Következő/Előző vált közöttük"
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "Import PuTTY Sessions"
+msgstr "PuTTY munkamenetek importálása"
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "Import mRemoteNG Sessions"
+msgstr "mRemoteNG munkamenetek importálása"

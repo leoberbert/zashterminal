@@ -8551,3 +8551,23 @@ msgstr "Feil ved sletting av oppsett"
 #: NEEDS WORK
 msgid "Error Moving Layout"
 msgstr "Feil ved flytting av oppsett"
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "All tabs"
+msgstr "Alle faner"
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "Search in all tabs and panes; Next/Previous jumps between them"
+msgstr "Søk i alle faner og paneler; Neste/Forrige hopper mellom dem"
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "Import PuTTY Sessions"
+msgstr "Importer PuTTY-økter"
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "Import mRemoteNG Sessions"
+msgstr "Importer mRemoteNG-økter"

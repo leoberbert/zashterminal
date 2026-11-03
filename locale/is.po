@@ -8541,3 +8541,23 @@ msgstr "Villa að eyða uppsetningu"
 #: NEEDS WORK
 msgid "Error Moving Layout"
 msgstr "Villa að færa uppsetningu"
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "All tabs"
+msgstr "Allir flipar"
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "Search in all tabs and panes; Next/Previous jumps between them"
+msgstr "Leita í öllum flipum og rúðum; Næsta/Fyrri hoppar á milli"
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "Import PuTTY Sessions"
+msgstr "Flytja inn PuTTY lotur"
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "Import mRemoteNG Sessions"
+msgstr "Flytja inn mRemoteNG lotur"

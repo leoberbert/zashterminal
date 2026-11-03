@@ -8968,3 +8968,23 @@ msgstr "Papel de parede claro"
 #: src/zashterminal/ui/wallpaper_group.py
 msgid "Several wallpaper variants were found. Select the image matching your desktop; light and dark variants can have different colors."
 msgstr "Foram encontradas várias versões do papel de parede. Selecione a imagem que corresponde à sua área de trabalho; as versões clara e escura podem ter cores diferentes."
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "All tabs"
+msgstr "Todas as abas"
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "Search in all tabs and panes; Next/Previous jumps between them"
+msgstr "Buscar em todas as abas e painéis; Próximo/Anterior salta entre eles"
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "Import PuTTY Sessions"
+msgstr "Importar sessões do PuTTY"
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "Import mRemoteNG Sessions"
+msgstr "Importar sessões do mRemoteNG"

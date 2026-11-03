@@ -8582,3 +8582,23 @@ msgstr "Fehler beim Löschen des Layouts"
 #: NEEDS WORK
 msgid "Error Moving Layout"
 msgstr "Fehler beim Verschieben des Layouts"
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "All tabs"
+msgstr "Alle Tabs"
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "Search in all tabs and panes; Next/Previous jumps between them"
+msgstr "In allen Tabs und Panels suchen; Weiter/Zurück wechselt dazwischen"
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "Import PuTTY Sessions"
+msgstr "PuTTY-Sitzungen importieren"
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "Import mRemoteNG Sessions"
+msgstr "mRemoteNG-Sitzungen importieren"

@@ -8499,3 +8499,23 @@ msgstr "레이아웃 삭제 오류"
 #: NEEDS WORK
 msgid "Error Moving Layout"
 msgstr "레이아웃 이동 오류"
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "All tabs"
+msgstr "모든 탭"
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "Search in all tabs and panes; Next/Previous jumps between them"
+msgstr "모든 탭과 창에서 검색; 다음/이전으로 이동합니다"
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "Import PuTTY Sessions"
+msgstr "PuTTY 세션 가져오기"
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "Import mRemoteNG Sessions"
+msgstr "mRemoteNG 세션 가져오기"

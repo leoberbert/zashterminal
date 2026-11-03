@@ -9309,3 +9309,23 @@ msgstr "Restart Now"
 # File: src/zashterminal/app.py, line: 443
 msgid "Could not restart automatically. Please close and open Zashterminal again."
 msgstr "Could not restart automatically. Please close and open Zashterminal again."
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "All tabs"
+msgstr "All tabs"
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "Search in all tabs and panes; Next/Previous jumps between them"
+msgstr "Search in all tabs and panes; Next/Previous jumps between them"
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "Import PuTTY Sessions"
+msgstr "Import PuTTY Sessions"
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "Import mRemoteNG Sessions"
+msgstr "Import mRemoteNG Sessions"

@@ -64,6 +64,8 @@ class ZashTerminalWindow(WindowSearchBroadcastMixin, Adw.ApplicationWindow):
         self.current_search_terminal = None
         self.search_current_occurrence = 0
         self.search_active = False
+        self._global_search_terminals = []
+        self._global_search_index = 0
 
         # Initial state from command line or other windows
         self.initial_working_directory = kwargs.get("initial_working_directory")
@@ -280,6 +282,7 @@ class ZashTerminalWindow(WindowSearchBroadcastMixin, Adw.ApplicationWindow):
         self.search_occurrence_label = self.ui_builder.search_occurrence_label
         self.case_sensitive_switch = self.ui_builder.case_sensitive_switch
         self.regex_switch = self.ui_builder.regex_switch
+        self.search_all_tabs_switch = self.ui_builder.search_all_tabs_switch
         self.command_toolbar = self.ui_builder.command_toolbar
         self.tab_manager.scrolled_tab_bar = self.scrolled_tab_bar
 

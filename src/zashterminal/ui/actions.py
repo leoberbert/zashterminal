@@ -73,6 +73,8 @@ class WindowActions:
             "toggle-broadcast": self.toggle_broadcast,
             "show-command-manager": self.show_command_manager,
             "import-securecrt-sessions": self.import_securecrt_sessions,
+            "import-putty-sessions": self.import_putty_sessions,
+            "import-mremoteng-sessions": self.import_mremoteng_sessions,
             "toggle-tftp-server": self.toggle_tftp_server,
             "preferences": self.preferences,
             "shortcuts": self.shortcuts,
@@ -495,31 +497,7 @@ class WindowActions:
                     folder_path
                 )
             )
-            if import_result.success:
-                self.window.refresh_tree()
-                self.window.toast_overlay.add_toast(
-                    Adw.Toast(title=import_result.message)
-                )
-                if import_result.warnings:
-                    self.logger.warning(
-                        f"SecureCRT import completed with {len(import_result.warnings)} warning(s)."
-                    )
-                    for warning in import_result.warnings:
-                        self.logger.warning(warning)
-                    self.window.toast_overlay.add_toast(
-                        Adw.Toast(
-                            title=_(
-                                "SecureCRT import finished with {count} warning(s)."
-                            ).format(count=len(import_result.warnings))
-                        )
-                    )
-            else:
-                self.window.toast_overlay.add_toast(
-                    Adw.Toast(title=import_result.message)
-                )
-                if import_result.warnings:
-                    for warning in import_result.warnings:
-                        self.logger.warning(warning)
+            self._show_import_result(import_result, source_label="SecureCRT")
         except Exception as exc:
             self.logger.error(f"SecureCRT folder selection failed: {exc}")
             self.window.toast_overlay.add_toast(
@@ -534,6 +512,207 @@ class WindowActions:
                 dialog.destroy()
             except Exception:
                 pass
+
+    def import_putty_sessions(self, *_args):
+        self._hide_tooltip()
+        chooser = Gtk.FileChooserDialog(
+            title=_("Select PuTTY Sessions File"),
+            transient_for=self.window,
+            modal=True,
+            action=Gtk.FileChooserAction.OPEN,
+        )
+        chooser.add_css_class("zashterminal-dialog")
+        chooser.add_button(_("Cancel"), Gtk.ResponseType.CANCEL)
+        chooser.add_button(_("Open"), Gtk.ResponseType.ACCEPT)
+        chooser.set_default_response(Gtk.ResponseType.ACCEPT)
+        filter_reg = Gtk.FileFilter()
+        filter_reg.set_name(_("PuTTY registry / INI (*.reg, *.ini)"))
+        filter_reg.add_pattern("*.reg")
+        filter_reg.add_pattern("*.ini")
+        chooser.add_filter(filter_reg)
+        filter_all = Gtk.FileFilter()
+        filter_all.set_name(_("All files"))
+        filter_all.add_pattern("*")
+        chooser.add_filter(filter_all)
+        try:
+            chooser.set_current_folder(Gio.File.new_for_path(str(Path.home())))
+        except Exception:
+            pass
+        chooser.connect("response", self._on_putty_sessions_file_selected)
+        chooser.present()
+
+    def _on_putty_sessions_file_selected(self, dialog, response_id):
+        try:
+            if response_id != Gtk.ResponseType.ACCEPT:
+                return
+            chosen = dialog.get_file()
+            if not chosen or not chosen.get_path():
+                return
+            file_path = chosen.get_path()
+
+            ask = Adw.MessageDialog(
+                transient_for=self.window,
+                heading=_("Import PuTTY Sessions"),
+                body=_(
+                    "Treat '/' or '\\' in PuTTY session names as folders in the sidebar?"
+                ),
+                close_response="no",
+            )
+            ask.add_response("no", _("No"))
+            ask.add_response("yes", _("Yes"))
+            ask.set_default_response("yes")
+            ask.set_response_appearance("yes", Adw.ResponseAppearance.SUGGESTED)
+
+            def on_ask(dlg, response):
+                try:
+                    split_folders = response == "yes"
+                    import_result = (
+                        self.window.session_operations.import_sessions_from_putty_file(
+                            file_path, split_folders=split_folders
+                        )
+                    )
+                    self._show_import_result(import_result, source_label="PuTTY")
+                finally:
+                    dlg.close()
+
+            ask.connect("response", on_ask)
+            ask.present()
+        except Exception as exc:
+            self.logger.error(f"PuTTY import failed: {exc}")
+            self.window.toast_overlay.add_toast(
+                Adw.Toast(
+                    title=_("Failed to import PuTTY sessions: {error}").format(
+                        error=exc
+                    )
+                )
+            )
+        finally:
+            try:
+                dialog.destroy()
+            except Exception:
+                pass
+
+    def import_mremoteng_sessions(self, *_args):
+        self._hide_tooltip()
+        chooser = Gtk.FileChooserDialog(
+            title=_("Select mRemoteNG confCons.xml File"),
+            transient_for=self.window,
+            modal=True,
+            action=Gtk.FileChooserAction.OPEN,
+        )
+        chooser.add_css_class("zashterminal-dialog")
+        chooser.add_button(_("Cancel"), Gtk.ResponseType.CANCEL)
+        chooser.add_button(_("Open"), Gtk.ResponseType.ACCEPT)
+        chooser.set_default_response(Gtk.ResponseType.ACCEPT)
+        filter_xml = Gtk.FileFilter()
+        filter_xml.set_name(_("mRemoteNG (confCons.xml, *.xml)"))
+        filter_xml.add_pattern("confCons.xml")
+        filter_xml.add_pattern("*.xml")
+        chooser.add_filter(filter_xml)
+        filter_all = Gtk.FileFilter()
+        filter_all.set_name(_("All files"))
+        filter_all.add_pattern("*")
+        chooser.add_filter(filter_all)
+        try:
+            chooser.set_current_folder(Gio.File.new_for_path(str(Path.home())))
+        except Exception:
+            pass
+        chooser.connect("response", self._on_mremoteng_file_selected)
+        chooser.present()
+
+    def _on_mremoteng_file_selected(self, dialog, response_id):
+        try:
+            if response_id != Gtk.ResponseType.ACCEPT:
+                return
+            chosen = dialog.get_file()
+            if not chosen or not chosen.get_path():
+                return
+            file_path = chosen.get_path()
+            self._run_mremoteng_import(file_path, master_password=None)
+        except Exception as exc:
+            self.logger.error(f"mRemoteNG import failed: {exc}")
+            self.window.toast_overlay.add_toast(
+                Adw.Toast(
+                    title=_("Failed to import mRemoteNG sessions: {error}").format(
+                        error=exc
+                    )
+                )
+            )
+        finally:
+            try:
+                dialog.destroy()
+            except Exception:
+                pass
+
+    def _run_mremoteng_import(self, file_path: str, master_password=None):
+        import_result = (
+            self.window.session_operations.import_sessions_from_mremoteng_file(
+                file_path, master_password=master_password
+            )
+        )
+        if (
+            not import_result.success
+            and import_result.message == _("master-password-required")
+        ):
+            prompt = Adw.MessageDialog(
+                transient_for=self.window,
+                heading=_("mRemoteNG Master Password"),
+                body=_(
+                    "This file uses a master password. Enter it to import saved "
+                    "passwords, or skip to import sessions without passwords."
+                ),
+                close_response="skip",
+            )
+            entry = Gtk.PasswordEntry(show_peek_icon=True, hexpand=True)
+            entry.set_margin_top(8)
+            prompt.set_extra_child(entry)
+            prompt.add_response("skip", _("Skip passwords"))
+            prompt.add_response("ok", _("Import"))
+            prompt.set_default_response("ok")
+            prompt.set_response_appearance("ok", Adw.ResponseAppearance.SUGGESTED)
+
+            def on_password(dlg, response):
+                try:
+                    password = entry.get_text() if response == "ok" else ""
+                    result = (
+                        self.window.session_operations.import_sessions_from_mremoteng_file(
+                            file_path, master_password=password
+                        )
+                    )
+                    self._show_import_result(result, source_label="mRemoteNG")
+                finally:
+                    dlg.close()
+
+            prompt.connect("response", on_password)
+            prompt.present()
+            return
+
+        self._show_import_result(import_result, source_label="mRemoteNG")
+    def _show_import_result(self, import_result, *, source_label: str) -> None:
+        if import_result.success:
+            self.window.refresh_tree()
+            self.window.toast_overlay.add_toast(Adw.Toast(title=import_result.message))
+            if import_result.warnings:
+                self.logger.warning(
+                    f"{source_label} import completed with "
+                    f"{len(import_result.warnings)} warning(s)."
+                )
+                for warning in import_result.warnings:
+                    self.logger.warning(warning)
+                self.window.toast_overlay.add_toast(
+                    Adw.Toast(
+                        title=_(
+                            "{source} import finished with {count} warning(s)."
+                        ).format(
+                            source=source_label, count=len(import_result.warnings)
+                        )
+                    )
+                )
+        else:
+            self.window.toast_overlay.add_toast(Adw.Toast(title=import_result.message))
+            if import_result.warnings:
+                for warning in import_result.warnings:
+                    self.logger.warning(warning)
 
     def shortcuts(self, *_args):
         self._hide_tooltip()

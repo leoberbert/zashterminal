@@ -8581,3 +8581,23 @@ msgstr "Viga paigutuse kustutamisel"
 #: NEEDS WORK
 msgid "Error Moving Layout"
 msgstr "Viga paigutuse liigutamisel"
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "All tabs"
+msgstr "Kõik vahekaardid"
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "Search in all tabs and panes; Next/Previous jumps between them"
+msgstr "Otsi kõigist vahekaartidest ja paanidest; Järgmine/Eelmine hüppab nende vahel"
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "Import PuTTY Sessions"
+msgstr "Impordi PuTTY seansid"
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "Import mRemoteNG Sessions"
+msgstr "Impordi mRemoteNG seansid"

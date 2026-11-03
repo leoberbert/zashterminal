@@ -8555,3 +8555,23 @@ msgstr "Błąd podczas usuwania układu"
 #: NEEDS WORK
 msgid "Error Moving Layout"
 msgstr "Błąd przenoszenia układu"
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "All tabs"
+msgstr "Wszystkie karty"
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "Search in all tabs and panes; Next/Previous jumps between them"
+msgstr "Szukaj we wszystkich kartach i panelach; Dalej/Wstecz przełącza między nimi"
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "Import PuTTY Sessions"
+msgstr "Importuj sesje PuTTY"
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "Import mRemoteNG Sessions"
+msgstr "Importuj sesje mRemoteNG"

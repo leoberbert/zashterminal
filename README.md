@@ -25,7 +25,7 @@ Zashterminal combines a VTE terminal with session management, an integrated file
 
 - [Gallery](#gallery)
 - [Features](#features)
-- [SecureCRT & PAM](#securecrt--pam)
+- [Imports & PAM](#imports--pam)
 - [Requirements](#requirements)
 - [Installation](#installation)
 - [Usage](#usage)
@@ -37,68 +37,102 @@ Zashterminal combines a VTE terminal with session management, an integrated file
 
 ## Gallery
 
-### Terminal + file manager
+Screenshots live in [`docs/gallery/`](docs/gallery/) (regenerate with `PYTHONPATH=src python3 scripts/capture_gallery.py`).
 
-Split view with a live shell above and a browsable file list below.
+### Home base
+
+Main window with a live shell — sessions sidebar, tabs, and header actions for search, file manager, and AI.
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/4c264548-909e-4edb-95be-a5dc6a6756bb" alt="Terminal with integrated file manager" width="920">
+  <img src="docs/gallery/01-main-terminal.png" alt="Zashterminal main window" width="920">
 </p>
 
-### Multi-pane layouts
+### Multi-pane ops layout
 
-Tile terminals for monitoring, status, and interactive shells in one window.
+Split horizontally and vertically to watch logs, metrics, and an interactive shell in one tab.
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/6aba3c63-a181-4e3c-8870-d58ceae11daa" alt="Four-pane terminal layout" width="920">
+  <img src="docs/gallery/02-multipane.png" alt="Multi-pane terminal layout" width="920">
 </p>
 
-### Color schemes
+### Integrated file manager
 
-Built-in palettes with live previews; edit or create custom schemes from Preferences.
+Browse local (and remote/SFTP) directories under the terminal — size, permissions, owner, recursive filter.
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/46e41739-7c28-47d7-b4ba-26e9320b0061" alt="Terminal color scheme picker" width="920">
+  <img src="docs/gallery/03-file-manager.png" alt="Terminal with integrated file manager" width="920">
 </p>
 
-### AI assistant — configuration
+### Search across all tabs
 
-Optional AI with Groq, Gemini, OpenRouter, or local models (Ollama / LM Studio). Only text you explicitly send is shared.
+Find bar with **Case sensitive**, **Regex**, and **All tabs** — Next/Previous jumps between matching panes.
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/762fa599-a266-41c3-83c2-f28fe825f0f6" alt="AI assistant configuration dialog" width="920">
+  <img src="docs/gallery/04-search-all-tabs.png" alt="Global search across all tabs" width="920">
 </p>
 
-### AI assistant — chat panel
+### Broadcast a command
 
-Side or docked panel with explanations, suggested commands, and one-click run / copy.
+Type once and send the same command to selected tabs/panes (with optional remembered selection).
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/4dd9482b-420d-4170-878d-e9a652493ec9" alt="AI assistant chat with suggested commands" width="920">
+  <img src="docs/gallery/05-broadcast.png" alt="Broadcast command bar" width="920">
 </p>
 
-### AI assistant — quick prompts
+### Color schemes & wallpaper palettes
 
-Starter prompts for common shell tasks when you open the panel.
+Thirty built-in schemes plus Pywal wallpaper detection — preview before you apply.
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/97aae8ed-6466-46b9-b7e4-ca1256f425ff" alt="AI quick prompts under the terminal" width="920">
+  <img src="docs/gallery/06-color-schemes.png" alt="Color scheme picker" width="920">
 </p>
 
-### File manager
+### Preferences
 
-Browse local directories with size, permissions, and ownership columns — without leaving the terminal.
+Appearance, terminal behavior, profiles/backups, and advanced VTE options in a searchable Preferences window.
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/a40bd623-eb31-4a8b-9fe2-e327d8b7de0c" alt="Integrated file manager listing" width="920">
+  <img src="docs/gallery/07-preferences.png" alt="Preferences appearance page" width="920">
 </p>
 
-### Session context menu
+### AI assistant
 
-Connect with SFTP, edit, duplicate, rename, or delete saved sessions from the sidebar.
+Optional multi-provider AI (Groq, Gemini, OpenRouter, Ollama / LM Studio). Only text you explicitly send is shared.
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/f340ac07-3408-488c-a4a8-d26ac1b7cdab" alt="Session context menu for SSH/SFTP" width="920">
+  <img src="docs/gallery/08-ai-config.png" alt="AI assistant configuration" width="920">
+</p>
+
+### Output highlighting
+
+Terminal colors, output rules, and command-specific highlighting for ops-friendly readability.
+
+<p align="center">
+  <img src="docs/gallery/09-highlight.png" alt="Highlight and terminal colors dialog" width="920">
+</p>
+
+### Session editor
+
+SSH/local sessions with folders, auth, post-login commands, forwards, and optional per-session highlight overrides.
+
+<p align="center">
+  <img src="docs/gallery/10-session-edit.png" alt="Add or edit SSH session" width="920">
+</p>
+
+### Keyboard shortcuts
+
+Browse and customize accelerators from the shortcuts dialog.
+
+<p align="center">
+  <img src="docs/gallery/11-shortcuts.png" alt="Keyboard shortcuts dialog" width="920">
+</p>
+
+### Command manager
+
+Reusable command snippets with icons and forms — insert, run, or open as a dialog.
+
+<p align="center">
+  <img src="docs/gallery/12-command-manager.png" alt="Command manager" width="920">
 </p>
 
 ---
@@ -108,8 +142,10 @@ Connect with SFTP, edit, duplicate, rename, or delete saved sessions from the si
 | Area | What you get |
 |------|----------------|
 | **Sessions** | Local, SSH, and SFTP sessions with folders, restore, and layouts |
+| **Imports** | SecureCRT directory trees, PuTTY `.reg`/`.ini`, mRemoteNG `confCons.xml`, OpenSSH `~/.ssh/config` |
 | **Layouts** | Horizontal/vertical splits; save and restore multi-pane setups |
 | **File manager** | Local and remote browsing, drag-and-drop transfer, remote edit + upload on save |
+| **Search** | In-terminal find with case/regex; **All tabs** scope jumps across panes |
 | **Highlighting** | Output rules for 50+ commands; optional Pygments for `cat` / input |
 | **AI (optional)** | Multi-provider chat, quick prompts, click-to-run snippets — selection only |
 | **Broadcast** | Type once; run across selected tabs/panes |
@@ -123,13 +159,16 @@ Switch or customize from **Preferences → Terminal colors**.
 
 ---
 
-## SecureCRT & PAM
+## Imports & PAM
 
-Migrate from SecureCRT without leaving sessions behind:
+Bring sessions in from the main menu:
 
-- Import sessions from the main menu (**Import SecureCRT Sessions**), including full directory trees
-- **Password V2** support (`02:<hex>`) mapped into Zashterminal’s session format
-- Keyboard-interactive flows used with **Balabit / One Identity** privileged session gateways
+- **SecureCRT** — Sessions folder trees + **Password V2** (`02:<hex>`)
+- **PuTTY** — exported `.reg` or portable `.ini` (SSH hosts, keys, local forwards; optional `/`-as-folders)
+- **mRemoteNG** — `confCons.xml` SSH nodes (legacy / AES-GCM passwords; optional master password)
+- **OpenSSH** — `~/.ssh/config` hosts synced on startup
+
+Keyboard-interactive flows used with **Balabit / One Identity** privileged session gateways are supported.
 
 One Identity (formerly Balabit) PAM docs: [Privileged Access Management](https://www.oneidentity.com/br-pt/privileged-access-management/)
 
