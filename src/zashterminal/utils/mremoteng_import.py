@@ -1,6 +1,10 @@
 """Parse mRemoteNG confCons.xml into SSH session dicts.
 
-Password decryption mirrors ZashCRT (legacy Rijndael / AES-GCM).
+Password decryption mirrors mRemoteNG / ZashCRT (legacy Rijndael / AES-GCM).
+
+The MD5 keying, AES-CBC, and PBKDF2-HMAC-SHA1 steps below are required to
+read existing confCons.xml exports; they are import-only interoperability
+decryptors, not algorithms chosen for new storage in Zashterminal.
 """
 
 from __future__ import annotations
@@ -51,16 +55,22 @@ def _attr_bool(element: ET.Element, name: str) -> bool:
 
 
 def decrypt_mremote_legacy_rijndael(cipher_text: str, password: str) -> str:
+    """Decrypt mRemoteNG legacy (pre-AES-GCM) password fields.
+
+    Algorithm is fixed by the mRemoteNG file format (MD5-derived key + AES-CBC).
+    """
     if not cipher_text.strip():
         return ""
     encrypted = base64.b64decode(cipher_text.strip())
     block_size = 16
     if len(encrypted) <= block_size:
         raise ValueError("Invalid mRemoteNG encrypted payload.")
-    key = MD5.new(password.encode("utf-8")).digest()
+    # mRemoteNG derives the AES key with MD5(password); cannot be upgraded.
+    key = MD5.new(password.encode("utf-8")).digest()  # NOSONAR
     iv = encrypted[:block_size]
     cipher = encrypted[block_size:]
-    aes = AES.new(key, AES.MODE_CBC, iv=iv)
+    # CBC is the mode written by mRemoteNG's legacy Rijndael encryptor.
+    aes = AES.new(key, AES.MODE_CBC, iv=iv)  # NOSONAR
     plain = aes.decrypt(cipher)
     # PKCS7-ish trailing padding from .NET — strip trailing nulls/control.
     plain = plain.rstrip(b"\x00")
@@ -73,6 +83,10 @@ def decrypt_mremote_legacy_rijndael(cipher_text: str, password: str) -> str:
 def decrypt_mremote_aes_gcm(
     cipher_text: str, password: str, iterations: int = 1000
 ) -> str:
+    """Decrypt mRemoteNG AES-GCM password fields (PBKDF2-HMAC-SHA1 + AES-GCM).
+
+    KDF parameters match mRemoteNG exports; SHA-1 here is format-mandated.
+    """
     if not cipher_text.strip():
         return ""
     if iterations < 1000:
@@ -86,12 +100,13 @@ def decrypt_mremote_aes_gcm(
     cipher_and_tag = encrypted[salt_size + nonce_size :]
     cipher = cipher_and_tag[:-tag_size]
     tag = cipher_and_tag[-tag_size:]
-    key = PBKDF2(
+    # mRemoteNG AES-GCM passwords use PBKDF2-HMAC-SHA1 with the file's iteration count.
+    key = PBKDF2(  # NOSONAR
         password.encode("utf-8"),
         salt,
         dkLen=key_size,
         count=iterations,
-        hmac_hash_module=SHA1,
+        hmac_hash_module=SHA1,  # NOSONAR
     )
     aes = AES.new(key, AES.MODE_GCM, nonce=nonce)
     # mRemoteNG authenticates the salt as AAD.
