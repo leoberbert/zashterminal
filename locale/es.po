@@ -8568,3 +8568,23 @@ msgstr "Error al eliminar el diseño"
 #: NEEDS WORK
 msgid "Error Moving Layout"
 msgstr "Error al mover el diseño"
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "All tabs"
+msgstr "Todas las pestañas"
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "Search in all tabs and panes; Next/Previous jumps between them"
+msgstr "Buscar en todas las pestañas y paneles; Siguiente/Anterior salta entre ellos"
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "Import PuTTY Sessions"
+msgstr "Importar sesiones de PuTTY"
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "Import mRemoteNG Sessions"
+msgstr "Importar sesiones de mRemoteNG"

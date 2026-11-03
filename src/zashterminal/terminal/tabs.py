@@ -1494,6 +1494,22 @@ class TabManager:
     ) -> Optional[Adw.ViewStackPage]:
         return getattr(terminal, "zashterminal_parent_page", None)
 
+    def focus_terminal(self, terminal: Vte.Terminal) -> bool:
+        """Activate the tab that owns ``terminal`` and move keyboard focus to it."""
+        if terminal is None:
+            return False
+        page = self.get_page_for_terminal(terminal)
+        if not page:
+            return False
+        for tab, candidate in self.pages.items():
+            if candidate is page:
+                self.set_active_tab(tab)
+                break
+        self._last_focused_terminal = weakref.ref(terminal)
+        page._last_focused_in_page = weakref.ref(terminal)
+        self._schedule_terminal_focus(terminal)
+        return True
+
     def update_titles_for_terminal(self, terminal, new_title: str, osc7_info):
         """Updates the tab title and the specific pane title for a terminal."""
         page = self.get_page_for_terminal(terminal)

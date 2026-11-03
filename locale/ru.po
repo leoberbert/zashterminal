@@ -8538,3 +8538,23 @@ msgstr "Ошибка удаления макета"
 #: NEEDS WORK
 msgid "Error Moving Layout"
 msgstr "Ошибка перемещения макета"
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "All tabs"
+msgstr "Все вкладки"
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "Search in all tabs and panes; Next/Previous jumps between them"
+msgstr "Поиск во всех вкладках и панелях; Далее/Назад переключает между ними"
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "Import PuTTY Sessions"
+msgstr "Импорт сеансов PuTTY"
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "Import mRemoteNG Sessions"
+msgstr "Импорт сеансов mRemoteNG"

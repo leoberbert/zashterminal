@@ -8544,3 +8544,23 @@ msgstr "Fel vid radering av layout"
 #: NEEDS WORK
 msgid "Error Moving Layout"
 msgstr "Fel vid flytt av layout"
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "All tabs"
+msgstr "Alla flikar"
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "Search in all tabs and panes; Next/Previous jumps between them"
+msgstr "Sök i alla flikar och paneler; Nästa/Föregående hoppar mellan dem"
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "Import PuTTY Sessions"
+msgstr "Importera PuTTY-sessioner"
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "Import mRemoteNG Sessions"
+msgstr "Importera mRemoteNG-sessioner"

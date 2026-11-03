@@ -8497,3 +8497,23 @@ msgstr "删除布局时出错"
 #: NEEDS WORK
 msgid "Error Moving Layout"
 msgstr "移动布局时出错"
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "All tabs"
+msgstr "所有标签页"
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "Search in all tabs and panes; Next/Previous jumps between them"
+msgstr "在所有标签页和窗格中搜索；下一个/上一个在其间跳转"
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "Import PuTTY Sessions"
+msgstr "导入 PuTTY 会话"
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "Import mRemoteNG Sessions"
+msgstr "导入 mRemoteNG 会话"

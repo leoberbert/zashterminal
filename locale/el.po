@@ -8571,3 +8571,23 @@ msgstr "Σφάλμα κατά τη διαγραφή διάταξης"
 #: NEEDS WORK
 msgid "Error Moving Layout"
 msgstr "Σφάλμα Μετακίνησης Διάταξης"
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "All tabs"
+msgstr "Όλες οι καρτέλες"
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "Search in all tabs and panes; Next/Previous jumps between them"
+msgstr "Αναζήτηση σε όλες τις καρτέλες και τα παράθυρα· Επόμενο/Προηγούμενο μετακινεί μεταξύ τους"
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "Import PuTTY Sessions"
+msgstr "Εισαγωγή συνεδριών PuTTY"
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "Import mRemoteNG Sessions"
+msgstr "Εισαγωγή συνεδριών mRemoteNG"

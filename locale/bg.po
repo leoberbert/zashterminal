@@ -8551,3 +8551,23 @@ msgstr "Грешка при изтриване на оформление"
 #: NEEDS WORK
 msgid "Error Moving Layout"
 msgstr "Грешка при преместване на оформление"
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "All tabs"
+msgstr "Всички раздели"
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "Search in all tabs and panes; Next/Previous jumps between them"
+msgstr "Търсене във всички раздели и панели; Напред/Назад превключва между тях"
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "Import PuTTY Sessions"
+msgstr "Импорт на сесии от PuTTY"
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "Import mRemoteNG Sessions"
+msgstr "Импорт на сесии от mRemoteNG"

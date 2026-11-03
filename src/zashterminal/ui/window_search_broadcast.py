@@ -3,7 +3,8 @@
 
 from __future__ import annotations
 
-from typing import List
+import re
+from typing import List, Optional
 
 import gi
 
@@ -51,6 +52,13 @@ class WindowSearchBroadcastMixin:
         # Initialize switch state from settings
         self.regex_switch.set_active(
             self.settings_manager.get("search_use_regex", False)
+        )
+
+        self.search_all_tabs_switch.connect(
+            "notify::active", self._on_search_all_tabs_changed
+        )
+        self.search_all_tabs_switch.set_active(
+            self.settings_manager.get("search_all_tabs", False)
         )
 
     def _setup_broadcast(self) -> None:
@@ -303,7 +311,6 @@ class WindowSearchBroadcastMixin:
         """Handle case sensitive switch changes."""
         case_sensitive = switch.get_active()
         self.settings_manager.set("search_case_sensitive", case_sensitive)
-        # Re-trigger search if there's text in the search entry
         if self.terminal_search_entry.get_text():
             self._on_search_text_changed(self.terminal_search_entry)
 
@@ -311,20 +318,83 @@ class WindowSearchBroadcastMixin:
         """Handle regex switch changes."""
         use_regex = switch.get_active()
         self.settings_manager.set("search_use_regex", use_regex)
-        # Re-trigger search if there's text in the search entry
         if self.terminal_search_entry.get_text():
             self._on_search_text_changed(self.terminal_search_entry)
 
+    def _on_search_all_tabs_changed(self, switch, param):
+        self.settings_manager.set("search_all_tabs", switch.get_active())
+        if self.terminal_search_entry.get_text():
+            self._on_search_text_changed(self.terminal_search_entry)
+
+    def _search_all_tabs_enabled(self) -> bool:
+        return bool(self.settings_manager.get("search_all_tabs", False))
+
+    def _build_search_regex(self, text: str) -> Optional[Vte.Regex]:
+        pcre2_flags = 0x00000400  # PCRE2_MULTILINE
+        if not self.settings_manager.get("search_case_sensitive", False):
+            pcre2_flags |= 0x00000008  # PCRE2_CASELESS
+        pattern = text if self.settings_manager.get("search_use_regex", False) else re.escape(text)
+        try:
+            return Vte.Regex.new_for_search(pattern, -1, pcre2_flags)
+        except GLib.Error as exc:
+            self.logger.error(
+                f"Invalid regex for search pattern '{text}': {exc.message}",
+                exc_info=True,
+            )
+            self.toast_overlay.add_toast(Adw.Toast(title=_("Invalid search pattern.")))
+            return None
+
+    def _clear_search_on_terminals(self, terminals: List[Vte.Terminal]) -> None:
+        for terminal in terminals:
+            try:
+                terminal.search_set_regex(None, 0)
+            except Exception:
+                pass
+
+    def _terminal_has_match(self, terminal: Vte.Terminal, regex: Vte.Regex) -> bool:
+        """Apply regex and return True if at least one match exists."""
+        try:
+            terminal.search_set_regex(None, 0)
+            terminal.search_set_regex(regex, 0)
+            v_adjustment = terminal.get_vadjustment()
+            if v_adjustment:
+                v_adjustment.set_value(0.0)
+            return bool(terminal.search_find_next())
+        except Exception as exc:
+            self.logger.debug(f"Error probing terminal for search match: {exc}")
+            return False
+
     def _update_search_occurrence_display(self):
-        """Update the search occurrence counter display."""
-        if self.search_active and self.search_current_occurrence > 0:
-            text = f"{self.search_current_occurrence}"
+        """Update the search occurrence / scope counter display."""
+        if not self.search_active:
+            self.search_occurrence_label.set_text("")
+            return
+
+        if self._search_all_tabs_enabled() and self._global_search_terminals:
+            terminal = None
+            if 0 <= self._global_search_index < len(self._global_search_terminals):
+                terminal = self._global_search_terminals[self._global_search_index]
+            name = self._get_terminal_display_name(terminal) if terminal else ""
+            total = len(self._global_search_terminals)
+            index = self._global_search_index + 1
+            if name:
+                text = _("{name} · {index}/{total}").format(
+                    name=name, index=index, total=total
+                )
+            else:
+                text = f"{index}/{total}"
+            self.search_occurrence_label.set_text(text)
+            return
+
+        if self.search_current_occurrence > 0:
+            self.search_occurrence_label.set_text(str(self.search_current_occurrence))
         else:
-            text = ""
-        self.search_occurrence_label.set_text(text)
+            self.search_occurrence_label.set_text("")
 
     def _hide_search_if_terminal_changed(self):
-        """Hide search if the current terminal is different from when search was started."""
+        """Hide single-tab search when the focused terminal changes."""
+        if self._search_all_tabs_enabled():
+            return
         current_terminal = self.tab_manager.get_selected_terminal()
         if self.search_active and current_terminal != self.current_search_terminal:
             self.search_bar.set_search_mode(False)
@@ -336,40 +406,44 @@ class WindowSearchBroadcastMixin:
         """Handle search text changes immediately."""
         text = search_entry.get_text()
 
-        # If text is empty, clear search immediately
         if not text:
-            terminal = self.tab_manager.get_selected_terminal()
-            if terminal:
-                terminal.search_set_regex(None, 0)
+            self._clear_search_on_terminals(
+                self.tab_manager.get_all_terminals_across_tabs()
+            )
             self.search_active = False
             self.current_search_terminal = None
             self.search_current_occurrence = 0
+            self._global_search_terminals = []
+            self._global_search_index = 0
             self._update_search_occurrence_display()
             return
 
-        # Perform the search immediately
         self._perform_search(text)
 
     def _search_from_beginning(self, terminal, regex):
         """Search from the beginning of the terminal content."""
         try:
-            # Try to find the first match from the beginning
             found = terminal.search_find_next()
             if found:
-                # Scroll to show the first match
                 v_adjustment = terminal.get_vadjustment()
                 if v_adjustment:
-                    # Get the position of the match and scroll to it
-                    match_col, match_row = terminal.get_cursor_position()
-                    # Scroll to show the match
-                    v_adjustment.set_value(max(0, match_row - 5))  # Show some context
+                    _match_col, match_row = terminal.get_cursor_position()
+                    v_adjustment.set_value(max(0, match_row - 5))
             return found
         except Exception as e:
             self.logger.debug(f"Error searching from beginning: {e}")
             return False
 
     def _perform_search(self, text):
-        """Perform search immediately for the given text."""
+        """Perform search for the given text (current tab or all tabs)."""
+        regex = self._build_search_regex(text)
+        if not regex:
+            return
+
+        if self._search_all_tabs_enabled():
+            self._perform_global_search(regex)
+            return
+
         terminal = self.tab_manager.get_selected_terminal()
         if not terminal:
             self.logger.warning("Search triggered but no active terminal found.")
@@ -378,78 +452,28 @@ class WindowSearchBroadcastMixin:
             )
             return
 
-        # Update search state
         self.current_search_terminal = terminal
         self.search_active = True
-
-        # First, clear any existing search to reset the state completely
-        terminal.search_set_regex(None, 0)
+        self._global_search_terminals = []
+        self._global_search_index = 0
 
         try:
-            # Use Vte.Regex for search operations
-            # PCRE2_MULTILINE (0x00000400) and optionally PCRE2_CASELESS (0x00000008)
-            pcre2_flags = 0x00000400  # PCRE2_MULTILINE always enabled
-            if not self.settings_manager.get("search_case_sensitive", False):
-                pcre2_flags |= 0x00000008  # PCRE2_CASELESS for case insensitive
-
-            use_regex = self.settings_manager.get("search_use_regex", False)
-            search_text = text
-
-            if not use_regex:
-                # For literal search, escape regex special characters
-                search_text = re.escape(text)
-
-            # Always use new_for_search, but with escaped pattern for literal mode
-            regex = Vte.Regex.new_for_search(search_text, -1, pcre2_flags)
-
-            if not regex:
-                self.logger.warning(
-                    f"Failed to compile search regex for pattern: {text}"
-                )
-                self.toast_overlay.add_toast(
-                    Adw.Toast(title=_("Invalid search pattern."))
-                )
-                return
-
-            # Completely clear search state before setting new regex
             terminal.search_set_regex(None, 0)
-
-            # Set the regex for search FIRST - establish working search
             terminal.search_set_regex(regex, 0)
 
-            # More robust search: try multiple approaches to ensure consistency
-            found = False
-
-            # Method 1: Try from current position first
-            current_col, current_row = terminal.get_cursor_position()
             found = terminal.search_find_next()
-
-            # Method 2: If not found from current position, search from beginning of scrollback
             if not found:
                 try:
-                    # Save current scroll position
                     v_adjustment = terminal.get_vadjustment()
                     if v_adjustment:
-                        # Scroll to the very beginning (including scrollback)
                         v_adjustment.set_value(0.0)
-
-                        # Try searching from beginning immediately
                         found = self._search_from_beginning(terminal, regex)
-
                 except Exception as e:
                     self.logger.debug(f"Error during scroll-based search: {e}")
-                    # Fallback to just trying again from current position
                     found = terminal.search_find_next()
 
-            # Count occurrences using the EXACT same regex object
-            if found:
-                # Just set current occurrence to 1 since we found at least one match
-                self.search_current_occurrence = 1
-                self._update_search_occurrence_display()
-            else:
-                self.search_current_occurrence = 0
-                self._update_search_occurrence_display()
-
+            self.search_current_occurrence = 1 if found else 0
+            self._update_search_occurrence_display()
         except GLib.Error as e:
             self.logger.error(
                 f"Invalid regex for search pattern '{text}': {e.message}", exc_info=True
@@ -457,79 +481,158 @@ class WindowSearchBroadcastMixin:
             self.toast_overlay.add_toast(Adw.Toast(title=_("Invalid search pattern.")))
             terminal.search_set_regex(None, 0)
 
+    def _perform_global_search(self, regex: Vte.Regex) -> None:
+        """Scan every open terminal; Next/Previous walks matching panes."""
+        all_terminals = self.tab_manager.get_all_terminals_across_tabs()
+        if not all_terminals:
+            self.toast_overlay.add_toast(Adw.Toast(title=_("No open terminals found.")))
+            return
+
+        matching: List[Vte.Terminal] = []
+        for terminal in all_terminals:
+            if self._terminal_has_match(terminal, regex):
+                matching.append(terminal)
+
+        self._global_search_terminals = matching
+        self._global_search_index = 0
+        self.search_active = True
+        self.search_current_occurrence = 1 if matching else 0
+
+        if not matching:
+            self.current_search_terminal = None
+            self._update_search_occurrence_display()
+            self.toast_overlay.add_toast(Adw.Toast(title=_("No matches found.")))
+            return
+
+        # Keep highlights on all matching terminals; jump to the first hit.
+        first = matching[0]
+        self.current_search_terminal = first
+        self.tab_manager.focus_terminal(first)
+        self._update_search_occurrence_display()
+
     def _on_search_next(self, button=None):
+        if not self.search_active:
+            return
+
+        if self._search_all_tabs_enabled():
+            self._global_search_step(forward=True)
+            return
+
         terminal = self.tab_manager.get_selected_terminal()
-        if terminal and self.search_active:
-            # Try to find next match
-            found = terminal.search_find_next()
+        if not terminal:
+            return
 
-            # If no match found from current position, try wrapping to beginning
-            if not found:
-                try:
-                    v_adjustment = terminal.get_vadjustment()
-                    if v_adjustment:
-                        # Scroll to the beginning and wrap around
-                        v_adjustment.set_value(0.0)
-                        found = terminal.search_find_next()
+        found = terminal.search_find_next()
+        if not found:
+            try:
+                v_adjustment = terminal.get_vadjustment()
+                if v_adjustment:
+                    v_adjustment.set_value(0.0)
+                    found = terminal.search_find_next()
+                    if found:
+                        self.search_current_occurrence = 1
+            except Exception as e:
+                self.logger.debug(f"Error during next search: {e}")
+        elif found:
+            self.search_current_occurrence += 1
 
-                        if found:
-                            self.search_current_occurrence = 1  # Wrapped to first match
-                except Exception as e:
-                    self.logger.debug(f"Error during next search: {e}")
-            elif found:
-                # Increment current occurrence
-                self.search_current_occurrence += 1
-
-            if not found:
-                self.toast_overlay.add_toast(
-                    Adw.Toast(title=_("No more matches found."))
-                )
-            else:
-                self._update_search_occurrence_display()
+        if not found:
+            self.toast_overlay.add_toast(Adw.Toast(title=_("No more matches found.")))
+        else:
+            self._update_search_occurrence_display()
 
     def _on_search_previous(self, button=None):
+        if not self.search_active:
+            return
+
+        if self._search_all_tabs_enabled():
+            self._global_search_step(forward=False)
+            return
+
         terminal = self.tab_manager.get_selected_terminal()
-        if terminal and self.search_active:
-            # Try to find previous match
-            found = terminal.search_find_previous()
+        if not terminal:
+            return
 
-            # If no match found, try wrapping to end
-            if not found:
-                try:
-                    v_adjustment = terminal.get_vadjustment()
-                    if v_adjustment:
-                        # Scroll to the end and wrap around
-                        v_adjustment.set_value(
-                            v_adjustment.get_upper() - v_adjustment.get_page_size()
-                        )
-                        found = terminal.search_find_previous()
+        found = terminal.search_find_previous()
+        if not found:
+            try:
+                v_adjustment = terminal.get_vadjustment()
+                if v_adjustment:
+                    v_adjustment.set_value(
+                        v_adjustment.get_upper() - v_adjustment.get_page_size()
+                    )
+                    found = terminal.search_find_previous()
+                    if found:
+                        self.search_current_occurrence = 1
+            except Exception as e:
+                self.logger.debug(f"Error during previous search: {e}")
+        elif found:
+            if self.search_current_occurrence > 1:
+                self.search_current_occurrence -= 1
 
-                        if found:
-                            self.search_current_occurrence = 1  # Wrapped to match
-                except Exception as e:
-                    self.logger.debug(f"Error during previous search: {e}")
-            elif found:
-                # Decrement current occurrence
-                if self.search_current_occurrence > 1:
-                    self.search_current_occurrence -= 1
+        if not found:
+            self.toast_overlay.add_toast(Adw.Toast(title=_("No more matches found.")))
+        else:
+            self._update_search_occurrence_display()
 
-            if not found:
-                self.toast_overlay.add_toast(
-                    Adw.Toast(title=_("No more matches found."))
-                )
-            else:
-                self._update_search_occurrence_display()
+    def _global_search_step(self, *, forward: bool) -> None:
+        terminals = self._global_search_terminals
+        if not terminals:
+            self.toast_overlay.add_toast(Adw.Toast(title=_("No matches found.")))
+            return
+
+        current = self.tab_manager.get_selected_terminal()
+        if current in terminals:
+            self._global_search_index = terminals.index(current)
+
+        terminal = terminals[self._global_search_index]
+        self.tab_manager.focus_terminal(terminal)
+
+        found = (
+            terminal.search_find_next() if forward else terminal.search_find_previous()
+        )
+        if found:
+            self.current_search_terminal = terminal
+            self._update_search_occurrence_display()
+            return
+
+        # Exhausted this pane — move to next/previous matching terminal (wrap).
+        if forward:
+            self._global_search_index = (self._global_search_index + 1) % len(terminals)
+        else:
+            self._global_search_index = (self._global_search_index - 1) % len(terminals)
+
+        terminal = terminals[self._global_search_index]
+        self.tab_manager.focus_terminal(terminal)
+        self.current_search_terminal = terminal
+        try:
+            v_adjustment = terminal.get_vadjustment()
+            if v_adjustment:
+                if forward:
+                    v_adjustment.set_value(0.0)
+                    terminal.search_find_next()
+                else:
+                    v_adjustment.set_value(
+                        v_adjustment.get_upper() - v_adjustment.get_page_size()
+                    )
+                    terminal.search_find_previous()
+        except Exception as exc:
+            self.logger.debug(f"Error wrapping global search: {exc}")
+        self._update_search_occurrence_display()
 
     def _on_search_stop(self, search_entry):
+        self._clear_search_on_terminals(
+            self.tab_manager.get_all_terminals_across_tabs()
+        )
         terminal = self.tab_manager.get_selected_terminal()
         if terminal:
-            terminal.search_set_regex(None, 0)
             terminal.grab_focus()
 
-        # Reset search state
         self.search_active = False
         self.current_search_terminal = None
         self.search_current_occurrence = 0
+        self._global_search_terminals = []
+        self._global_search_index = 0
         self._update_search_occurrence_display()
 
     # --- Window Lifecycle and State ---

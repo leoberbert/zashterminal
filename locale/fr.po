@@ -8571,3 +8571,23 @@ msgstr "Erreur de suppression de la mise en page"
 #: NEEDS WORK
 msgid "Error Moving Layout"
 msgstr "Erreur de déplacement de la mise en page"
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "All tabs"
+msgstr "Tous les onglets"
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "Search in all tabs and panes; Next/Previous jumps between them"
+msgstr "Rechercher dans tous les onglets et panneaux ; Suivant/Précédent passe de l’un à l’autre"
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "Import PuTTY Sessions"
+msgstr "Importer les sessions PuTTY"
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "Import mRemoteNG Sessions"
+msgstr "Importer les sessions mRemoteNG"

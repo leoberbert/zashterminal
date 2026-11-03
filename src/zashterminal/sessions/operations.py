@@ -11,6 +11,8 @@ from gi.repository import Gio
 from ..core.signals import AppSignals
 from ..helpers import generate_unique_name
 from ..utils.logger import get_logger
+from ..utils.mremoteng_import import import_mremoteng_sessions_from_file
+from ..utils.putty_import import import_putty_sessions_from_file
 from ..utils.ssh_config_parser import SSHConfigParser
 from ..utils.translation_utils import _
 from .models import SessionFolder, SessionItem
@@ -613,6 +615,224 @@ class SessionOperations:
             )
             self.logger.info(message)
             return OperationResult(True, message, warnings=warnings)
+
+    def import_sessions_from_putty_file(
+        self, file_path: Union[str, Path], *, split_folders: bool = True
+    ) -> OperationResult:
+        """Import SSH sessions from a PuTTY .reg or portable .ini export."""
+        with self._operation_lock:
+            target = Path(file_path).expanduser()
+            if not target.exists() or not target.is_file():
+                message = _("PuTTY sessions file not found at {path}").format(
+                    path=str(target)
+                )
+                return OperationResult(False, message)
+
+            try:
+                entries, parse_warnings = import_putty_sessions_from_file(
+                    target, split_folders=split_folders
+                )
+            except Exception as exc:
+                message = _("Failed to parse PuTTY file: {error}").format(error=exc)
+                self.logger.error(message)
+                return OperationResult(False, message)
+
+            warnings: List[str] = list(parse_warnings)
+            if not entries:
+                message = _("No PuTTY SSH sessions were imported from {path}.").format(
+                    path=str(target)
+                )
+                return OperationResult(False, message, warnings=warnings)
+
+            return self._commit_imported_ssh_entries(
+                entries=[
+                    {
+                        "name": entry.name,
+                        "folder_path": entry.folder_path,
+                        "host": entry.host,
+                        "user": entry.user,
+                        "port": entry.port,
+                        "auth_type": entry.auth_type,
+                        "auth_value": entry.auth_value,
+                        "post_login_command": entry.post_login_command,
+                        "port_forwardings": entry.port_forwardings,
+                        "source": "putty",
+                    }
+                    for entry in entries
+                ],
+                warnings=warnings,
+                success_template=_(
+                    "Imported {count} PuTTY session(s) from {path}."
+                ),
+                path=str(target),
+            )
+
+    def import_sessions_from_mremoteng_file(
+        self,
+        file_path: Union[str, Path],
+        *,
+        master_password: Optional[str] = None,
+    ) -> OperationResult:
+        """Import SSH sessions from an mRemoteNG confCons.xml file."""
+        with self._operation_lock:
+            target = Path(file_path).expanduser()
+            if not target.exists() or not target.is_file():
+                message = _("mRemoteNG file not found at {path}").format(
+                    path=str(target)
+                )
+                return OperationResult(False, message)
+
+            try:
+                entries, parse_warnings, needs_password = (
+                    import_mremoteng_sessions_from_file(
+                        target, master_password=master_password
+                    )
+                )
+            except Exception as exc:
+                message = _("Failed to parse mRemoteNG file: {error}").format(
+                    error=exc
+                )
+                self.logger.error(message)
+                return OperationResult(False, message)
+
+            if needs_password:
+                return OperationResult(
+                    False,
+                    _("master-password-required"),
+                    warnings=parse_warnings,
+                )
+
+            warnings: List[str] = list(parse_warnings)
+            if not entries:
+                message = _(
+                    "No mRemoteNG SSH sessions were imported from {path}."
+                ).format(path=str(target))
+                return OperationResult(False, message, warnings=warnings)
+
+            return self._commit_imported_ssh_entries(
+                entries=[
+                    {
+                        "name": entry.name,
+                        "folder_path": entry.folder_path,
+                        "host": entry.host,
+                        "user": entry.user,
+                        "port": entry.port,
+                        "auth_type": "password" if entry.password else "",
+                        "auth_value": entry.password,
+                        "post_login_command": "",
+                        "port_forwardings": [],
+                        "source": "mremoteng",
+                    }
+                    for entry in entries
+                ],
+                warnings=warnings,
+                success_template=_(
+                    "Imported {count} mRemoteNG session(s) from {path}."
+                ),
+                path=str(target),
+            )
+
+    def _commit_imported_ssh_entries(
+        self,
+        *,
+        entries: List[dict],
+        warnings: List[str],
+        success_template: str,
+        path: str,
+    ) -> OperationResult:
+        """Shared batch save path for PuTTY / mRemoteNG style imports."""
+        existing_folder_paths: Set[str] = {
+            folder.path
+            for folder in self.folder_store
+            if isinstance(folder, SessionFolder)
+        }
+        session_names_by_folder: Dict[str, Set[str]] = {}
+        imported_count = 0
+        created_folder_count = 0
+
+        def folder_names(folder_path: str) -> Set[str]:
+            names = session_names_by_folder.get(folder_path)
+            if names is None:
+                names = set(self._get_session_names_in_folder(folder_path))
+                session_names_by_folder[folder_path] = names
+            return names
+
+        for entry in entries:
+            folder_path = entry.get("folder_path") or ""
+            if folder_path in {"/", "."}:
+                folder_path = ""
+            if folder_path and not folder_path.startswith("/"):
+                folder_path = f"/{folder_path}"
+
+            if folder_path:
+                created_folder_count += self._ensure_folder_hierarchy_exists(
+                    folder_path, existing_folder_paths
+                )
+
+            existing_names = folder_names(folder_path)
+            session_name = generate_unique_name(
+                entry.get("name") or "Imported Session", existing_names
+            )
+            auth_type = entry.get("auth_type") or ""
+            auth_value = entry.get("auth_value") or ""
+            post_login = (entry.get("post_login_command") or "").strip()
+
+            session = SessionItem(
+                name=session_name,
+                session_type="ssh",
+                host=entry.get("host") or "",
+                user=entry.get("user") or "",
+                port=int(entry.get("port") or 22),
+                auth_type=auth_type if auth_type in {"password", "key"} else "",
+                auth_value="",
+                folder_path=folder_path,
+                port_forwardings=entry.get("port_forwardings") or [],
+                post_login_command_enabled=bool(post_login),
+                post_login_command=post_login,
+                source=entry.get("source") or "user",
+            )
+            if auth_type == "key" and auth_value:
+                session.auth_value = auth_value
+            elif auth_type == "password" and auth_value:
+                try:
+                    session.auth_value = auth_value
+                except Exception as exc:
+                    warnings.append(
+                        _("Could not store password for '{name}': {error}").format(
+                            name=session_name, error=exc
+                        )
+                    )
+                    session.auth_type = ""
+                    session._auth_value = ""
+
+            if not session.validate():
+                warnings.append(
+                    _("Skipped '{name}': invalid session data.").format(
+                        name=session_name
+                    )
+                )
+                continue
+
+            self.session_store.append(session)
+            existing_names.add(session_name)
+            imported_count += 1
+
+        if imported_count == 0:
+            message = _("No sessions were imported from {path}.").format(path=path)
+            return OperationResult(False, message, warnings=warnings)
+
+        if not self._save_changes():
+            message = _("Failed to save imported sessions.")
+            return OperationResult(False, message, warnings=warnings)
+
+        AppSignals.get().emit("request-tree-refresh")
+        message = success_template.format(count=imported_count, path=path)
+        if created_folder_count:
+            message = _("{message} ({folders} folder(s) created).").format(
+                message=message, folders=created_folder_count
+            )
+        self.logger.info(message)
+        return OperationResult(True, message, warnings=warnings)
 
     def paste_item(
         self,

@@ -108,6 +108,7 @@ class WindowUIBuilder:
         self.search_next_button = None
         self.case_sensitive_switch = None
         self.regex_switch = None
+        self.search_all_tabs_switch = None
         self.search_occurrence_label = None
         self.add_session_button = None
         self.add_folder_button = None
@@ -233,10 +234,22 @@ class WindowUIBuilder:
         regex_box.append(regex_label)
         regex_box.append(self.regex_switch)
 
+        # All tabs switch — search across every open terminal pane
+        self.search_all_tabs_switch = Gtk.Switch()
+        self.tooltip_helper.add_tooltip(
+            self.search_all_tabs_switch,
+            _("Search in all tabs and panes; Next/Previous jumps between them"),
+        )
+        all_tabs_box = Gtk.Box(spacing=6)
+        all_tabs_label = Gtk.Label(label=_("All tabs"))
+        all_tabs_box.append(all_tabs_label)
+        all_tabs_box.append(self.search_all_tabs_switch)
+
         search_box.append(self.terminal_search_entry)
         search_box.append(self.search_occurrence_label)
         search_box.append(case_sensitive_box)
         search_box.append(regex_box)
+        search_box.append(all_tabs_box)
         search_box.append(self.search_prev_button)
         search_box.append(self.search_next_button)
         self.search_bar.set_child(search_box)

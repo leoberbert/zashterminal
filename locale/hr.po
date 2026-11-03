@@ -8541,3 +8541,23 @@ msgstr "Greška pri brisanju izgleda"
 #: NEEDS WORK
 msgid "Error Moving Layout"
 msgstr "Greška prilikom premještanja izgleda"
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "All tabs"
+msgstr "Sve kartice"
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "Search in all tabs and panes; Next/Previous jumps between them"
+msgstr "Traži u svim karticama i pločama; Sljedeće/Prethodno skače među njima"
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "Import PuTTY Sessions"
+msgstr "Uvezi PuTTY sesije"
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "Import mRemoteNG Sessions"
+msgstr "Uvezi mRemoteNG sesije"
