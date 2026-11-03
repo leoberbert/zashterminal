@@ -112,6 +112,30 @@ def allow_main_version_fallback(
     return env.get("ZASHTERMINAL_UPDATE_ALLOW_MAIN", "").strip().lower() in _TRUTHY
 
 
+def is_running_from_source_tree() -> bool:
+    """True when the import path is a git checkout (editable / PYTHONPATH=src).
+
+    System installs live under site-packages or /opt/.../venv; those must keep
+    receiving update prompts. A source tree would otherwise nag forever because
+    ``install.sh`` updates ``/usr/local/bin`` while ``~/.local/bin`` keeps
+    launching the checkout.
+    """
+    try:
+        import zashterminal as _pkg
+
+        init_path = Path(getattr(_pkg, "__file__", "") or "").resolve()
+        if not init_path.is_file():
+            return False
+        # .../src/zashterminal/__init__.py → project root is parents[2]
+        project_root = init_path.parents[2]
+        return (project_root / "pyproject.toml").is_file() and (
+            (project_root / ".git").exists()
+            or (project_root / ".git").is_file()
+        )
+    except Exception:
+        return False
+
+
 class UpdateManager:
     """Checks GitHub for new versions and builds update commands."""
 
@@ -138,6 +162,25 @@ class UpdateManager:
             )
         except Exception as e:
             self.logger.warning(f"Failed to persist update state: {e}")
+
+    def _scrub_stale_main_cache(
+        self, state: Dict[str, Any], *, allow_main_fallback: bool
+    ) -> Dict[str, Any]:
+        """Drop cached main-tip versions when main fallback is disabled."""
+        if allow_main_fallback:
+            return state
+        if str(state.get("last_remote_source", "")) != "github-main":
+            return state
+        for key in (
+            "last_remote_version",
+            "last_remote_ref",
+            "last_remote_source",
+            "last_prompt_version",
+            "last_prompt_day",
+            "last_prompt_at",
+        ):
+            state.pop(key, None)
+        return state
 
     def _parse_release_payload(self, payload: Dict[str, Any]) -> Optional[Dict[str, str]]:
         tag_name = str(payload.get("tag_name", "")).strip()
@@ -254,10 +297,17 @@ class UpdateManager:
             return {"checked": False, "reason": "disabled-by-env"}
         if not enabled:
             return {"checked": False, "reason": "disabled-by-setting"}
+        if is_running_from_source_tree():
+            return {"checked": False, "reason": "source-tree-install"}
+
+        if allow_main_fallback is None:
+            allow_main_fallback = allow_main_version_fallback()
 
         now = int(time.time())
         today = _today_key()
-        state = self._read_state()
+        state = self._scrub_stale_main_cache(
+            self._read_state(), allow_main_fallback=allow_main_fallback
+        )
         first_run = not bool(state.get("initialized"))
         local_norm = _normalize_version(local_version)
         cached_remote = str(state.get("last_remote_version", "")).strip()

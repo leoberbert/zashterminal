@@ -527,9 +527,15 @@ install_desktop_files() {
   sudo mkdir -p "${APP_DIR}" "${ICON_DIR}" "${PIXMAP_DIR}"
 
   if [ -f "${src_dir}/usr/share/applications/${DESKTOP_ID}.desktop" ]; then
-    sudo install -Dm644 \
+    # Pin Exec= to the system launcher so ~/.local/bin cannot shadow menu launches.
+    local desktop_tmp
+    desktop_tmp="$(mktemp)"
+    # Replace only the bare command name; keep args (%F, --new-window, …).
+    sed "s|^Exec=zashterminal|Exec=${BIN_PATH}|g" \
       "${src_dir}/usr/share/applications/${DESKTOP_ID}.desktop" \
-      "${APP_DIR}/${DESKTOP_ID}.desktop"
+      > "${desktop_tmp}"
+    sudo install -Dm644 "${desktop_tmp}" "${APP_DIR}/${DESKTOP_ID}.desktop"
+    rm -f "${desktop_tmp}"
   fi
 
   if [ -f "${src_dir}/usr/share/icons/hicolor/scalable/apps/${PACKAGE_NAME}.svg" ]; then
@@ -545,12 +551,37 @@ install_desktop_files() {
   sudo gtk-update-icon-cache /usr/share/icons/hicolor >/dev/null 2>&1 || true
 }
 
+clear_user_path_shadow() {
+  # pip install -e / console_scripts put a launcher in ~/.local/bin that wins
+  # over /usr/local/bin on PATH. Updates then look like they "did nothing".
+  local user_bin="${HOME}/.local/bin/${PACKAGE_NAME}"
+  if [ ! -e "${user_bin}" ]; then
+    return 0
+  fi
+  if [ "${user_bin}" = "${BIN_PATH}" ]; then
+    return 0
+  fi
+
+  if grep -Eq 'from zashterminal import |Entry point|console_scripts' "${user_bin}" 2>/dev/null \
+    || head -n 1 "${user_bin}" 2>/dev/null | grep -Eq 'python'; then
+    warn "Removing PATH-shadowing user launcher: ${user_bin}"
+    warn "It was hiding ${BIN_PATH} (system install). Re-run 'pip install -e .' only for development."
+    rm -f "${user_bin}" || warn "Could not remove ${user_bin}"
+  else
+    warn "Found ${user_bin} ahead of ${BIN_PATH} on PATH; remove it if updates appear stuck."
+  fi
+}
+
 post_install_notes() {
+  clear_user_path_shadow
   log "Installation complete (system-wide with venv)."
   log "  Venv: ${VENV_DIR}"
   log "  Launcher: ${BIN_PATH}"
   log "  Desktop: ${APP_DIR}/${DESKTOP_ID}.desktop"
-  log "Run: ${PACKAGE_NAME}"
+  log "Run: ${BIN_PATH}"
+  if command -v "${PACKAGE_NAME}" >/dev/null 2>&1; then
+    log "Resolved on PATH as: $(command -v "${PACKAGE_NAME}")"
+  fi
 }
 
 main() {

@@ -18,6 +18,7 @@ from zashterminal.utils.updater import (
     allow_main_version_fallback,
     is_arch_family,
     is_auto_update_disabled_by_env,
+    is_running_from_source_tree,
 )
 
 
@@ -49,6 +50,10 @@ class DistroAndEnvTests(unittest.TestCase):
         self.assertTrue(
             allow_main_version_fallback({"ZASHTERMINAL_UPDATE_ALLOW_MAIN": "1"})
         )
+
+    def test_source_tree_detection_matches_checkout(self):
+        # Tests import from the repo's src/ tree, so this should be True here.
+        self.assertTrue(is_running_from_source_tree())
 
 
 class UpdateManagerParseTests(unittest.TestCase):
@@ -90,15 +95,62 @@ class UpdateManagerCheckTests(unittest.TestCase):
         self.tmp.cleanup()
 
     def test_disabled_by_setting(self):
-        result = self.manager.check_for_updates("0.8.10", enabled=False)
+        with mock.patch(
+            "zashterminal.utils.updater.is_running_from_source_tree",
+            return_value=False,
+        ):
+            result = self.manager.check_for_updates("0.8.10", enabled=False)
         self.assertEqual(result["reason"], "disabled-by-setting")
 
     def test_disabled_by_env(self):
-        with mock.patch.dict(
-            "os.environ", {"ZASHTERMINAL_DISABLE_AUTO_UPDATE": "1"}, clear=False
+        with mock.patch(
+            "zashterminal.utils.updater.is_running_from_source_tree",
+            return_value=False,
+        ):
+            with mock.patch.dict(
+                "os.environ",
+                {"ZASHTERMINAL_DISABLE_AUTO_UPDATE": "1"},
+                clear=False,
+            ):
+                result = self.manager.check_for_updates("0.8.10", enabled=True)
+        self.assertEqual(result["reason"], "disabled-by-env")
+
+    def test_skips_source_tree_install(self):
+        with mock.patch(
+            "zashterminal.utils.updater.is_running_from_source_tree",
+            return_value=True,
         ):
             result = self.manager.check_for_updates("0.8.10", enabled=True)
-        self.assertEqual(result["reason"], "disabled-by-env")
+        self.assertEqual(result["reason"], "source-tree-install")
+        self.assertFalse(result.get("update_available", False))
+
+    def test_scrubs_stale_github_main_cache(self):
+        self.state_file.write_text(
+            json.dumps(
+                {
+                    "initialized": True,
+                    "last_check": 1,
+                    "last_remote_version": "0.8.20",
+                    "last_remote_ref": "main",
+                    "last_remote_source": "github-main",
+                }
+            ),
+            encoding="utf-8",
+        )
+        with mock.patch(
+            "zashterminal.utils.updater.is_running_from_source_tree",
+            return_value=False,
+        ):
+            with mock.patch.object(
+                self.manager, "_fetch_remote_version", return_value=None
+            ):
+                result = self.manager.check_for_updates(
+                    "0.8.19", enabled=True, allow_main_fallback=False
+                )
+        self.assertFalse(result.get("update_available", False))
+        state = json.loads(self.state_file.read_text(encoding="utf-8"))
+        self.assertNotEqual(state.get("last_remote_source"), "github-main")
+        self.assertNotIn("last_remote_version", state)
 
     def test_fetch_order_release_then_tags_skips_main_by_default(self):
         release_resp = mock.Mock(ok=False, status_code=404)
@@ -174,16 +226,20 @@ class UpdateManagerCheckTests(unittest.TestCase):
         self.assertEqual(get_mock.call_count, 2)
 
     def test_check_writes_state_and_detects_update(self):
-        with mock.patch.object(
-            self.manager,
-            "_fetch_remote_version",
-            return_value={
-                "version": "0.8.16",
-                "ref": "v0.8.16",
-                "source": "github-tag",
-            },
+        with mock.patch(
+            "zashterminal.utils.updater.is_running_from_source_tree",
+            return_value=False,
         ):
-            result = self.manager.check_for_updates("0.8.10", enabled=True)
+            with mock.patch.object(
+                self.manager,
+                "_fetch_remote_version",
+                return_value={
+                    "version": "0.8.16",
+                    "ref": "v0.8.16",
+                    "source": "github-tag",
+                },
+            ):
+                result = self.manager.check_for_updates("0.8.10", enabled=True)
 
         self.assertTrue(result["update_available"])
         self.assertTrue(result["checked"])
