@@ -76,6 +76,72 @@ class WindowSearchBroadcastMixin:
         key_controller = Gtk.EventControllerKey.new()
         key_controller.connect("key-pressed", self._on_broadcast_key_pressed)
         self.broadcast_entry.add_controller(key_controller)
+        scope = self.settings_manager.get("broadcast_default_scope", "select")
+        scope_map = {"this": 0, "group": 1, "all": 2, "select": 3}
+        if hasattr(self, "broadcast_scope_combo") and self.broadcast_scope_combo:
+            self.broadcast_scope_combo.set_selected(scope_map.get(scope, 3))
+            self.broadcast_scope_combo.connect(
+                "notify::selected", self._on_broadcast_scope_changed
+            )
+
+    def _on_broadcast_scope_changed(self, combo, _param) -> None:
+        idx = combo.get_selected()
+        reverse = {0: "this", 1: "group", 2: "all", 3: "select"}
+        self.settings_manager.set(
+            "broadcast_default_scope", reverse.get(idx, "select")
+        )
+
+    def _broadcast_scope_index(self) -> int:
+        if hasattr(self, "broadcast_scope_combo") and self.broadcast_scope_combo:
+            return int(self.broadcast_scope_combo.get_selected())
+        return 3
+
+    def _terminal_broadcast_group(self, terminal: Vte.Terminal) -> str:
+        session = getattr(terminal, "zashterminal_session_item", None)
+        if isinstance(session, SessionItem):
+            return (session.broadcast_group or "").strip()
+        tab = None
+        try:
+            page = self.tab_manager.get_page_for_terminal(terminal)
+            tab = getattr(page, "tab", None) if page else None
+        except Exception:
+            tab = None
+        session_item = getattr(tab, "session_item", None) if tab else None
+        if isinstance(session_item, SessionItem):
+            return (session_item.broadcast_group or "").strip()
+        return ""
+
+    def _resolve_broadcast_terminals(
+        self, all_terminals: List[Vte.Terminal]
+    ) -> Optional[List[Vte.Terminal]]:
+        """Return terminals for the current scope, or None to open the picker."""
+        scope = self._broadcast_scope_index()
+        selected = self.tab_manager.get_selected_terminal()
+        if scope == 0:  # This pane
+            return [selected] if selected else []
+        if scope == 1:  # Group
+            if not selected:
+                return []
+            group = self._terminal_broadcast_group(selected)
+            if not group:
+                self.toast_overlay.add_toast(
+                    Adw.Toast(
+                        title=_(
+                            "Focused pane has no broadcast group; "
+                            "set one in the session editor."
+                        )
+                    )
+                )
+                return []
+            matched = [
+                t
+                for t in all_terminals
+                if self._terminal_broadcast_group(t) == group
+            ]
+            return matched or []
+        if scope == 2:  # All panes
+            return list(all_terminals)
+        return None  # Select…
 
     def _on_search_mode_changed(self, search_bar, param):
         if search_bar.get_search_mode():
@@ -124,7 +190,7 @@ class WindowSearchBroadcastMixin:
 
     def _on_broadcast_activate(self, entry: Gtk.Entry):
         """
-        Shows a confirmation dialog before broadcasting the command to all terminals.
+        Broadcasts using the selected scope, or shows a picker for Select…
         """
         command = entry.get_text().strip()
         if not command:
@@ -133,6 +199,22 @@ class WindowSearchBroadcastMixin:
         all_terminals = self.tab_manager.get_all_terminals_across_tabs()
         if not all_terminals:
             self.toast_overlay.add_toast(Adw.Toast(title=_("No open terminals found.")))
+            return
+
+        scoped = self._resolve_broadcast_terminals(all_terminals)
+        if scoped is not None:
+            if not scoped:
+                self.toast_overlay.add_toast(
+                    Adw.Toast(title=_("No terminals matched the broadcast scope."))
+                )
+                return
+            if self._broadcast_scope_index() == 2 and len(scoped) > 1:
+                # Confirm destructive-looking "all panes" sends.
+                self._confirm_broadcast_to_terminals(command, scoped)
+                return
+            self._execute_broadcast(command, scoped)
+            entry.set_text("")
+            self.broadcast_bar.set_search_mode(False)
             return
 
         remember_choice = self._broadcast_remember_choice
@@ -240,6 +322,44 @@ class WindowSearchBroadcastMixin:
             selection_controls,
             remember_check,
         )
+        dialog.present()
+
+    def _confirm_broadcast_to_terminals(
+        self, command: str, terminals: List[Vte.Terminal]
+    ) -> None:
+        """Ask before sending to every open pane."""
+        dialog = Adw.MessageDialog(
+            transient_for=self,
+            heading=_("Broadcast to all panes?"),
+            body=_(
+                "Send this command to <b>{count}</b> open terminals?"
+            ).format(count=len(terminals)),
+            body_use_markup=True,
+            close_response="cancel",
+        )
+        highlighted_cmd = get_bash_pango_markup(command)
+        command_label = Gtk.Label(
+            label=f"<tt>{highlighted_cmd}</tt>",
+            use_markup=True,
+            css_classes=["card"],
+            halign=Gtk.Align.CENTER,
+            margin_top=8,
+            margin_bottom=8,
+        )
+        dialog.set_extra_child(command_label)
+        dialog.add_response("cancel", _("Cancel"))
+        dialog.add_response("send", _("Send Command"))
+        dialog.set_default_response("send")
+        dialog.set_response_appearance("send", Adw.ResponseAppearance.DESTRUCTIVE)
+
+        def on_response(_dialog, response_id: str):
+            if response_id == "send":
+                self._execute_broadcast(command, terminals)
+            _dialog.close()
+            self.broadcast_entry.set_text("")
+            self.broadcast_bar.set_search_mode(False)
+
+        dialog.connect("response", on_response)
         dialog.present()
 
     def _on_broadcast_confirm(

@@ -554,6 +554,40 @@ class PreferencesDialog(Adw.PreferencesWindow):
         )
         log_group.add(log_to_file_row)
 
+        transcript_row = self._create_switch_row(
+            _("Enable Session Transcripts"),
+            _(
+                "When Automatic, sessions follow this setting. "
+                "Files are written under the transcript directory."
+            ),
+            "transcript_logging_enabled",
+            default_value=False,
+        )
+        log_group.add(transcript_row)
+
+        transcript_strip_row = self._create_switch_row(
+            _("Strip ANSI Codes from Transcripts"),
+            _("Remove color/control sequences for readable log files"),
+            "transcript_strip_ansi",
+            default_value=True,
+        )
+        log_group.add(transcript_strip_row)
+
+        transcript_dir_row = Adw.EntryRow(title=_("Transcript Directory"))
+        transcript_dir_row.set_text(
+            self.settings_manager.get("transcript_directory", "") or ""
+        )
+        transcript_dir_row.set_tooltip_text(
+            _("Leave empty for ~/.local/share/zashterminal/transcripts")
+        )
+        transcript_dir_row.connect(
+            "changed",
+            lambda row: self._on_setting_changed(
+                "transcript_directory", row.get_text().strip()
+            ),
+        )
+        log_group.add(transcript_dir_row)
+
         log_level_row = Adw.ComboRow(
             title=_("Console Log Level"),
         )

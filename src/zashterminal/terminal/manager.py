@@ -27,6 +27,11 @@ from ..utils.logger import get_logger, log_terminal_event
 from ..utils.osc7_tracker import OSC7Info, get_osc7_tracker
 from ..utils.platform import get_environment_manager, get_platform_info
 from ..utils.security import validate_session_data
+from ..utils.transcript import (
+    TranscriptWriter,
+    build_transcript_path,
+    resolve_transcript_enabled,
+)
 from ..utils.translation_utils import _
 from .execute_command import pack_execute_user_data
 from .manager_balabit import TerminalBalabitMixin
@@ -828,6 +833,12 @@ class TerminalManager(
         try:
             terminal.zashterminal_handler_ids = []
             terminal.zashterminal_controllers = []
+            if isinstance(identifier, SessionItem):
+                terminal.zashterminal_session_item = identifier
+            else:
+                terminal.zashterminal_session_item = None
+
+            self._attach_transcript_logger(terminal, identifier, terminal_id)
 
             handler_id = terminal.connect(
                 "child-exited", self._on_child_exited, identifier, terminal_id
@@ -901,6 +912,98 @@ class TerminalManager(
             self.logger.error(
                 f"Failed to configure terminal events for ID {terminal_id}: {e}"
             )
+
+    def _default_transcript_directory(self) -> pathlib.Path:
+        custom = (self.settings_manager.get("transcript_directory", "") or "").strip()
+        if custom:
+            return pathlib.Path(custom).expanduser()
+        data_home = pathlib.Path(
+            os.environ.get("XDG_DATA_HOME", pathlib.Path.home() / ".local" / "share")
+        )
+        return data_home / "zashterminal" / "transcripts"
+
+    def _attach_transcript_logger(
+        self,
+        terminal: Vte.Terminal,
+        identifier: Union[str, SessionItem],
+        terminal_id: int,
+    ) -> None:
+        session = identifier if isinstance(identifier, SessionItem) else None
+        global_enabled = bool(
+            self.settings_manager.get("transcript_logging_enabled", False)
+        )
+        override = session.transcript_logging if session else None
+        if not resolve_transcript_enabled(
+            global_enabled=global_enabled, session_override=override
+        ):
+            return
+
+        session_name = (
+            session.name
+            if session
+            else (identifier if isinstance(identifier, str) else f"terminal-{terminal_id}")
+        )
+        host = session.host if session else ""
+        strip_ansi = bool(self.settings_manager.get("transcript_strip_ansi", True))
+        try:
+            path = build_transcript_path(
+                self._default_transcript_directory(),
+                session_name=session_name,
+                host=host,
+            )
+            writer = TranscriptWriter(path, strip_escapes=strip_ansi)
+            terminal._zashterminal_transcript = writer
+            handler_id = terminal.connect(
+                "contents-changed",
+                self._on_terminal_contents_changed_for_transcript,
+            )
+            terminal.zashterminal_handler_ids.append(handler_id)
+            self.logger.info(
+                f"Transcript logging enabled for '{session_name}' → {path}"
+            )
+        except Exception as exc:
+            self.logger.warning(f"Failed to start transcript logging: {exc}")
+
+    def _detach_transcript_logger(self, terminal: Vte.Terminal) -> None:
+        writer = getattr(terminal, "_zashterminal_transcript", None)
+        if writer is None:
+            return
+        try:
+            writer.close()
+        except Exception:
+            pass
+        try:
+            delattr(terminal, "_zashterminal_transcript")
+        except Exception:
+            terminal._zashterminal_transcript = None
+
+    def _on_terminal_contents_changed_for_transcript(
+        self, terminal: Vte.Terminal
+    ) -> None:
+        writer = getattr(terminal, "_zashterminal_transcript", None)
+        if writer is None:
+            return
+        try:
+            _col, row = terminal.get_cursor_position()
+            start_row = int(getattr(writer, "last_row", 0) or 0)
+            if row < start_row:
+                return
+            col_count = max(1, terminal.get_column_count())
+            result = terminal.get_text_range_format(
+                Vte.Format.TEXT,
+                start_row,
+                0,
+                row,
+                col_count - 1,
+            )
+            text = ""
+            if result:
+                text = result[0] if isinstance(result, (tuple, list)) else str(result)
+            if text:
+                writer.write(text if text.endswith("\n") else text + "\n")
+            writer.note_row(row + 1)
+        except Exception as exc:
+            self.logger.debug(f"Transcript append failed: {exc}")
 
     def _setup_context_menu(self, terminal: Vte.Terminal) -> None:
         try:
@@ -1071,6 +1174,7 @@ class TerminalManager(
 
             # Clean up highlight proxy FIRST to stop GLib watches
             self._cleanup_highlight_proxy(terminal_id)
+            self._detach_transcript_logger(terminal)
 
             pid = terminal_info.get("process_id")
             if pid:

@@ -199,6 +199,35 @@ class SessionEditDialog(BaseDialog):
         self.type_combo.connect("notify::selected", self._on_type_changed)
         name_group.add(self.type_combo)
 
+        # Broadcast group (Terminator-style) — applies to local and SSH
+        self.broadcast_group_entry = self._create_entry_row(
+            title=_("Broadcast Group"),
+            text=self.editing_session.broadcast_group or "",
+            on_changed=None,
+        )
+        self.broadcast_group_entry.set_tooltip_text(
+            _("Optional group name for broadcast (e.g. web, db)")
+        )
+        name_group.add(self.broadcast_group_entry)
+
+        # Transcript logging tri-state
+        self.transcript_combo = Adw.ComboRow(
+            title=_("Session Transcript"),
+            subtitle=_("Capture terminal output to a log file"),
+        )
+        self.transcript_combo.set_model(
+            Gtk.StringList.new(
+                [_("Automatic (use preferences)"), _("Always on"), _("Always off")]
+            )
+        )
+        if self.editing_session.transcript_logging is True:
+            self.transcript_combo.set_selected(1)
+        elif self.editing_session.transcript_logging is False:
+            self.transcript_combo.set_selected(2)
+        else:
+            self.transcript_combo.set_selected(0)
+        name_group.add(self.transcript_combo)
+
         # Tab Color - using Adw.ActionRow with color button
         color_row = Adw.ActionRow(
             title=_("Tab Color"),
@@ -753,6 +782,17 @@ class SessionEditDialog(BaseDialog):
         self.x11_switch.set_active(self.editing_session.x11_forwarding)
         self.x11_switch.connect("notify::active", self._on_x11_toggled)
         options_group.add(self.x11_switch)
+
+        # ProxyJump / bastion
+        self.proxy_jump_entry = self._create_entry_row(
+            title=_("ProxyJump"),
+            text=self.editing_session.proxy_jump or "",
+            on_changed=None,
+        )
+        self.proxy_jump_entry.set_tooltip_text(
+            _("OpenSSH jump host, e.g. user@bastion or user@jump1,user@jump2")
+        )
+        options_group.add(self.proxy_jump_entry)
 
         # SFTP toggle
         self.sftp_switch = Adw.SwitchRow(
@@ -1648,6 +1688,30 @@ class SessionEditDialog(BaseDialog):
                 and session_data["session_type"] == "ssh"
             )
             else "shell"
+        )
+        session_data["broadcast_group"] = (
+            self.broadcast_group_entry.get_text().strip()
+            if getattr(self, "broadcast_group_entry", None)
+            else ""
+        )
+        transcript_idx = (
+            self.transcript_combo.get_selected()
+            if getattr(self, "transcript_combo", None)
+            else 0
+        )
+        if transcript_idx == 1:
+            session_data["transcript_logging"] = True
+        elif transcript_idx == 2:
+            session_data["transcript_logging"] = False
+        else:
+            session_data["transcript_logging"] = None
+        session_data["proxy_jump"] = (
+            self.proxy_jump_entry.get_text().strip()
+            if (
+                session_data["session_type"] == "ssh"
+                and getattr(self, "proxy_jump_entry", None)
+            )
+            else ""
         )
         is_network_device = session_data["ssh_connection_mode"] == "network_device"
         if is_network_device:

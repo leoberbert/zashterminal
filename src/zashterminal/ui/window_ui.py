@@ -102,6 +102,7 @@ class WindowUIBuilder:
         self.broadcast_bar = None
         self.broadcast_button = None
         self.broadcast_entry = None
+        self.broadcast_scope_combo = None
         self.terminal_search_entry = None  # Renamed for clarity
         self.sidebar_search_entry = None  # Renamed for clarity
         self.search_prev_button = None
@@ -199,6 +200,21 @@ class WindowUIBuilder:
         self.broadcast_bar = Gtk.SearchBar()
         self.broadcast_bar.add_css_class("broadcast-bar")
         broadcast_box = Gtk.Box(spacing=6)
+        self.broadcast_scope_combo = Gtk.DropDown.new_from_strings(
+            [
+                _("This pane"),
+                _("Group"),
+                _("All panes"),
+                _("Select…"),
+            ]
+        )
+        self.broadcast_scope_combo.set_tooltip_text(
+            _(
+                "Broadcast destination: current pane, same broadcast group, "
+                "all panes, or manual selection"
+            )
+        )
+        broadcast_box.append(self.broadcast_scope_combo)
         self.broadcast_entry = Gtk.Entry(
             hexpand=True,
             placeholder_text=_("Type your command here and press ENTER..."),

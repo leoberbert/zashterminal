@@ -238,6 +238,12 @@ class DefaultSettings:
             # Logging Settings
             "log_to_file": False,
             "console_log_level": "ERROR",
+            # Session transcript logging (terminal output capture)
+            "transcript_logging_enabled": False,
+            "transcript_strip_ansi": True,
+            "transcript_directory": "",
+            # Broadcast destination: this | group | all | select
+            "broadcast_default_scope": "select",
             # Remote Editing
             "use_system_tmp_for_edit": False,
             "clear_remote_edit_files_on_exit": True,

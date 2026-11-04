@@ -10,6 +10,7 @@ from gi.repository import Gio, GObject
 from ..utils.exceptions import SessionValidationError
 from ..utils.logger import get_logger
 from ..utils.platform import normalize_path
+from ..utils.proxy_jump import normalize_proxy_jump, validate_proxy_jump
 from ..utils.security import InputSanitizer
 from ..utils.translation_utils import _
 
@@ -108,6 +109,9 @@ class SessionItem(BaseModel):
         port_forwardings: Optional[List[Dict[str, Any]]] = None,
         x11_forwarding: bool = False,
         ssh_connection_mode: str = "shell",
+        proxy_jump: str = "",
+        broadcast_group: str = "",
+        transcript_logging: Optional[bool] = None,
         source: str = "user",
         local_working_directory: str = "",
         local_startup_command: str = "",
@@ -156,6 +160,9 @@ class SessionItem(BaseModel):
             if ssh_connection_mode in {"shell", "network_device"}
             else "shell"
         )
+        self._proxy_jump = normalize_proxy_jump(proxy_jump)
+        self._broadcast_group = (broadcast_group or "").strip()
+        self._transcript_logging = transcript_logging
         self._source = source or "user"
         # Local terminal specific properties
         self._local_working_directory = (
@@ -466,6 +473,40 @@ class SessionItem(BaseModel):
         return self.is_ssh() and self._ssh_connection_mode == "network_device"
 
     @property
+    def proxy_jump(self) -> str:
+        return self._proxy_jump
+
+    @proxy_jump.setter
+    def proxy_jump(self, value: str):
+        new_value = normalize_proxy_jump(value)
+        if self._proxy_jump != new_value:
+            self._proxy_jump = new_value
+            self._mark_modified()
+
+    @property
+    def broadcast_group(self) -> str:
+        return self._broadcast_group
+
+    @broadcast_group.setter
+    def broadcast_group(self, value: str):
+        new_value = (value or "").strip()
+        if self._broadcast_group != new_value:
+            self._broadcast_group = new_value
+            self._mark_modified()
+
+    @property
+    def transcript_logging(self) -> Optional[bool]:
+        return self._transcript_logging
+
+    @transcript_logging.setter
+    def transcript_logging(self, value: Optional[bool]):
+        if value is not None:
+            value = bool(value)
+        if self._transcript_logging != value:
+            self._transcript_logging = value
+            self._mark_modified()
+
+    @property
     def source(self) -> str:
         return self._source
 
@@ -571,6 +612,11 @@ class SessionItem(BaseModel):
                 errors.append(_("Host is required for SSH sessions."))
             if not (1 <= self.port <= 65535):
                 errors.append(_("Port must be between 1 and 65535."))
+            ok_jump, jump_error = validate_proxy_jump(self._proxy_jump)
+            if not ok_jump:
+                errors.append(
+                    _("Invalid ProxyJump value: {error}").format(error=jump_error)
+                )
             if self.post_login_command_enabled and not self.post_login_command:
                 errors.append(_("Post-login command cannot be empty when enabled."))
             if self.sftp_session_enabled and self.sftp_local_directory:
@@ -622,6 +668,9 @@ class SessionItem(BaseModel):
             "port_forwardings": self.port_forwardings,
             "x11_forwarding": self.x11_forwarding,
             "ssh_connection_mode": self.ssh_connection_mode,
+            "proxy_jump": self.proxy_jump,
+            "broadcast_group": self.broadcast_group,
+            "transcript_logging": self.transcript_logging,
             "local_working_directory": self.local_working_directory,
             "local_startup_command": self.local_startup_command,
 
@@ -655,6 +704,9 @@ class SessionItem(BaseModel):
             port_forwardings=data.get("port_forwardings", []),
             x11_forwarding=data.get("x11_forwarding", False),
             ssh_connection_mode=data.get("ssh_connection_mode", "shell"),
+            proxy_jump=data.get("proxy_jump", ""),
+            broadcast_group=data.get("broadcast_group", ""),
+            transcript_logging=data.get("transcript_logging", None),
             source=data.get("source", "user"),
             local_working_directory=data.get("local_working_directory", ""),
             local_startup_command=data.get("local_startup_command", ""),
