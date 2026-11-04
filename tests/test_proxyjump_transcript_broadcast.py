@@ -14,6 +14,7 @@ from zashterminal.utils.ssh_config_parser import SSHConfigParser
 from zashterminal.utils.transcript import (
     TranscriptWriter,
     build_transcript_path,
+    default_transcript_directory,
     resolve_transcript_enabled,
     strip_ansi,
 )
@@ -149,6 +150,10 @@ class TranscriptHelperTests(unittest.TestCase):
         self.assertTrue(
             resolve_transcript_enabled(global_enabled=True, session_override=None)
         )
+        default_dir = default_transcript_directory("")
+        self.assertTrue(str(default_dir).endswith("zashterminal/transcripts"))
+        custom = default_transcript_directory("/tmp/my-transcripts")
+        self.assertEqual(custom, Path("/tmp/my-transcripts"))
 
     def test_writer_and_path(self):
         with tempfile.TemporaryDirectory() as tmp:

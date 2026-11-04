@@ -210,8 +210,11 @@ class WindowUIBuilder:
         )
         self.broadcast_scope_combo.set_tooltip_text(
             _(
-                "Broadcast destination: current pane, same broadcast group, "
-                "all panes, or manual selection"
+                "This pane: only the focused terminal. "
+                "Group: all panes whose session Broadcast Group matches the focused one "
+                "(set it in Edit Session). "
+                "All panes: every open terminal (asks to confirm). "
+                "Select…: choose manually."
             )
         )
         broadcast_box.append(self.broadcast_scope_combo)

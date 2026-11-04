@@ -914,13 +914,11 @@ class TerminalManager(
             )
 
     def _default_transcript_directory(self) -> pathlib.Path:
-        custom = (self.settings_manager.get("transcript_directory", "") or "").strip()
-        if custom:
-            return pathlib.Path(custom).expanduser()
-        data_home = pathlib.Path(
-            os.environ.get("XDG_DATA_HOME", pathlib.Path.home() / ".local" / "share")
+        from ..utils.transcript import default_transcript_directory
+
+        return default_transcript_directory(
+            self.settings_manager.get("transcript_directory", "") or ""
         )
-        return data_home / "zashterminal" / "transcripts"
 
     def _attach_transcript_logger(
         self,

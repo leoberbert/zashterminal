@@ -554,12 +554,17 @@ class PreferencesDialog(Adw.PreferencesWindow):
         )
         log_group.add(log_to_file_row)
 
+        from ...utils.transcript import default_transcript_directory
+
+        default_transcript_path = default_transcript_directory(
+            self.settings_manager.get("transcript_directory", "") or ""
+        )
         transcript_row = self._create_switch_row(
             _("Enable Session Transcripts"),
             _(
-                "When Automatic, sessions follow this setting. "
-                "Files are written under the transcript directory."
-            ),
+                "Default for sessions set to Automatic. "
+                "Files are named TIMESTAMP_session_host.log under {path}."
+            ).format(path=str(default_transcript_path)),
             "transcript_logging_enabled",
             default_value=False,
         )
@@ -573,19 +578,28 @@ class PreferencesDialog(Adw.PreferencesWindow):
         )
         log_group.add(transcript_strip_row)
 
-        transcript_dir_row = Adw.EntryRow(title=_("Transcript Directory"))
-        transcript_dir_row.set_text(
+        transcript_dir_row = Adw.ActionRow(
+            title=_("Transcript Directory"),
+            subtitle=_(
+                "Leave empty to use {path}. Change takes effect for new sessions."
+            ).format(path=str(default_transcript_directory(""))),
+        )
+        transcript_dir_row.set_activatable(False)
+        transcript_dir_entry = Gtk.Entry()
+        transcript_dir_entry.set_valign(Gtk.Align.CENTER)
+        transcript_dir_entry.set_hexpand(True)
+        transcript_dir_entry.set_size_request(220, -1)
+        transcript_dir_entry.set_placeholder_text(str(default_transcript_directory("")))
+        transcript_dir_entry.set_text(
             self.settings_manager.get("transcript_directory", "") or ""
         )
-        transcript_dir_row.set_tooltip_text(
-            _("Leave empty for ~/.local/share/zashterminal/transcripts")
-        )
-        transcript_dir_row.connect(
+        transcript_dir_entry.connect(
             "changed",
-            lambda row: self._on_setting_changed(
-                "transcript_directory", row.get_text().strip()
+            lambda entry: self._on_setting_changed(
+                "transcript_directory", entry.get_text().strip()
             ),
         )
+        transcript_dir_row.add_suffix(transcript_dir_entry)
         log_group.add(transcript_dir_row)
 
         log_level_row = Adw.ComboRow(

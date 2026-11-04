@@ -88,6 +88,29 @@ class SessionEditDialog(BaseDialog):
         if self.name_row:
             self.name_row.grab_focus()
 
+    def _create_described_entry_row(
+        self,
+        *,
+        title: str,
+        subtitle: str,
+        text: str = "",
+        placeholder: str = "",
+    ) -> tuple[Adw.ActionRow, Gtk.Entry]:
+        """ActionRow with visible subtitle + entry (EntryRow hides descriptions)."""
+        row = Adw.ActionRow(title=title, subtitle=subtitle)
+        row.set_activatable(False)
+        entry = Gtk.Entry()
+        entry.set_valign(Gtk.Align.CENTER)
+        entry.set_hexpand(True)
+        entry.set_size_request(220, -1)
+        if text:
+            entry.set_text(text)
+        if placeholder:
+            entry.set_placeholder_text(placeholder)
+        entry.set_tooltip_text(subtitle)
+        row.add_suffix(entry)
+        return row, entry
+
     def _setup_ui(self) -> None:
         try:
             # Apply custom CSS for modern styling
@@ -200,20 +223,33 @@ class SessionEditDialog(BaseDialog):
         name_group.add(self.type_combo)
 
         # Broadcast group (Terminator-style) — applies to local and SSH
-        self.broadcast_group_entry = self._create_entry_row(
-            title=_("Broadcast Group"),
-            text=self.editing_session.broadcast_group or "",
-            on_changed=None,
+        self.broadcast_group_row, self.broadcast_group_entry = (
+            self._create_described_entry_row(
+                title=_("Broadcast Group"),
+                subtitle=_(
+                    "Name used by Broadcast → Group (e.g. web, db). "
+                    "Panes with the same name receive the command together."
+                ),
+                text=self.editing_session.broadcast_group or "",
+                placeholder=_("e.g. web"),
+            )
         )
-        self.broadcast_group_entry.set_tooltip_text(
-            _("Optional group name for broadcast (e.g. web, db)")
-        )
-        name_group.add(self.broadcast_group_entry)
+        name_group.add(self.broadcast_group_row)
 
         # Transcript logging tri-state
+        from ...utils.transcript import default_transcript_directory
+
+        transcript_dir = default_transcript_directory(
+            (self._settings_manager.get("transcript_directory", "") or "")
+            if self._settings_manager
+            else ""
+        )
         self.transcript_combo = Adw.ComboRow(
             title=_("Session Transcript"),
-            subtitle=_("Capture terminal output to a log file"),
+            subtitle=_(
+                "Save this session’s output to a .log file under {path}. "
+                "Automatic follows Preferences → Advanced."
+            ).format(path=str(transcript_dir)),
         )
         self.transcript_combo.set_model(
             Gtk.StringList.new(
@@ -784,15 +820,16 @@ class SessionEditDialog(BaseDialog):
         options_group.add(self.x11_switch)
 
         # ProxyJump / bastion
-        self.proxy_jump_entry = self._create_entry_row(
+        self.proxy_jump_row, self.proxy_jump_entry = self._create_described_entry_row(
             title=_("ProxyJump"),
+            subtitle=_(
+                "Bastion/jump host before the destination (OpenSSH -J). "
+                "Examples: user@bastion  or  user@jump1,user@jump2:2222"
+            ),
             text=self.editing_session.proxy_jump or "",
-            on_changed=None,
+            placeholder=_("user@bastion"),
         )
-        self.proxy_jump_entry.set_tooltip_text(
-            _("OpenSSH jump host, e.g. user@bastion or user@jump1,user@jump2")
-        )
-        options_group.add(self.proxy_jump_entry)
+        options_group.add(self.proxy_jump_row)
 
         # SFTP toggle
         self.sftp_switch = Adw.SwitchRow(

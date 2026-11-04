@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 import re
 import threading
 from datetime import datetime
@@ -9,6 +10,17 @@ from pathlib import Path
 from typing import Optional, TextIO
 
 _ANSI_RE = re.compile(r"\x1b(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])")
+
+
+def default_transcript_directory(custom: Optional[str] = None) -> Path:
+    """Resolve the transcript directory (custom path or XDG data home default)."""
+    text = (custom or "").strip()
+    if text:
+        return Path(text).expanduser()
+    data_home = Path(
+        os.environ.get("XDG_DATA_HOME", Path.home() / ".local" / "share")
+    )
+    return data_home / "zashterminal" / "transcripts"
 
 
 def strip_ansi(text: str) -> str:
