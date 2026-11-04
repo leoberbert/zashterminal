@@ -255,6 +255,40 @@ class MultiPuttyImportTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 import_multiputty_sessions_from_file(path)
 
+    def test_namespace_default_name_and_missing_host(self):
+        from zashterminal.utils.putty_import import _xml_local_name
+
+        self.assertEqual(_xml_local_name("{urn:mputty}connection"), "connection")
+        self.assertEqual(_xml_local_name("host"), "host")
+
+        content = """<?xml version="1.0"?>
+<config xmlns="urn:mputty">
+  <connection>
+    <protocol>ssh</protocol>
+    <host>ns.example</host>
+  </connection>
+  <connection name="nohost">
+    <protocol>ssh</protocol>
+  </connection>
+  <connection name="post-off">
+    <host>cmd.example</host>
+    <postcommands>false</postcommands>
+    <command1>ignored</command1>
+  </connection>
+</config>
+"""
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "ns.xml"
+            path.write_text(content, encoding="utf-8")
+            sessions, warnings = import_multiputty_sessions_from_file(path)
+
+        names = {s.name for s in sessions}
+        self.assertIn("Imported Multi PuTTY Session", names)
+        self.assertIn("post-off", names)
+        post = next(s for s in sessions if s.name == "post-off")
+        self.assertEqual(post.post_login_command, "")
+        self.assertTrue(any("missing host" in w for w in warnings))
+
 
 class MRemoteNgImportTests(unittest.TestCase):
     def _legacy_encrypt(self, plain: str, password: str = DEFAULT_MREMOTENG_PASSWORD) -> str:
