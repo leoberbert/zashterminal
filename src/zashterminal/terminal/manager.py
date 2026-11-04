@@ -1070,7 +1070,7 @@ class TerminalManager(
             text = result[0] if isinstance(result, (tuple, list)) else str(result)
         if text:
             writer.write(text if text.endswith("\n") else text + "\n")
-        writer.note_row(row if force else row)
+        writer.note_row(row)
 
     def _on_terminal_contents_changed_for_transcript(
         self, terminal: Vte.Terminal
