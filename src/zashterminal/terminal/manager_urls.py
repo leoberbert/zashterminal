@@ -12,6 +12,7 @@ from gi.repository import Gdk, Gtk, Vte
 
 from ..helpers import is_valid_url
 from ..settings.config import PROMPT_TERMINATOR_PATTERN
+from ..utils.dead_keys import resolve_dead_key
 from ._lazy import (
     ANSI_ESCAPE_PATTERN as _ANSI_ESCAPE_PATTERN,
     get_highlight_manager as _get_highlight_manager,
@@ -154,6 +155,16 @@ class TerminalUrlMixin:
             Gdk.EVENT_PROPAGATE to allow VTE to process the key normally.
         """
         try:
+            pending = getattr(terminal, "_zash_pending_dead", None)
+            text, new_pending, stop = resolve_dead_key(pending, keyval, state)
+            if text is not None or new_pending != pending or stop:
+                terminal._zash_pending_dead = new_pending
+            if text:
+                terminal.feed_child(text.encode("utf-8"))
+            if stop:
+                # Keep the key away from GTK IM so a dead ~/^ cannot swallow Ctrl+C.
+                return Gdk.EVENT_STOP
+
             # Only trigger on Enter or KP_Enter, ignore if modifiers are pressed
             if keyval not in (Gdk.KEY_Return, Gdk.KEY_KP_Enter):
                 return Gdk.EVENT_PROPAGATE
@@ -206,6 +217,11 @@ class TerminalUrlMixin:
 
         # CRUCIAL: Always propagate the event so VTE processes the newline
         return Gdk.EVENT_PROPAGATE
+
+    def _on_terminal_focus_out_clear_dead_key(self, _controller, terminal) -> None:
+        """Drop a pending dead key if focus leaves the terminal."""
+        if getattr(terminal, "_zash_pending_dead", None) is not None:
+            terminal._zash_pending_dead = None
 
     def _analyze_command_from_line(
         self, line: str, terminal: Vte.Terminal, terminal_id: int
