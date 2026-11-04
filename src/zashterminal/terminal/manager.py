@@ -13,8 +13,9 @@ from urllib.parse import urlparse
 import gi
 
 gi.require_version("Gtk", "4.0")
+gi.require_version("Adw", "1")
 gi.require_version("Vte", "3.91")
-from gi.repository import Gdk, GLib, GObject, Gtk, Vte
+from gi.repository import Adw, Gdk, GLib, GObject, Gtk, Vte
 
 from ..helpers import is_valid_url
 from ..sessions.models import SessionItem
@@ -959,14 +960,32 @@ class TerminalManager(
             self.logger.info(
                 f"Transcript logging enabled for '{session_name}' → {path}"
             )
+            self._notify_transcript_started(path)
         except Exception as exc:
             self.logger.warning(f"Failed to start transcript logging: {exc}")
+
+    def _notify_transcript_started(self, path: pathlib.Path) -> None:
+        """Surface a short toast so enabling transcripts is visible to the user."""
+        try:
+            window = self.parent_window
+            overlay = getattr(window, "toast_overlay", None) if window else None
+            if overlay is None:
+                return
+            toast = Adw.Toast(
+                title=_("Recording transcript to {path}").format(path=str(path))
+            )
+            toast.set_timeout(5)
+            overlay.add_toast(toast)
+        except Exception as exc:
+            self.logger.debug(f"Transcript toast failed: {exc}")
 
     def _detach_transcript_logger(self, terminal: Vte.Terminal) -> None:
         writer = getattr(terminal, "_zashterminal_transcript", None)
         if writer is None:
             return
         try:
+            # Flush any remaining text on the current line before close.
+            self._flush_transcript_line(terminal, writer, force=True)
             writer.close()
         except Exception:
             pass
@@ -975,6 +994,41 @@ class TerminalManager(
         except Exception:
             terminal._zashterminal_transcript = None
 
+    def _flush_transcript_line(
+        self,
+        terminal: Vte.Terminal,
+        writer: TranscriptWriter,
+        *,
+        force: bool = False,
+    ) -> None:
+        _col, row = terminal.get_cursor_position()
+        start_row = int(getattr(writer, "last_row", 0) or 0)
+        if row < start_row:
+            # Terminal cleared / scrollback reset — resync cursor row.
+            writer.note_row(max(0, row))
+            return
+        # Normally wait until the cursor advances to a new row (completed line).
+        # On detach/force, also capture the current partial line.
+        if row == start_row and not force:
+            return
+        col_count = max(1, terminal.get_column_count())
+        end_row = row if force else max(start_row, row - 1)
+        if end_row < start_row:
+            return
+        result = terminal.get_text_range_format(
+            Vte.Format.TEXT,
+            start_row,
+            0,
+            end_row,
+            col_count - 1,
+        )
+        text = ""
+        if result:
+            text = result[0] if isinstance(result, (tuple, list)) else str(result)
+        if text:
+            writer.write(text if text.endswith("\n") else text + "\n")
+        writer.note_row(row if force else row)
+
     def _on_terminal_contents_changed_for_transcript(
         self, terminal: Vte.Terminal
     ) -> None:
@@ -982,24 +1036,7 @@ class TerminalManager(
         if writer is None:
             return
         try:
-            _col, row = terminal.get_cursor_position()
-            start_row = int(getattr(writer, "last_row", 0) or 0)
-            if row < start_row:
-                return
-            col_count = max(1, terminal.get_column_count())
-            result = terminal.get_text_range_format(
-                Vte.Format.TEXT,
-                start_row,
-                0,
-                row,
-                col_count - 1,
-            )
-            text = ""
-            if result:
-                text = result[0] if isinstance(result, (tuple, list)) else str(result)
-            if text:
-                writer.write(text if text.endswith("\n") else text + "\n")
-            writer.note_row(row + 1)
+            self._flush_transcript_line(terminal, writer, force=False)
         except Exception as exc:
             self.logger.debug(f"Transcript append failed: {exc}")
 
