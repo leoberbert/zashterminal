@@ -11,6 +11,7 @@ from unittest import mock
 
 from zashterminal.utils.platform import (
     ensure_wayland_input_method,
+    resolve_gtk_im_module,
     should_set_wayland_im_module,
 )
 
@@ -19,20 +20,31 @@ class WaylandImPolicyTests(unittest.TestCase):
     def test_sets_wayland_when_unset_on_wayland_session(self):
         env = {"WAYLAND_DISPLAY": "wayland-0"}
         self.assertTrue(should_set_wayland_im_module(env))
+        self.assertEqual(resolve_gtk_im_module(env), "wayland")
 
     def test_sets_wayland_when_simple_module(self):
         env = {"WAYLAND_DISPLAY": "wayland-0", "GTK_IM_MODULE": "simple"}
         self.assertTrue(should_set_wayland_im_module(env))
+        self.assertEqual(resolve_gtk_im_module(env), "wayland")
+
+    def test_sets_wayland_when_legacy_simple_module_name(self):
+        env = {
+            "WAYLAND_DISPLAY": "wayland-0",
+            "GTK_IM_MODULE": "gtk-im-context-simple",
+        }
+        self.assertEqual(resolve_gtk_im_module(env), "wayland")
 
     def test_respects_explicit_im_frameworks(self):
         for module in ("ibus", "fcitx", "fcitx5", "xim", "wayland"):
             with self.subTest(module=module):
                 env = {"WAYLAND_DISPLAY": "wayland-0", "GTK_IM_MODULE": module}
                 self.assertFalse(should_set_wayland_im_module(env))
+                self.assertIsNone(resolve_gtk_im_module(env))
 
     def test_skips_x11_session(self):
         env = {"XDG_SESSION_TYPE": "x11"}
         self.assertFalse(should_set_wayland_im_module(env))
+        self.assertIsNone(resolve_gtk_im_module(env))
 
     def test_skips_when_gdk_backend_forced_x11(self):
         # Distrobox/Gentoo launcher may export WAYLAND_DISPLAY but force X11.
@@ -41,10 +53,68 @@ class WaylandImPolicyTests(unittest.TestCase):
             "GDK_BACKEND": "x11",
         }
         self.assertFalse(should_set_wayland_im_module(env))
+        self.assertIsNone(resolve_gtk_im_module(env))
 
     def test_detects_session_type_wayland_without_display_var(self):
         env = {"XDG_SESSION_TYPE": "wayland"}
         self.assertTrue(should_set_wayland_im_module(env))
+        self.assertEqual(resolve_gtk_im_module(env), "wayland")
+
+
+class KdeHyprlandDeadKeyImTests(unittest.TestCase):
+    def test_kde_wayland_prefers_simple_instead_of_wayland(self):
+        env = {
+            "WAYLAND_DISPLAY": "wayland-0",
+            "XDG_CURRENT_DESKTOP": "KDE",
+        }
+        self.assertFalse(should_set_wayland_im_module(env))
+        self.assertEqual(resolve_gtk_im_module(env), "simple")
+
+    def test_plasma_overrides_auto_wayland_module(self):
+        env = {
+            "WAYLAND_DISPLAY": "wayland-0",
+            "XDG_CURRENT_DESKTOP": "X-Generic:Plasma",
+            "GTK_IM_MODULE": "wayland",
+        }
+        self.assertEqual(resolve_gtk_im_module(env), "simple")
+
+    def test_hyprland_prefers_simple(self):
+        env = {
+            "WAYLAND_DISPLAY": "wayland-0",
+            "XDG_CURRENT_DESKTOP": "Hyprland",
+        }
+        self.assertEqual(resolve_gtk_im_module(env), "simple")
+
+    def test_kde_keeps_existing_simple(self):
+        env = {
+            "WAYLAND_DISPLAY": "wayland-0",
+            "XDG_CURRENT_DESKTOP": "KDE",
+            "GTK_IM_MODULE": "simple",
+        }
+        self.assertIsNone(resolve_gtk_im_module(env))
+
+    def test_kde_keeps_legacy_simple_name(self):
+        env = {
+            "WAYLAND_DISPLAY": "wayland-0",
+            "XDG_CURRENT_DESKTOP": "KDE",
+            "GTK_IM_MODULE": "gtk-im-context-simple",
+        }
+        self.assertIsNone(resolve_gtk_im_module(env))
+
+    def test_kde_does_not_override_ibus(self):
+        env = {
+            "WAYLAND_DISPLAY": "wayland-0",
+            "XDG_CURRENT_DESKTOP": "KDE",
+            "GTK_IM_MODULE": "ibus",
+        }
+        self.assertIsNone(resolve_gtk_im_module(env))
+
+    def test_kde_detected_via_desktop_session(self):
+        env = {
+            "WAYLAND_DISPLAY": "wayland-0",
+            "DESKTOP_SESSION": "plasma",
+        }
+        self.assertEqual(resolve_gtk_im_module(env), "simple")
 
 
 class EnsureWaylandInputMethodTests(unittest.TestCase):
@@ -52,7 +122,16 @@ class EnsureWaylandInputMethodTests(unittest.TestCase):
         clean = {
             k: v
             for k, v in os.environ.items()
-            if k not in {"GTK_IM_MODULE", "GDK_BACKEND", "WAYLAND_DISPLAY", "XDG_SESSION_TYPE"}
+            if k
+            not in {
+                "GTK_IM_MODULE",
+                "GDK_BACKEND",
+                "WAYLAND_DISPLAY",
+                "XDG_SESSION_TYPE",
+                "XDG_CURRENT_DESKTOP",
+                "XDG_SESSION_DESKTOP",
+                "DESKTOP_SESSION",
+            }
         }
         clean["WAYLAND_DISPLAY"] = "wayland-0"
         with mock.patch.dict(os.environ, clean, clear=True):
@@ -63,13 +142,43 @@ class EnsureWaylandInputMethodTests(unittest.TestCase):
         clean = {
             k: v
             for k, v in os.environ.items()
-            if k not in {"GTK_IM_MODULE", "GDK_BACKEND", "WAYLAND_DISPLAY", "XDG_SESSION_TYPE"}
+            if k
+            not in {
+                "GTK_IM_MODULE",
+                "GDK_BACKEND",
+                "WAYLAND_DISPLAY",
+                "XDG_SESSION_TYPE",
+                "XDG_CURRENT_DESKTOP",
+                "XDG_SESSION_DESKTOP",
+                "DESKTOP_SESSION",
+            }
         }
         clean["WAYLAND_DISPLAY"] = "wayland-0"
         clean["GTK_IM_MODULE"] = "ibus"
         with mock.patch.dict(os.environ, clean, clear=True):
             ensure_wayland_input_method()
             self.assertEqual(os.environ.get("GTK_IM_MODULE"), "ibus")
+
+    def test_sets_simple_on_kde_wayland(self):
+        clean = {
+            k: v
+            for k, v in os.environ.items()
+            if k
+            not in {
+                "GTK_IM_MODULE",
+                "GDK_BACKEND",
+                "WAYLAND_DISPLAY",
+                "XDG_SESSION_TYPE",
+                "XDG_CURRENT_DESKTOP",
+                "XDG_SESSION_DESKTOP",
+                "DESKTOP_SESSION",
+            }
+        }
+        clean["WAYLAND_DISPLAY"] = "wayland-0"
+        clean["XDG_CURRENT_DESKTOP"] = "KDE"
+        with mock.patch.dict(os.environ, clean, clear=True):
+            ensure_wayland_input_method()
+            self.assertEqual(os.environ.get("GTK_IM_MODULE"), "simple")
 
 
 if __name__ == "__main__":
