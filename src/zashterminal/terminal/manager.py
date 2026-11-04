@@ -874,6 +874,9 @@ class TerminalManager(
             focus_controller.connect(
                 "enter", self._on_terminal_focus_in, terminal, terminal_id
             )
+            focus_controller.connect(
+                "leave", self._on_terminal_focus_out_clear_dead_key, terminal
+            )
             terminal.add_controller(focus_controller)
             terminal.zashterminal_controllers.append(focus_controller)
 
