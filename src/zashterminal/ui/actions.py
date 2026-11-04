@@ -74,6 +74,7 @@ class WindowActions:
             "show-command-manager": self.show_command_manager,
             "import-securecrt-sessions": self.import_securecrt_sessions,
             "import-putty-sessions": self.import_putty_sessions,
+            "import-multiputty-sessions": self.import_multiputty_sessions,
             "import-mremoteng-sessions": self.import_mremoteng_sessions,
             "toggle-tftp-server": self.toggle_tftp_server,
             "preferences": self.preferences,
@@ -582,6 +583,62 @@ class WindowActions:
             self.window.toast_overlay.add_toast(
                 Adw.Toast(
                     title=_("Failed to import PuTTY sessions: {error}").format(
+                        error=exc
+                    )
+                )
+            )
+        finally:
+            try:
+                dialog.destroy()
+            except Exception:
+                pass
+
+    def import_multiputty_sessions(self, *_args):
+        self._hide_tooltip()
+        chooser = Gtk.FileChooserDialog(
+            title=_("Select Multi PuTTY Sessions File"),
+            transient_for=self.window,
+            modal=True,
+            action=Gtk.FileChooserAction.OPEN,
+        )
+        chooser.add_css_class("zashterminal-dialog")
+        chooser.add_button(_("Cancel"), Gtk.ResponseType.CANCEL)
+        chooser.add_button(_("Open"), Gtk.ResponseType.ACCEPT)
+        chooser.set_default_response(Gtk.ResponseType.ACCEPT)
+        filter_mp = Gtk.FileFilter()
+        filter_mp.set_name(_("Multi PuTTY (*.dat, *.xml)"))
+        filter_mp.add_pattern("*.dat")
+        filter_mp.add_pattern("*.xml")
+        chooser.add_filter(filter_mp)
+        filter_all = Gtk.FileFilter()
+        filter_all.set_name(_("All files"))
+        filter_all.add_pattern("*")
+        chooser.add_filter(filter_all)
+        try:
+            chooser.set_current_folder(Gio.File.new_for_path(str(Path.home())))
+        except Exception:
+            pass
+        chooser.connect("response", self._on_multiputty_sessions_file_selected)
+        chooser.present()
+
+    def _on_multiputty_sessions_file_selected(self, dialog, response_id):
+        try:
+            if response_id != Gtk.ResponseType.ACCEPT:
+                return
+            chosen = dialog.get_file()
+            if not chosen or not chosen.get_path():
+                return
+            import_result = (
+                self.window.session_operations.import_sessions_from_multiputty_file(
+                    chosen.get_path()
+                )
+            )
+            self._show_import_result(import_result, source_label="Multi PuTTY")
+        except Exception as exc:
+            self.logger.error(f"Multi PuTTY import failed: {exc}")
+            self.window.toast_overlay.add_toast(
+                Adw.Toast(
+                    title=_("Failed to import Multi PuTTY sessions: {error}").format(
                         error=exc
                     )
                 )

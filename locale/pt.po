@@ -9143,3 +9143,43 @@ msgstr "Enviar este comando para <b>{count}</b> terminais abertos?"
 #: src/zashterminal/sessions/models.py
 msgid "Invalid ProxyJump value: {error}"
 msgstr "Valor de ProxyJump inválido: {error}"
+
+#:
+#: src/zashterminal/ui/menus.py
+msgid "Import Multi PuTTY Sessions"
+msgstr "Importar sessões Multi PuTTY"
+
+#:
+#: src/zashterminal/ui/actions.py
+msgid "Select Multi PuTTY Sessions File"
+msgstr "Selecionar arquivo de sessões Multi PuTTY"
+
+#:
+#: src/zashterminal/ui/actions.py
+msgid "Multi PuTTY (*.dat, *.xml)"
+msgstr "Multi PuTTY (*.dat, *.xml)"
+
+#:
+#: src/zashterminal/ui/actions.py
+msgid "Failed to import Multi PuTTY sessions: {error}"
+msgstr "Falha ao importar sessões Multi PuTTY: {error}"
+
+#:
+#: src/zashterminal/sessions/operations.py
+msgid "Multi PuTTY sessions file not found at {path}"
+msgstr "Arquivo de sessões Multi PuTTY não encontrado em {path}"
+
+#:
+#: src/zashterminal/sessions/operations.py
+msgid "Failed to parse Multi PuTTY file: {error}"
+msgstr "Falha ao analisar arquivo Multi PuTTY: {error}"
+
+#:
+#: src/zashterminal/sessions/operations.py
+msgid "No Multi PuTTY SSH sessions were imported from {path}."
+msgstr "Nenhuma sessão SSH Multi PuTTY foi importada de {path}."
+
+#:
+#: src/zashterminal/sessions/operations.py
+msgid "Imported {count} Multi PuTTY session(s) from {path}."
+msgstr "Importada(s) {count} sessão(ões) Multi PuTTY de {path}."
