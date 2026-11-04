@@ -144,6 +144,69 @@ class SessionImportOperationsTests(unittest.TestCase):
         self.assertFalse(result.success)
         self.assertIn("Failed to save", result.message)
 
+    def test_multiputty_missing_file(self):
+        result = self.ops.import_sessions_from_multiputty_file("/no/such/mputty.dat")
+        self.assertFalse(result.success)
+        self.assertIn("/no/such/mputty.dat", result.message)
+
+    def test_multiputty_parse_error(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "broken.xml"
+            path.write_text("<not><closed>", encoding="utf-8")
+            result = self.ops.import_sessions_from_multiputty_file(path)
+        self.assertFalse(result.success)
+        self.assertIn("Invalid Multi PuTTY XML", result.message)
+
+    def test_multiputty_no_ssh_sessions(self):
+        content = """<?xml version="1.0"?>
+<config>
+  <connection name="old">
+    <protocol>telnet</protocol>
+    <host>router</host>
+  </connection>
+</config>
+"""
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "mputty.dat"
+            path.write_text(content, encoding="utf-8")
+            result = self.ops.import_sessions_from_multiputty_file(path)
+        self.assertFalse(result.success)
+        self.assertEqual(self.session_store.get_n_items(), 0)
+        self.assertTrue(result.warnings)
+
+    def test_multiputty_import_success_creates_folders(self):
+        content = """<?xml version="1.0"?>
+<config>
+  <container name="Prod">
+    <connection name="api">
+      <protocol>ssh</protocol>
+      <host>api.example</host>
+      <port>2222</port>
+      <login>deploy</login>
+      <password>secret</password>
+    </connection>
+  </container>
+</config>
+"""
+        signals_patch, signals = self._signals()
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "mputty.dat"
+            path.write_text(content, encoding="utf-8")
+            with signals_patch:
+                result = self.ops.import_sessions_from_multiputty_file(path)
+        self.assertTrue(result.success, result.message)
+        self.assertEqual(self.session_store.get_n_items(), 1)
+        session = self.session_store.get_item(0)
+        self.assertEqual(session.name, "api")
+        self.assertEqual(session.folder_path, "/Prod")
+        self.assertEqual(session.host, "api.example")
+        self.assertEqual(session.port, 2222)
+        self.assertEqual(session.user, "deploy")
+        self.assertEqual(session.auth_type, "password")
+        self.assertGreaterEqual(self.folder_store.get_n_items(), 1)
+        signals.emit.assert_called_with("request-tree-refresh")
+        self.assertIn("Multi PuTTY", result.message)
+
     def test_mremoteng_missing_file(self):
         result = self.ops.import_sessions_from_mremoteng_file("/missing/confCons.xml")
         self.assertFalse(result.success)
