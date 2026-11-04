@@ -6,6 +6,7 @@ import tempfile
 import unittest
 from datetime import datetime
 from pathlib import Path
+from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
 from zashterminal.sessions.models import SessionItem
@@ -187,6 +188,42 @@ class BroadcastGroupKeyTests(unittest.TestCase):
         focused = "web"
         matched = [s for s in (a, b, c, d) if group_of(s) == focused]
         self.assertEqual([s.name for s in matched], ["w1", "w2"])
+
+
+class TranscriptPreferenceApplyTests(unittest.TestCase):
+    def test_disabling_stops_open_writers_unless_always_on(self):
+        from zashterminal.terminal.manager import TerminalManager
+        from zashterminal.utils.transcript import TranscriptWriter
+
+        mgr = object.__new__(TerminalManager)
+        mgr.logger = MagicMock()
+        mgr.parent_window = MagicMock()
+        mgr.parent_window.toast_overlay = MagicMock()
+        mgr.registry = MagicMock()
+
+        auto_session = SessionItem(name="auto", host="h", transcript_logging=None)
+        always_session = SessionItem(name="force", host="h", transcript_logging=True)
+        auto_term = SimpleNamespace(zashterminal_session_item=auto_session)
+        always_on_term = SimpleNamespace(zashterminal_session_item=always_session)
+
+        with tempfile.TemporaryDirectory() as tmp:
+            auto_writer = TranscriptWriter(Path(tmp) / "a.log")
+            always_writer = TranscriptWriter(Path(tmp) / "b.log")
+            auto_term._zashterminal_transcript = auto_writer
+            always_on_term._zashterminal_transcript = always_writer
+
+            mgr.registry.get_all_terminal_ids.return_value = [1, 2]
+            mgr.registry.get_terminal.side_effect = lambda tid: {
+                1: auto_term,
+                2: always_on_term,
+            }[tid]
+
+            stopped = mgr.apply_transcript_preference_change(False)
+            self.assertEqual(stopped, 1)
+            self.assertIsNone(getattr(auto_term, "_zashterminal_transcript", None))
+            # Always-on session keeps recording
+            self.assertIs(always_on_term._zashterminal_transcript, always_writer)
+            always_writer.close()
 
 
 if __name__ == "__main__":

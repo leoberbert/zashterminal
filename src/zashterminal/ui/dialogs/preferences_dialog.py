@@ -562,8 +562,9 @@ class PreferencesDialog(Adw.PreferencesWindow):
         transcript_row = self._create_switch_row(
             _("Enable Session Transcripts"),
             _(
-                "Default for sessions set to Automatic. "
-                "Files are named TIMESTAMP_session_host.log under {path}."
+                "Off by default. When enabled, reopen terminals to start recording. "
+                "Disabling stops open recordings immediately. "
+                "Files: TIMESTAMP_session_host.log under {path}."
             ).format(path=str(default_transcript_path)),
             "transcript_logging_enabled",
             default_value=False,

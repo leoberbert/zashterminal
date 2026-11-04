@@ -979,6 +979,46 @@ class TerminalManager(
         except Exception as exc:
             self.logger.debug(f"Transcript toast failed: {exc}")
 
+    def _toast(self, title: str, timeout: int = 5) -> None:
+        try:
+            overlay = getattr(self.parent_window, "toast_overlay", None)
+            if overlay is None:
+                return
+            toast = Adw.Toast(title=title)
+            toast.set_timeout(timeout)
+            overlay.add_toast(toast)
+        except Exception as exc:
+            self.logger.debug(f"Toast failed: {exc}")
+
+    def apply_transcript_preference_change(self, enabled: bool) -> int:
+        """Apply global transcript toggle to open terminals.
+
+        Disabling stops writers immediately (unless the session is Always on).
+        Enabling does not retrofit open tabs — caller should tell the user to
+        reopen them. Returns how many open transcripts were stopped.
+        """
+        stopped = 0
+        for terminal_id in list(self.registry.get_all_terminal_ids()):
+            terminal = self.registry.get_terminal(terminal_id)
+            if terminal is None:
+                continue
+            session = getattr(terminal, "zashterminal_session_item", None)
+            override = (
+                session.transcript_logging
+                if isinstance(session, SessionItem)
+                else None
+            )
+            should_record = resolve_transcript_enabled(
+                global_enabled=bool(enabled), session_override=override
+            )
+            has_writer = (
+                getattr(terminal, "_zashterminal_transcript", None) is not None
+            )
+            if has_writer and not should_record:
+                self._detach_transcript_logger(terminal)
+                stopped += 1
+        return stopped
+
     def _detach_transcript_logger(self, terminal: Vte.Terminal) -> None:
         writer = getattr(terminal, "_zashterminal_transcript", None)
         if writer is None:
@@ -986,6 +1026,9 @@ class TerminalManager(
         try:
             # Flush any remaining text on the current line before close.
             self._flush_transcript_line(terminal, writer, force=True)
+        except Exception:
+            pass
+        try:
             writer.close()
         except Exception:
             pass

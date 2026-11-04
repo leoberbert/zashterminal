@@ -247,8 +247,9 @@ class SessionEditDialog(BaseDialog):
         self.transcript_combo = Adw.ComboRow(
             title=_("Session Transcript"),
             subtitle=_(
-                "Save this session’s output to a .log file under {path}. "
-                "Automatic follows Preferences → Advanced."
+                "Save this session’s output under {path}. "
+                "Automatic follows Preferences (off by default). "
+                "Changing this applies when you reopen the terminal."
             ).format(path=str(transcript_dir)),
         )
         self.transcript_combo.set_model(
