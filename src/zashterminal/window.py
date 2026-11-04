@@ -272,6 +272,7 @@ class ZashTerminalWindow(WindowSearchBroadcastMixin, Adw.ApplicationWindow):
         self.broadcast_bar = self.ui_builder.broadcast_bar
         self.broadcast_button = self.ui_builder.broadcast_button
         self.broadcast_entry = self.ui_builder.broadcast_entry
+        self.broadcast_scope_combo = self.ui_builder.broadcast_scope_combo
         self._broadcast_remember_choice = False
         self._broadcast_last_selection: List[str] = []
         # Assign the correctly named widgets
@@ -809,6 +810,43 @@ class ZashTerminalWindow(WindowSearchBroadcastMixin, Adw.ApplicationWindow):
             # Hide AI panel if disabled
             if not new_value and self.ui_builder.is_ai_panel_visible():
                 self.ui_builder.hide_ai_panel()
+
+        if key == "transcript_logging_enabled":
+            stopped = self.terminal_manager.apply_transcript_preference_change(
+                bool(new_value)
+            )
+            if new_value:
+                self.toast_overlay.add_toast(
+                    Adw.Toast(
+                        title=_(
+                            "Session transcripts enabled. Reopen terminals "
+                            "(or open a new tab) to start recording."
+                        )
+                    )
+                )
+            elif stopped:
+                self.toast_overlay.add_toast(
+                    Adw.Toast(
+                        title=_(
+                            "Stopped transcript recording on {count} open terminal(s)."
+                        ).format(count=stopped)
+                    )
+                )
+            else:
+                self.toast_overlay.add_toast(
+                    Adw.Toast(title=_("Session transcripts disabled."))
+                )
+            return
+
+        if key in {"transcript_directory", "transcript_strip_ansi"}:
+            self.toast_overlay.add_toast(
+                Adw.Toast(
+                    title=_(
+                        "Transcript setting saved. Reopen terminals for it to take effect."
+                    )
+                )
+            )
+            return
 
         if key == "gtk_theme":
             # A wallpaper snapshot can temporarily override the manual choice.
