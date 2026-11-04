@@ -88,6 +88,29 @@ class SessionEditDialog(BaseDialog):
         if self.name_row:
             self.name_row.grab_focus()
 
+    def _create_described_entry_row(
+        self,
+        *,
+        title: str,
+        subtitle: str,
+        text: str = "",
+        placeholder: str = "",
+    ) -> tuple[Adw.ActionRow, Gtk.Entry]:
+        """ActionRow with visible subtitle + entry (EntryRow hides descriptions)."""
+        row = Adw.ActionRow(title=title, subtitle=subtitle)
+        row.set_activatable(False)
+        entry = Gtk.Entry()
+        entry.set_valign(Gtk.Align.CENTER)
+        entry.set_hexpand(True)
+        entry.set_size_request(220, -1)
+        if text:
+            entry.set_text(text)
+        if placeholder:
+            entry.set_placeholder_text(placeholder)
+        entry.set_tooltip_text(subtitle)
+        row.add_suffix(entry)
+        return row, entry
+
     def _setup_ui(self) -> None:
         try:
             # Apply custom CSS for modern styling
@@ -198,6 +221,49 @@ class SessionEditDialog(BaseDialog):
         self.type_combo.set_selected(0 if self.editing_session.is_local() else 1)
         self.type_combo.connect("notify::selected", self._on_type_changed)
         name_group.add(self.type_combo)
+
+        # Broadcast group (Terminator-style) — applies to local and SSH
+        self.broadcast_group_row, self.broadcast_group_entry = (
+            self._create_described_entry_row(
+                title=_("Broadcast Group"),
+                subtitle=_(
+                    "Name used by Broadcast → Group (e.g. web, db). "
+                    "Panes with the same name receive the command together."
+                ),
+                text=self.editing_session.broadcast_group or "",
+                placeholder=_("e.g. web"),
+            )
+        )
+        name_group.add(self.broadcast_group_row)
+
+        # Transcript logging tri-state
+        from ...utils.transcript import default_transcript_directory
+
+        transcript_dir = default_transcript_directory(
+            (self._settings_manager.get("transcript_directory", "") or "")
+            if self._settings_manager
+            else ""
+        )
+        self.transcript_combo = Adw.ComboRow(
+            title=_("Session Transcript"),
+            subtitle=_(
+                "Save this session’s output under {path}. "
+                "Automatic follows Preferences (off by default). "
+                "Changing this applies when you reopen the terminal."
+            ).format(path=str(transcript_dir)),
+        )
+        self.transcript_combo.set_model(
+            Gtk.StringList.new(
+                [_("Automatic (use preferences)"), _("Always on"), _("Always off")]
+            )
+        )
+        if self.editing_session.transcript_logging is True:
+            self.transcript_combo.set_selected(1)
+        elif self.editing_session.transcript_logging is False:
+            self.transcript_combo.set_selected(2)
+        else:
+            self.transcript_combo.set_selected(0)
+        name_group.add(self.transcript_combo)
 
         # Tab Color - using Adw.ActionRow with color button
         color_row = Adw.ActionRow(
@@ -753,6 +819,18 @@ class SessionEditDialog(BaseDialog):
         self.x11_switch.set_active(self.editing_session.x11_forwarding)
         self.x11_switch.connect("notify::active", self._on_x11_toggled)
         options_group.add(self.x11_switch)
+
+        # ProxyJump / bastion
+        self.proxy_jump_row, self.proxy_jump_entry = self._create_described_entry_row(
+            title=_("ProxyJump"),
+            subtitle=_(
+                "Bastion/jump host before the destination (OpenSSH -J). "
+                "Examples: user@bastion  or  user@jump1,user@jump2:2222"
+            ),
+            text=self.editing_session.proxy_jump or "",
+            placeholder=_("user@bastion"),
+        )
+        options_group.add(self.proxy_jump_row)
 
         # SFTP toggle
         self.sftp_switch = Adw.SwitchRow(
@@ -1648,6 +1726,30 @@ class SessionEditDialog(BaseDialog):
                 and session_data["session_type"] == "ssh"
             )
             else "shell"
+        )
+        session_data["broadcast_group"] = (
+            self.broadcast_group_entry.get_text().strip()
+            if getattr(self, "broadcast_group_entry", None)
+            else ""
+        )
+        transcript_idx = (
+            self.transcript_combo.get_selected()
+            if getattr(self, "transcript_combo", None)
+            else 0
+        )
+        if transcript_idx == 1:
+            session_data["transcript_logging"] = True
+        elif transcript_idx == 2:
+            session_data["transcript_logging"] = False
+        else:
+            session_data["transcript_logging"] = None
+        session_data["proxy_jump"] = (
+            self.proxy_jump_entry.get_text().strip()
+            if (
+                session_data["session_type"] == "ssh"
+                and getattr(self, "proxy_jump_entry", None)
+            )
+            else ""
         )
         is_network_device = session_data["ssh_connection_mode"] == "network_device"
         if is_network_device:

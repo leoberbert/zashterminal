@@ -418,6 +418,9 @@ class FileOperations:
                     ssh_cmd = (
                         f"ssh -o ControlPath={spawner._get_ssh_control_path(session)}"
                     )
+                    proxy_jump = (getattr(session, "proxy_jump", "") or "").strip()
+                    if proxy_jump:
+                        ssh_cmd += f" -o ProxyJump={proxy_jump}"
                     remote_path_normalized = self._normalize_remote_path(
                         remote_path, session
                     )
@@ -564,6 +567,9 @@ class FileOperations:
                     ssh_cmd = (
                         f"ssh -o ControlPath={spawner._get_ssh_control_path(session)}"
                     )
+                    proxy_jump = (getattr(session, "proxy_jump", "") or "").strip()
+                    if proxy_jump:
+                        ssh_cmd += f" -o ProxyJump={proxy_jump}"
                     remote_path_normalized = self._normalize_remote_path(
                         remote_path, session
                     )

@@ -326,7 +326,8 @@ class ProcessSpawner:
         # Unix domain socket paths are short (~108 bytes on Linux). Long host/user
         # values (common with gateway usernames like user@host) can exceed the limit
         # and break ControlMaster with "path too long for Unix domain socket".
-        raw = f"{session.host}|{port}|{user}"
+        proxy_jump = getattr(session, "proxy_jump", "") or ""
+        raw = f"{session.host}|{port}|{user}|{proxy_jump}"
         digest = hashlib.sha256(raw.encode("utf-8")).hexdigest()[:16]
         # Keep the socket filename very short because OpenSSH may append a
         # temporary suffix during ControlMaster setup (e.g. ".XXXX...").
@@ -926,6 +927,9 @@ class ProcessSpawner:
             if getattr(session, "x11_forwarding", False):
                 ssh_options["ForwardX11"] = "yes"
                 ssh_options["ForwardX11Trusted"] = "yes"
+            proxy_jump = (getattr(session, "proxy_jump", "") or "").strip()
+            if proxy_jump:
+                ssh_options["ProxyJump"] = proxy_jump
 
             cmd = self.command_builder.build_remote_command(
                 "ssh",
@@ -1048,6 +1052,11 @@ class ProcessSpawner:
         if command_type == "ssh" and getattr(session, "x11_forwarding", False):
             ssh_options["ForwardX11"] = "yes"
             ssh_options["ForwardX11Trusted"] = "yes"
+
+        proxy_jump = (getattr(session, "proxy_jump", "") or "").strip()
+        if proxy_jump:
+            # Works for both ssh and sftp via -o ProxyJump=
+            ssh_options["ProxyJump"] = proxy_jump
 
         cmd = self.command_builder.build_remote_command(
             command_type,
@@ -1189,6 +1198,9 @@ class ProcessSpawner:
             ssh_options.pop("ControlPersist", None)
             ssh_options.pop("ControlMaster", None)
             ssh_options.pop("ControlPath", None)
+        proxy_jump = (getattr(session, "proxy_jump", "") or "").strip()
+        if proxy_jump:
+            ssh_options["ProxyJump"] = proxy_jump
 
         cmd = self.command_builder.build_remote_command(
             "ssh",

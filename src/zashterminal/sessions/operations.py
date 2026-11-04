@@ -123,6 +123,10 @@ class SessionOperations:
             )
             original_session.port_forwardings = updated_session.port_forwardings
             original_session.x11_forwarding = updated_session.x11_forwarding
+            original_session.ssh_connection_mode = updated_session.ssh_connection_mode
+            original_session.proxy_jump = updated_session.proxy_jump
+            original_session.broadcast_group = updated_session.broadcast_group
+            original_session.transcript_logging = updated_session.transcript_logging
             # Local terminal options
             original_session.local_working_directory = (
                 updated_session.local_working_directory
@@ -383,6 +387,7 @@ class SessionOperations:
                     auth_type="key",
                     auth_value=candidate_identity,
                     x11_forwarding=bool(entry.forward_x11),
+                    proxy_jump=entry.proxy_jump or "",
                     source="ssh_config",
                 )
 

@@ -554,6 +554,55 @@ class PreferencesDialog(Adw.PreferencesWindow):
         )
         log_group.add(log_to_file_row)
 
+        from ...utils.transcript import default_transcript_directory
+
+        default_transcript_path = default_transcript_directory(
+            self.settings_manager.get("transcript_directory", "") or ""
+        )
+        transcript_row = self._create_switch_row(
+            _("Enable Session Transcripts"),
+            _(
+                "Off by default. When enabled, reopen terminals to start recording. "
+                "Disabling stops open recordings immediately. "
+                "Files: TIMESTAMP_session_host.log under {path}."
+            ).format(path=str(default_transcript_path)),
+            "transcript_logging_enabled",
+            default_value=False,
+        )
+        log_group.add(transcript_row)
+
+        transcript_strip_row = self._create_switch_row(
+            _("Strip ANSI Codes from Transcripts"),
+            _("Remove color/control sequences for readable log files"),
+            "transcript_strip_ansi",
+            default_value=True,
+        )
+        log_group.add(transcript_strip_row)
+
+        transcript_dir_row = Adw.ActionRow(
+            title=_("Transcript Directory"),
+            subtitle=_(
+                "Leave empty to use {path}. Change takes effect for new sessions."
+            ).format(path=str(default_transcript_directory(""))),
+        )
+        transcript_dir_row.set_activatable(False)
+        transcript_dir_entry = Gtk.Entry()
+        transcript_dir_entry.set_valign(Gtk.Align.CENTER)
+        transcript_dir_entry.set_hexpand(True)
+        transcript_dir_entry.set_size_request(220, -1)
+        transcript_dir_entry.set_placeholder_text(str(default_transcript_directory("")))
+        transcript_dir_entry.set_text(
+            self.settings_manager.get("transcript_directory", "") or ""
+        )
+        transcript_dir_entry.connect(
+            "changed",
+            lambda entry: self._on_setting_changed(
+                "transcript_directory", entry.get_text().strip()
+            ),
+        )
+        transcript_dir_row.add_suffix(transcript_dir_entry)
+        log_group.add(transcript_dir_row)
+
         log_level_row = Adw.ComboRow(
             title=_("Console Log Level"),
         )
