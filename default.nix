@@ -15,7 +15,7 @@
 
 python3Packages.buildPythonApplication {
   pname = "zashterminal";
-  version = "0.8.23";
+  version = "0.8.24";
 
   src = ./.;
 
