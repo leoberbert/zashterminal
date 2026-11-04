@@ -9183,3 +9183,26 @@ msgstr "Nenhuma sessão SSH Multi PuTTY foi importada de {path}."
 #: src/zashterminal/sessions/operations.py
 msgid "Imported {count} Multi PuTTY session(s) from {path}."
 msgstr "Importada(s) {count} sessão(ões) Multi PuTTY de {path}."
+
+
+
+#:
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Updates"
+msgstr "Atualizações"
+
+#:
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Check for updates on startup"
+msgstr "Verificar atualizações na inicialização"
+
+#:
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid ""
+"Look for newer Releases or tags on GitHub when the app starts "
+"(unreleased main tip is ignored unless ZASHTERMINAL_UPDATE_ALLOW_MAIN=1). "
+"Disable entirely with ZASHTERMINAL_DISABLE_AUTO_UPDATE=1."
+msgstr ""
+"Procura Releases ou tags mais novas no GitHub ao iniciar o app "
+"(o tip não publicado da main é ignorado, salvo com ZASHTERMINAL_UPDATE_ALLOW_MAIN=1). "
+"Desative por completo com ZASHTERMINAL_DISABLE_AUTO_UPDATE=1."
