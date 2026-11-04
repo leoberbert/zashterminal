@@ -20,6 +20,24 @@ _EXPLICIT_IM_MODULES = frozenset(
     }
 )
 
+# Frameworks the user/desktop installed; never replace these.
+_PROTECTED_IM_MODULES = frozenset(
+    {
+        "ibus",
+        "fcitx",
+        "fcitx5",
+        "xim",
+        "broadway",
+    }
+)
+
+# GTK's built-in compose IM (legacy and current module ids).
+_SIMPLE_IM_MODULES = frozenset({"simple", "gtk-im-context-simple"})
+
+# Desktops where zwp_text_input_v3 (GTK_IM_MODULE=wayland) breaks ABNT2
+# dead keys such as ^~ in VTE; prefer local compose via "simple".
+_DESKTOP_SIMPLE_IM_MARKERS = ("KDE", "PLASMA", "HYPRLAND")
+
 
 class PlatformInfo:
     """Information about the current platform (assumed to be Linux)."""
@@ -267,6 +285,47 @@ def _is_wayland_session(environ: Mapping[str, str]) -> bool:
     return session_type == "wayland"
 
 
+def _desktop_prefers_simple_im(environ: Mapping[str, str]) -> bool:
+    """KDE Plasma / Hyprland need GTK simple IM for ABNT2 dead keys (^~)."""
+    desktop = environ.get("XDG_CURRENT_DESKTOP", "")
+    session_desktop = environ.get("XDG_SESSION_DESKTOP", "")
+    desktop_session = environ.get("DESKTOP_SESSION", "")
+    blob = f"{desktop}:{session_desktop}:{desktop_session}".upper()
+    return any(marker in blob for marker in _DESKTOP_SIMPLE_IM_MARKERS)
+
+
+def resolve_gtk_im_module(environ: Mapping[str, str]) -> Optional[str]:
+    """
+    Choose GTK_IM_MODULE for dead-key/compose support.
+
+    Returns the module id to set, or None when the current value must be left
+    alone (user/desktop IM framework, or already correct).
+    """
+    current = environ.get("GTK_IM_MODULE", "").strip().lower()
+    if current in _PROTECTED_IM_MODULES:
+        return None
+
+    # Plasma and Hyprland: text-input-v3 via "wayland" swallows ABNT2 dead_tilde
+    # (^~) in VTE. Restore the known-good local compose backend.
+    if _desktop_prefers_simple_im(environ):
+        if current in _SIMPLE_IM_MODULES:
+            return None
+        if current in {"", "wayland"}:
+            return "simple"
+        return None
+
+    if not _is_wayland_session(environ):
+        return None
+
+    if current in _EXPLICIT_IM_MODULES:
+        return None
+
+    # Unset or GTK's "simple" backend (no text-input-v3) → enable Wayland IM.
+    if current in {"", "simple", "gtk-im-context-simple"}:
+        return "wayland"
+    return None
+
+
 def should_set_wayland_im_module(environ: Mapping[str, str]) -> bool:
     """
     Decide whether to set GTK_IM_MODULE=wayland for compose/dead-key support.
@@ -274,40 +333,31 @@ def should_set_wayland_im_module(environ: Mapping[str, str]) -> bool:
     Pure helper (no side effects) so unit tests can cover the policy without
     mutating process environment.
     """
-    if not _is_wayland_session(environ):
-        return False
-
-    current = environ.get("GTK_IM_MODULE", "").strip().lower()
-    if current in _EXPLICIT_IM_MODULES:
-        return False
-
-    # Unset or GTK's "simple" backend (no text-input-v3) → enable Wayland IM.
-    return current in {"", "simple"}
+    return resolve_gtk_im_module(environ) == "wayland"
 
 
 def ensure_wayland_input_method() -> None:
     """
-    Ensure accent/diacritic compose works on Wayland without IBus/Fcitx.
+    Ensure accent/diacritic compose works before any GTK import.
 
-    Must run before any GTK import. On Wayland, GTK4 often defaults to the
-    ``simple`` IM module, which does not bind ``zwp_text_input_manager_v3`` and
-    breaks dead-key accents when no desktop IM framework is installed. Prefer
-    the built-in ``wayland`` module unless the user/desktop already selected one.
+    On most Wayland sessions without IBus/Fcitx, prefer the built-in
+    ``wayland`` IM (text-input-v3). On KDE Plasma and Hyprland, prefer
+    ``simple`` instead — ``wayland`` drops ABNT2 dead keys such as ``^~``.
     """
     logger = get_logger("zashterminal.platform.input")
 
-    if not should_set_wayland_im_module(os.environ):
+    target = resolve_gtk_im_module(os.environ)
+    if target is None:
         current = os.environ.get("GTK_IM_MODULE", "").strip()
         if current:
             logger.debug(
-                f"Leaving GTK_IM_MODULE={current} unchanged (Wayland IM policy)."
+                f"Leaving GTK_IM_MODULE={current} unchanged (input-method policy)."
             )
         return
 
-    os.environ["GTK_IM_MODULE"] = "wayland"
+    os.environ["GTK_IM_MODULE"] = target
     logger.info(
-        "Wayland session detected; setting GTK_IM_MODULE=wayland for "
-        "accent/compose support without IBus/Fcitx."
+        f"Setting GTK_IM_MODULE={target} for dead-key/compose support."
     )
 
 
