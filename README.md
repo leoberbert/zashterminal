@@ -91,7 +91,30 @@ Thirty built-in schemes plus Pywal wallpaper detection — preview before you ap
 
 Appearance, terminal behavior, profiles/backups, and advanced VTE options in a searchable Preferences window.
 
-Background blur uses a captured backdrop on KDE Plasma. Its KWin helper script is created as a unique, owner-only temporary file and removed after the window query, including on failure.
+Background blur is rendered live by the compositor: it follows window movement, resizing and changes behind the terminal without screenshots, hidden windows or capture permissions. Enable **Background Blur** and raise **Terminal Transparency** to see the effect. Transparency and blur strength are separate controls.
+
+Toggling blur takes effect immediately, including while Preferences is focused and the terminal is idle; changing transparency or moving the window is not required.
+
+On KDE Wayland, the optional **Zashterminal Per-Window Blur** native effect enables **Blur Strength** levels **1–15** in Preferences. It changes the GPU sampling kernel for the requested terminal surface only; it does not change the desktop's blur strength or blur other applications. Requests are identified by the caller's authenticated PID and native surface ID, not the window title.
+
+Strength changes affect the window whose Preferences you opened; other open terminal windows keep their own values. The last selected strength is saved as the default for newly created windows.
+
+The native effect currently targets **Fedora 44 x86_64, KWin 6.8.2 and Qt 6.11.2**. Build it with rootless Podman and network access; no compiler or development packages are installed on the host:
+
+```bash
+bash native/kwin-blur/build.sh --stage
+bash native/kwin-blur/build.sh --help
+```
+
+`--stage` builds into the user cache without changing the running desktop. The helper's `--help` shows how to expose the staged plugin to a **new nested KWin** through `QT_PLUGIN_PATH` for isolated validation. After validation, install it into the existing system plugin directory with administrator authentication:
+
+```bash
+bash native/kwin-blur/build.sh --install-system
+```
+
+Installation copies only the plugin; it does not restart KWin or change its global settings. Restart the terminal application to discover and load the effect. KWin's native API is private: rebuild and revalidate the effect after KWin/Qt upgrades; the helper rejects mismatched versions.
+
+Without the extension, standard Wayland background effects, older KDE Wayland blur, and the X11 KDE blur hint remain available when advertised by the compositor. Their strength belongs to the desktop, so the independent-strength slider is disabled with installation guidance. On unsupported compositors the blur switch is disabled too. Existing nonzero screenshot-blur amounts migrate to enabled; transparency is preserved.
 
 <p align="center">
   <img src="docs/gallery/07-preferences.png" alt="Preferences appearance page" width="920">

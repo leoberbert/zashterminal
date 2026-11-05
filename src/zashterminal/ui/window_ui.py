@@ -129,7 +129,7 @@ class WindowUIBuilder:
         """Constructs the entire UI and sets it on the parent window."""
         self._setup_styles()
         main_box = self._setup_main_structure()
-        self.window.set_content(self._wrap_blur_backdrop(main_box))
+        self.window.set_content(main_box)
         self.logger.info("Main window UI constructed successfully.")
 
     def _setup_styles(self) -> None:
@@ -183,24 +183,6 @@ class WindowUIBuilder:
         self.window.get_style_context().add_provider(
             self.border_provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
         )
-
-    def _wrap_blur_backdrop(self, main_box: Gtk.Box) -> Gtk.Overlay:
-        """Hold a softened still of the backdrop behind the transparent terminal."""
-        self.blur_picture = Gtk.Picture(
-            can_target=False,
-            hexpand=True,
-            vexpand=True,
-            visible=False,
-            content_fit=Gtk.ContentFit.COVER,
-        )
-        backdrop = Gtk.Box(hexpand=True, vexpand=True)
-        backdrop.append(self.blur_picture)
-        overlay = Gtk.Overlay()
-        overlay.set_child(backdrop)
-        main_box.set_halign(Gtk.Align.FILL)
-        main_box.set_valign(Gtk.Align.FILL)
-        overlay.add_overlay(main_box)
-        return overlay
 
     def _setup_main_structure(self) -> Gtk.Box:
         """Sets up the main window structure (header, search bar, flap, content)."""
