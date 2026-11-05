@@ -5,8 +5,7 @@ from typing import TYPE_CHECKING, Any, List, Tuple
 import gi
 
 gi.require_version("Gtk", "4.0")
-gi.require_version("Adw", "1")
-from gi.repository import Adw, Gdk, GLib, Gtk
+from gi.repository import Gdk, GLib, Gtk
 
 from ..sessions.models import SessionFolder, SessionItem
 from ..utils.icons import set_button_icon
@@ -24,7 +23,7 @@ if TYPE_CHECKING:
 class SidebarManager:
     """
     Manages the state and interactions of the main window's sidebar,
-    including the flap, popover for auto-hide mode, search, and sizing.
+    including the docked or overlay split view, search, and sizing.
     """
 
     def __init__(self, window: "ZashTerminalWindow", ui: "WindowUIBuilder"):
@@ -34,10 +33,15 @@ class SidebarManager:
         self.logger = get_logger("zashterminal.ui.sidebar")
 
         # Get widgets from the UI builder
-        self.flap = ui.flap
+        self.split = ui.split_view
         self.sidebar_box = ui.sidebar_box
-        self.sidebar_popover = ui.sidebar_popover
         self.toggle_sidebar_button = ui.toggle_sidebar_button
+        self.pin_sidebar_button = ui.pin_sidebar_button
+        self._updating_pin = False
+        self._updating_toggle = False
+        self._updating_width = False
+        self._switching_mode = False
+        self._width_save_id = 0
         self.search_entry = ui.sidebar_search_entry
         self.add_session_button = ui.add_session_button
         self.add_folder_button = ui.add_folder_button
@@ -51,17 +55,18 @@ class SidebarManager:
     def _connect_signals(self):
         """Connects signals for all widgets managed by this class."""
         self.toggle_sidebar_button.connect("toggled", self._on_toggle_sidebar)
-        self.sidebar_popover.connect("closed", self._on_sidebar_popover_closed)
-        self.sidebar_popover.connect("show", self._on_sidebar_popover_show)
-
-        popover_key_controller = Gtk.EventControllerKey.new()
-        popover_key_controller.set_propagation_phase(Gtk.PropagationPhase.CAPTURE)
-        popover_key_controller.connect(
-            "key-pressed", self._on_sidebar_popover_key_pressed
+        self.pin_sidebar_button.connect("toggled", self._on_pin_toggled)
+        self.split.connect("notify::show-sidebar", self._on_show_sidebar_changed)
+        self.split.connect(
+            "notify::sidebar-width-fraction", self._on_sidebar_width_changed
         )
-        self.sidebar_popover.add_controller(popover_key_controller)
 
-        self.flap.connect("notify::folded", self._on_sidebar_folded_changed)
+        sidebar_key_controller = Gtk.EventControllerKey.new()
+        sidebar_key_controller.set_propagation_phase(Gtk.PropagationPhase.CAPTURE)
+        sidebar_key_controller.connect("key-pressed", self._on_sidebar_key_pressed)
+        self.sidebar_box.add_controller(sidebar_key_controller)
+
+        self.sidebar_box.connect("notify::width", self._on_sidebar_folded_changed)
 
         # MODIFIED: Connect the buttons to intermediate methods in this class
         self.add_session_button.connect("clicked", self._on_add_session_clicked)
@@ -76,15 +81,17 @@ class SidebarManager:
         search_key_controller.connect("key-pressed", self._on_search_key_pressed)
         self.search_entry.add_controller(search_key_controller)
 
-        # Window resizing for popover
-        self.window.connect("notify::default-width", self._on_window_size_changed)
-        self.window.connect("notify::default-height", self._on_window_size_changed)
 
     # NEW: Callback methods that close the popover before calling the action
     def _close_popover_if_active(self):
-        """Closes the popover if it's visible."""
-        if self.sidebar_popover and self.sidebar_popover.get_visible():
-            self.sidebar_popover.popdown()
+        """Close an unpinned overlay before a dialog, so the dialog is not covered."""
+        if self.split.get_collapsed() and self.split.get_show_sidebar():
+            self.split.set_show_sidebar(False)
+
+    def close_if_unpinned(self) -> None:
+        """Hide the sessions panel after opening a session when the pin is off."""
+        if self.split.get_collapsed():
+            self.split.set_show_sidebar(False)
 
     def _on_add_session_clicked(self, button):
         self._close_popover_if_active()
@@ -116,79 +123,89 @@ class SidebarManager:
 
     def initialize_state(self):
         """Sets the initial state of the sidebar based on settings."""
-        auto_hide = self.settings_manager.get("auto_hide_sidebar", False)
+        auto_hide = self.settings_manager.get("auto_hide_sidebar", True)
         self.handle_auto_hide_change(auto_hide, is_initial_setup=True)
-        self.update_sidebar_sizes()
+        self._width_tries = 0
+        GLib.timeout_add(50, self._apply_width_when_mapped)
 
     def handle_auto_hide_change(
         self, auto_hide_enabled: bool, is_initial_setup: bool = False
     ):
-        """Switches the sidebar between normal (flap) and auto-hide (popover) modes."""
-        current_parent = self.sidebar_box.get_parent()
-
-        # Safely unparent the sidebar_box from its current container
-        if current_parent:
-            if isinstance(current_parent, Adw.Flap):
-                if current_parent.get_flap() == self.sidebar_box:
-                    current_parent.set_flap(None)
-            elif hasattr(current_parent, "set_child"):  # For Popover, Bin, etc.
-                current_parent.set_child(None)
-            elif hasattr(current_parent, "remove"):  # For Box, etc.
-                current_parent.remove(self.sidebar_box)
-
-        if auto_hide_enabled:
-            # Now that it's unparented, set it as the child of the popover
-            self.sidebar_popover.set_child(self.sidebar_box)
-            self.flap.set_reveal_flap(False)
-            if not is_initial_setup:
-                self.sidebar_popover.popdown()
-            self.toggle_sidebar_button.set_active(False)
-        else:  # Normal mode
-            # Now that it's unparented, set it as the flap widget
-            self.flap.set_flap(self.sidebar_box)
-            initial_visible = self.settings_manager.get_sidebar_visible()
-            self.flap.set_reveal_flap(initial_visible)
-            self.toggle_sidebar_button.set_active(initial_visible)
-            if initial_visible:
-                self._update_flap_size()
-
+        """Pin off overlays the terminal. Pin on docks the panel beside it."""
+        was_open = self.split.get_show_sidebar()
+        self._switching_mode = True
+        try:
+            self.split.set_collapsed(bool(auto_hide_enabled))
+            if auto_hide_enabled:
+                self.split.set_show_sidebar(False if is_initial_setup else was_open)
+            else:
+                visible = was_open or self.settings_manager.get_sidebar_visible()
+                if is_initial_setup:
+                    visible = self.settings_manager.get_sidebar_visible()
+                self.split.set_show_sidebar(bool(visible))
+                if (
+                    self.split.get_show_sidebar()
+                    and not self.settings_manager.get_sidebar_visible()
+                ):
+                    self.settings_manager.set_sidebar_visible(True)
+        finally:
+            self._switching_mode = False
+        if (
+            not is_initial_setup
+            and self.split.get_collapsed()
+            and self.split.get_show_sidebar()
+        ):
+            GLib.idle_add(self._focus_first_item)
+        self._sync_pin_button()
         self._update_sidebar_button_icon()
+
+    def _on_pin_toggled(self, button: Gtk.ToggleButton) -> None:
+        if self._updating_pin:
+            return
+        pinned = button.get_active()
+        auto_hide = not pinned
+        if self.settings_manager.get("auto_hide_sidebar", True) == auto_hide:
+            self._sync_pin_button()
+            return
+        self.settings_manager.set("auto_hide_sidebar", auto_hide)
+
+    def _sync_pin_button(self) -> None:
+        pinned = not bool(self.settings_manager.get("auto_hide_sidebar", True))
+        if self.pin_sidebar_button.get_active() != pinned:
+            self._updating_pin = True
+            self.pin_sidebar_button.set_active(pinned)
+            self._updating_pin = False
+        tooltip = (
+            _("Unpin the sessions panel") if pinned else _("Pin the sessions panel")
+        )
+        get_tooltip_helper().add_tooltip(self.pin_sidebar_button, tooltip)
 
     def _on_toggle_sidebar(self, button: Gtk.ToggleButton) -> None:
-        """Handles sidebar toggle button clicks for both modes."""
-        auto_hide = self.settings_manager.get("auto_hide_sidebar", False)
-        is_active = button.get_active()
+        """Show or hide the sessions panel in both pin states."""
+        if self._updating_toggle:
+            return
+        self.split.set_show_sidebar(button.get_active())
 
-        if auto_hide:
-            if is_active:
-                self._update_popover_size()
-                if self.sidebar_popover.get_parent() is not None:
-                    self.sidebar_popover.unparent()
-                self.sidebar_popover.set_parent(button)
-                self.sidebar_popover.popup()
+    def _on_show_sidebar_changed(self, _split, _param) -> None:
+        shown = self.split.get_show_sidebar()
+        if self.toggle_sidebar_button.get_active() != shown:
+            self._updating_toggle = True
+            self.toggle_sidebar_button.set_active(shown)
+            self._updating_toggle = False
+        self._update_sidebar_button_icon()
+        if self._switching_mode:
+            return
+        if not self.split.get_collapsed():
+            if self.settings_manager.get_sidebar_visible() != shown:
+                self.settings_manager.set_sidebar_visible(shown)
+        if shown:
+            self.update_sidebar_sizes()
+            if self.split.get_collapsed():
                 GLib.idle_add(self._focus_first_item)
-            else:
-                self.sidebar_popover.popdown()
-        else:
-            self.flap.set_reveal_flap(is_active)
-            self.settings_manager.set_sidebar_visible(is_active)
-            if is_active:
-                self._update_flap_size()
-
-        self._update_sidebar_button_icon()
-
-    def _on_sidebar_popover_show(self, popover):
-        self._update_popover_size()
-        popover.set_can_focus(True)
-        popover.grab_focus()
-
-    def _on_sidebar_popover_closed(self, popover):
-        self.toggle_sidebar_button.set_active(False)
-        self._update_sidebar_button_icon()
-        self.search_entry.set_text("")
-        self.session_tree.clear_search()
-
-        # Always transfer focus back to the terminal when popup closes
+            return
+        if self.split.get_collapsed():
+            self.search_entry.set_text("")
+            self.session_tree.clear_search()
         self._transfer_focus_to_terminal()
 
     def _transfer_focus_to_terminal(self):
@@ -211,38 +228,28 @@ class SidebarManager:
         except Exception as e:
             self.logger.error(f"Failed to transfer focus to terminal: {e}")
 
-    def _on_sidebar_popover_key_pressed(self, _, keyval, _keycode, state) -> bool:
-        # Always allow closing with the Escape key
-        if keyval == Gdk.KEY_Escape:
-            self.sidebar_popover.popdown()
+    def _on_sidebar_key_pressed(self, _, keyval, _keycode, state) -> bool:
+        if (
+            keyval == Gdk.KEY_Escape
+            and self.split.get_collapsed()
+            and self.split.get_show_sidebar()
+        ):
+            self.split.set_show_sidebar(False)
             return Gdk.EVENT_STOP
 
-        # Get the configured shortcut for "toggle-sidebar"
         shortcut_string = self.settings_manager.get_shortcut("toggle-sidebar")
         if not shortcut_string:
             return Gdk.EVENT_PROPAGATE
 
-        # Parse the shortcut string to get the expected keyval and modifiers
         success, parsed_keyval, parsed_mods = Gtk.accelerator_parse(shortcut_string)
-
         if success:
-            # Get the relevant modifiers from the current key event
             event_mods = state & Gtk.accelerator_get_default_mod_mask()
-
-            # **THE FIX**: Convert the event's keyval to lowercase for comparison,
-            # as Gtk.accelerator_parse normalizes the key.
             event_keyval_lower = Gdk.keyval_to_lower(keyval)
-
-            # Compare the key and modifiers from the event with the configured shortcut
             if event_keyval_lower == parsed_keyval and event_mods == parsed_mods:
-                self.sidebar_popover.popdown()
+                self.split.set_show_sidebar(not self.split.get_show_sidebar())
                 return Gdk.EVENT_STOP
 
         return Gdk.EVENT_PROPAGATE
-
-    def _on_window_size_changed(self, window, param):
-        if self.sidebar_popover.get_visible():
-            self._update_popover_size()
 
     def _on_sidebar_folded_changed(self, flap, param):
         self._update_sidebar_responsive_design()
@@ -253,7 +260,6 @@ class SidebarManager:
             self.session_tree.clear_search()
         else:
             self.session_tree.set_filter_text(search_text)
-        self.update_sidebar_sizes()
 
     def _on_search_key_pressed(self, _, keyval, *args) -> bool:
         if keyval == Gdk.KEY_Down:
@@ -276,22 +282,8 @@ class SidebarManager:
         return Gdk.EVENT_PROPAGATE
 
     def _update_sidebar_button_icon(self) -> None:
-        auto_hide = self.settings_manager.get("auto_hide_sidebar", False)
-        if auto_hide:
-            set_button_icon(self.toggle_sidebar_button, "computer-symbolic")
-            get_tooltip_helper().add_tooltip(
-                self.toggle_sidebar_button, _("Show Sessions")
-            )
-        else:
-            is_visible = self.flap.get_reveal_flap()
-            icon_name = (
-                "sidebar-hide-symbolic" if is_visible else "sidebar-show-symbolic"
-            )
-            set_button_icon(self.toggle_sidebar_button, icon_name)
-            tooltip_text = (
-                _("Hide Sessions Panel") if is_visible else _("Show Sessions Panel")
-            )
-            get_tooltip_helper().add_tooltip(self.toggle_sidebar_button, tooltip_text)
+        set_button_icon(self.toggle_sidebar_button, "computer-symbolic")
+        get_tooltip_helper().add_tooltip(self.toggle_sidebar_button, _("Show Sessions"))
 
     def _focus_first_item(self):
         """Focus on the first item in the session tree for keyboard navigation."""
@@ -305,27 +297,57 @@ class SidebarManager:
         return False
 
     def update_sidebar_sizes(self):
-        """Update sidebar sizes for both flap and popover modes."""
-        auto_hide = self.settings_manager.get("auto_hide_sidebar", False)
-        if auto_hide:
-            if self.sidebar_popover.get_visible():
-                self._update_popover_size()
-        else:
-            if self.flap.get_reveal_flap():
-                self._update_flap_size()
+        """Apply the compact pixel width. The fraction property is a ratio."""
+        if not self.split.get_show_sidebar():
+            return
+        self._set_split_width(self._preferred_sidebar_width())
 
-    def _update_flap_size(self):
-        natural_width = self._calculate_sidebar_natural_width()
-        self.sidebar_box.set_size_request(natural_width, -1)
-        self.logger.debug(f"Updated flap sidebar width to {natural_width}px")
+    def _preferred_sidebar_width(self) -> int:
+        # 260 is about half of the previous 560px clamp, just past the toolbar.
+        saved = int(self.settings_manager.get("sidebar_width", 300) or 300)
+        if saved == 300:
+            saved = 260
+        return max(220, min(saved, 280))
 
-    def _update_popover_size(self):
-        sidebar_width = self._calculate_sidebar_natural_width()
-        window_width = self.window.get_width()
-        window_height = self.window.get_height()
-        popover_width = min(sidebar_width, int(window_width * 0.8))
-        popover_height = int(window_height * 0.9)
-        self.sidebar_popover.set_size_request(popover_width, popover_height)
+    def _set_split_width(self, width: int) -> None:
+        width = max(220, min(int(width), 280))
+        total = self.split.get_width()
+        if total <= width:
+            return
+        self._updating_width = True
+        self.split.set_sidebar_width_fraction(width / total)
+        self._updating_width = False
+
+    def _apply_width_when_mapped(self) -> bool:
+        self._width_tries += 1
+        total = self.split.get_width()
+        target = self._preferred_sidebar_width()
+        if total <= target:
+            return self._width_tries < 40
+        current = int(round(self.split.get_sidebar_width_fraction() * total))
+        if abs(current - target) > 8:
+            self._set_split_width(target)
+            return self._width_tries < 40
+        return GLib.SOURCE_REMOVE
+
+    def _on_sidebar_width_changed(self, *_args) -> None:
+        if self._updating_width:
+            return
+        if self._width_save_id:
+            GLib.source_remove(self._width_save_id)
+        self._width_save_id = GLib.timeout_add(400, self._save_sidebar_width)
+
+    def _save_sidebar_width(self) -> bool:
+        self._width_save_id = 0
+        total = self.split.get_width() or self.window.get_width()
+        if total <= 0:
+            return GLib.SOURCE_REMOVE
+        width = int(round(self.split.get_sidebar_width_fraction() * total))
+        width = max(220, min(width, 280))
+        current = int(self.settings_manager.get("sidebar_width", 300) or 300)
+        if current != width:
+            self.settings_manager.set("sidebar_width", width)
+        return GLib.SOURCE_REMOVE
 
     def _update_sidebar_responsive_design(self):
         sidebar_width = self.sidebar_box.get_width()

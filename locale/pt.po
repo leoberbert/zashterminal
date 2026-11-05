@@ -5964,6 +5964,15 @@ msgstr "Painel de Sessões com Ocultação Automática"
 #: NEEDS WORK
 msgid "Hide panel when activating sessions"
 msgstr "Ocultar painel ao ativar sessões"
+#
+msgid "When on, the panel covers the terminal and closes after you open a session. The pin in the panel does the same."
+msgstr "Quando ligado, o painel cobre o terminal e fecha ao abrir uma sessão. O pino no painel faz o mesmo."
+#
+msgid "Pin the sessions panel"
+msgstr "Fixar o painel de sessões"
+#
+msgid "Unpin the sessions panel"
+msgstr "Desafixar o painel de sessões"
 # 
 # File: usr/share/zashterminal/ui/dialogs/preferences_dialog.py, line: 147
 #: NEEDS WORK
