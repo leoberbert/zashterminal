@@ -38,10 +38,14 @@ class PreferencesDialog(Adw.PreferencesWindow):
         self.add_css_class("zashterminal-dialog")
         self.logger = get_logger("zashterminal.ui.dialogs.preferences")
         self.settings_manager = settings_manager
+        self._syncing_auto_hide = False
+        self.auto_hide_sidebar_row = None
         self._setup_appearance_page()
         self._setup_terminal_page()
         self._setup_profiles_page()
         self._setup_advanced_page()
+        self.settings_manager.add_change_listener(self._on_external_setting)
+        self.connect("close-request", self._on_close_request)
         self.logger.info("Preferences dialog initialized")
 
     def _create_switch_row(
@@ -152,18 +156,20 @@ class PreferencesDialog(Adw.PreferencesWindow):
         )
         misc_group.add(bold_bright_row)
 
-        auto_hide_sidebar_row = Adw.SwitchRow(
+        self.auto_hide_sidebar_row = Adw.SwitchRow(
             title=_("Auto-Hide Sessions Panel"),
-            subtitle=_("Hide panel when activating sessions"),
+            subtitle=_(
+                "When on, the panel covers the terminal and closes after you open a session. The pin in the panel does the same."
+            ),
         )
-        auto_hide_sidebar_row.set_active(
-            self.settings_manager.get("auto_hide_sidebar", False)
+        self.auto_hide_sidebar_row.set_active(
+            self.settings_manager.get("auto_hide_sidebar", True)
         )
-        auto_hide_sidebar_row.connect(
+        self.auto_hide_sidebar_row.connect(
             "notify::active",
             lambda r, _: self._on_auto_hide_sidebar_changed(r.get_active()),
         )
-        misc_group.add(auto_hide_sidebar_row)
+        misc_group.add(self.auto_hide_sidebar_row)
 
         text_blink_row = Adw.ComboRow(
             title=_("Blinking Text"),
@@ -769,30 +775,27 @@ class PreferencesDialog(Adw.PreferencesWindow):
         self.settings_manager.set(key, value)
         self.emit("setting-changed", key, value)
 
+    def _on_close_request(self, *_args) -> bool:
+        self.settings_manager.remove_change_listener(self._on_external_setting)
+        return False
+
+    def _on_external_setting(self, key: str, _old_value, new_value) -> None:
+        if key != "auto_hide_sidebar" or self.auto_hide_sidebar_row is None:
+            return
+        active = bool(new_value)
+        if self.auto_hide_sidebar_row.get_active() == active:
+            return
+        self._syncing_auto_hide = True
+        self.auto_hide_sidebar_row.set_active(active)
+        self._syncing_auto_hide = False
+
     def _on_auto_hide_sidebar_changed(self, new_value: bool) -> None:
-        """Handle auto-hide sidebar setting change with informational dialog."""
-        current_value = self.settings_manager.get("auto_hide_sidebar", True)
-
-        # If user is disabling auto-hide sidebar, show informational dialog
-        if current_value and not new_value:
-            self._show_sidebar_info_dialog()
-
-        # Apply the setting
+        """Keep the preference switch and the panel pin on the same setting."""
+        if self._syncing_auto_hide:
+            return
+        if self.settings_manager.get("auto_hide_sidebar", True) == new_value:
+            return
         self._on_setting_changed("auto_hide_sidebar", new_value)
-
-    def _show_sidebar_info_dialog(self) -> None:
-        """Show informational dialog about sidebar visibility changes."""
-        dialog = Adw.MessageDialog(
-            transient_for=self,
-            heading=_("Sessions Panel Visibility"),
-            body=_(
-                "The sessions panel visibility change will take effect when you close and reopen the application. "
-                "You can also toggle the sessions panel manually using Ctrl+Shift+H."
-            ),
-        )
-        dialog.add_response("ok", _("OK"))
-        dialog.set_default_response("ok")
-        dialog.present()
 
     def _on_reset_settings_clicked(self, button) -> None:
         dialog = Adw.MessageDialog(

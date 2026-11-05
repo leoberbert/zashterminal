@@ -255,9 +255,10 @@ class ZashTerminalWindow(WindowSearchBroadcastMixin, Adw.ApplicationWindow):
     def _assign_ui_components(self):
         """Assigns widgets created by the UI builder to the window instance."""
         self.header_bar = self.ui_builder.header_bar
-        self.flap = self.ui_builder.flap
+        self.split_view = self.ui_builder.split_view
+        self.flap = None
         self.sidebar_box = self.ui_builder.sidebar_box
-        self.sidebar_popover = self.ui_builder.sidebar_popover
+        self.sidebar_popover = None
         self.toggle_sidebar_button = self.ui_builder.toggle_sidebar_button
         self.file_manager_button = self.ui_builder.file_manager_button
         self.cleanup_button = self.ui_builder.cleanup_button
