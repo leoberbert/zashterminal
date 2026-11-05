@@ -38,6 +38,15 @@ from .utils.security import validate_session_data
 from .utils.translation_utils import _
 
 
+def _application_windows():
+    """Top-level windows of this process. Hidden together while capturing the backdrop."""
+    try:
+        model = Gtk.Window.get_toplevels()
+        return [model.get_item(index) for index in range(model.get_n_items())]
+    except Exception:
+        return []
+
+
 class ZashTerminalWindow(WindowSearchBroadcastMixin, Adw.ApplicationWindow):
     """
     Main application window. Acts as the central orchestrator for all major
@@ -194,9 +203,109 @@ class ZashTerminalWindow(WindowSearchBroadcastMixin, Adw.ApplicationWindow):
 
         # Apply settings to all terminals, which handles terminal transparency.
         self.terminal_manager.apply_settings_to_all_terminals()
+        self.apply_background_blur()
 
         # Update tooltip colors based on current theme
         self._update_tooltip_colors()
+
+    def apply_background_blur(self) -> None:
+        """Soften a still of whatever is behind this window as the slider rises."""
+        picture = getattr(self.ui_builder, "blur_picture", None)
+        if picture is None:
+            return
+        from .utils.backdrop_blur import BackdropBlur
+
+        controller = getattr(self, "_backdrop_blur", None)
+        if controller is None:
+            controller = BackdropBlur(self.logger)
+            self._backdrop_blur = controller
+        amount = float(self.settings_manager.get("background_blur", 0) or 0)
+        action = controller.plan(amount, (self.get_width(), self.get_height()))
+        if action == "clear":
+            self._blur_generation = getattr(self, "_blur_generation", 0) + 1
+            picture.set_paintable(None)
+            picture.set_visible(False)
+            return
+        if action in {"paint", "refresh"}:
+            self._paint_backdrop(controller, picture, amount)
+        if action in {"capture", "refresh"}:
+            self._schedule_backdrop_capture()
+
+    def _paint_backdrop(self, controller, picture, amount: float) -> None:
+        import threading
+
+        self._blur_generation = getattr(self, "_blur_generation", 0) + 1
+        generation = self._blur_generation
+
+        def work() -> None:
+            png = None
+            try:
+                png = controller.render(amount)
+            except Exception as exc:
+                self.logger.warning(f"Could not blur the backdrop: {exc}")
+
+            def finish() -> bool:
+                if generation != getattr(self, "_blur_generation", 0) or not png:
+                    return GLib.SOURCE_REMOVE
+                try:
+                    picture.set_paintable(Gdk.Texture.new_from_bytes(GLib.Bytes.new(png)))
+                    picture.set_visible(True)
+                except Exception as exc:
+                    self.logger.warning(f"Could not show the blurred backdrop: {exc}")
+                return GLib.SOURCE_REMOVE
+
+            GLib.idle_add(finish)
+
+        threading.Thread(target=work, name="backdrop-blur", daemon=True).start()
+
+    def _schedule_backdrop_capture(self) -> None:
+        source = getattr(self, "_backdrop_capture_source", 0)
+        if source:
+            GLib.source_remove(source)
+
+        def start() -> bool:
+            self._backdrop_capture_source = 0
+            self._capture_backdrop()
+            return GLib.SOURCE_REMOVE
+
+        self._backdrop_capture_source = GLib.timeout_add(80, start)
+
+    def _capture_backdrop(self) -> None:
+        import os
+
+        controller = getattr(self, "_backdrop_blur", None)
+        picture = getattr(self.ui_builder, "blur_picture", None)
+        if controller is None or picture is None:
+            return
+        amount = float(self.settings_manager.get("background_blur", 0) or 0)
+        if amount <= 0:
+            return
+        rect = controller.locate(os.getpid())
+        if rect is None:
+            if controller.remember_wallpaper(self.settings_manager.get("wallpaper_theme")):
+                self._paint_backdrop(controller, picture, amount)
+            return
+        saved = [(widget, widget.get_opacity()) for widget in _application_windows()]
+        for widget, _opacity in saved:
+            widget.set_opacity(0)
+
+        def grab() -> bool:
+            try:
+                image = controller.capture(rect)
+                if image is None:
+                    controller.remember_wallpaper(self.settings_manager.get("wallpaper_theme"))
+                else:
+                    controller.remember(image, (self.get_width(), self.get_height()))
+            finally:
+                for widget, opacity in saved:
+                    widget.set_opacity(opacity or 1)
+            current = float(self.settings_manager.get("background_blur", 0) or 0)
+            if current > 0 and controller.sharp is not None:
+                self._paint_backdrop(controller, picture, current)
+            return GLib.SOURCE_REMOVE
+
+        # One extra beat so the compositor drops our pixels before the shot.
+        GLib.timeout_add(180, grab)
 
     def _create_managers_and_ui(self) -> None:
         """
@@ -881,6 +990,7 @@ class ZashTerminalWindow(WindowSearchBroadcastMixin, Adw.ApplicationWindow):
             "font",
             "color_scheme",
             "transparency",
+            "background_blur",
             "headerbar_transparency",
             "line_spacing",
             "bold_is_bright",
@@ -904,6 +1014,8 @@ class ZashTerminalWindow(WindowSearchBroadcastMixin, Adw.ApplicationWindow):
                 GLib.idle_add(self._update_tooltip_colors)
             if key in ["transparency", "headerbar_transparency"]:
                 self._update_file_manager_transparency()
+            if key == "background_blur":
+                self.apply_background_blur()
             if self.font_sizer_widget and key == "font":
                 self.font_sizer_widget.update_display()
 

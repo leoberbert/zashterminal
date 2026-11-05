@@ -91,6 +91,8 @@ Thirty built-in schemes plus Pywal wallpaper detection — preview before you ap
 
 Appearance, terminal behavior, profiles/backups, and advanced VTE options in a searchable Preferences window.
 
+Background blur uses a captured backdrop on KDE Plasma. Its KWin helper script is created as a unique, owner-only temporary file and removed after the window query, including on failure.
+
 <p align="center">
   <img src="docs/gallery/07-preferences.png" alt="Preferences appearance page" width="920">
 </p>

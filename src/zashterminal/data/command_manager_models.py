@@ -6,6 +6,7 @@ and display customization.
 """
 
 import json
+import shlex
 import threading
 import uuid
 from dataclasses import dataclass, field, asdict
@@ -190,6 +191,83 @@ class CommandButton:
 def generate_id() -> str:
     """Generate a unique ID for a command button."""
     return str(uuid.uuid4())[:8]
+
+
+_FLATPAK_CONFIRM_ACTIONS = {"install", "uninstall", "update", "uninstall --unused"}
+_FLATPAK_NO_REF_ACTIONS = {
+    "list",
+    "list --app",
+    "remotes",
+    "uninstall --unused",
+    "repair",
+    "ps",
+    "history",
+}
+
+
+def _quote_if_present(value: str) -> Optional[str]:
+    if not value:
+        return None
+    return shlex.quote(value)
+
+
+def _flatpak_global_options(user_scope: bool, assume_yes: bool, action: str) -> List[str]:
+    parts = ["flatpak"]
+    if user_scope:
+        parts.append("--user")
+    if assume_yes and action in _FLATPAK_CONFIRM_ACTIONS:
+        parts.append("-y")
+    return parts
+
+
+def _flatpak_with_optional_ref(action_parts: List[str], application: str) -> List[str]:
+    parts = list(action_parts)
+    quoted = _quote_if_present(application)
+    if quoted:
+        parts.append(quoted)
+    return parts
+
+
+def _flatpak_operation(action: str, application: str, remote: str) -> List[str]:
+    if action == "remote-add-flathub":
+        return [
+            "remote-add",
+            "--if-not-exists",
+            "flathub",
+            "https://dl.flathub.org/repo/flathub.flatpakrepo",
+        ]
+    if action == "install":
+        parts = ["install"]
+        for value in (remote, application):
+            quoted = _quote_if_present(value)
+            if quoted:
+                parts.append(quoted)
+        return parts
+    if action == "remote-ls":
+        parts = ["remote-ls", "--app"]
+        quoted = _quote_if_present(remote)
+        if quoted:
+            parts.append(quoted)
+        return parts
+    if action in ("update", "uninstall"):
+        return _flatpak_with_optional_ref([action], application)
+    if action in _FLATPAK_NO_REF_ACTIONS:
+        return action.split()
+    return _flatpak_with_optional_ref(action.split(), application)
+
+
+def build_flatpak_command(field_values: Dict[str, Any] = None) -> str:
+    """Build a flatpak command from Command Manager form values."""
+    values = field_values or {}
+    action = str(values.get("action") or "list").strip() or "list"
+    application = str(values.get("application") or "").strip()
+    remote = str(values.get("remote") or "").strip()
+    prefix = _flatpak_global_options(
+        bool(values.get("user_scope")),
+        bool(values.get("assume_yes")),
+        action,
+    )
+    return " ".join(prefix + _flatpak_operation(action, application, remote))
 
 
 # Built-in example commands
@@ -577,6 +655,83 @@ def get_builtin_commands() -> List[CommandButton]:
                     placeholder=_("e.g., firefox, vim (optional for updates)"),
                     tooltip=_("Package name for install/remove/search actions"),
                     template_key="package",
+                ),
+            ],
+        ),
+        CommandButton(
+            id="builtin_flatpak",
+            name=_("Flatpak"),
+            description=_("Install, update, and manage Flatpak applications"),
+            command_template="flatpak {action} {application}",
+            icon_name="system-software-install-symbolic",
+            display_mode=DisplayMode.ICON_AND_TEXT,
+            execution_mode=ExecutionMode.SHOW_DIALOG,
+            is_builtin=True,
+            category=_("System"),
+            sort_order=4,
+            form_fields=[
+                CommandFormField(
+                    id="action",
+                    label=_("Action"),
+                    field_type=FieldType.DROPDOWN,
+                    default_value="list",
+                    options=[
+                        ("list", _("List Installed")),
+                        ("list --app", _("List Applications")),
+                        ("search", _("Search")),
+                        ("install", _("Install")),
+                        ("uninstall", _("Uninstall")),
+                        ("update", _("Update")),
+                        ("info", _("Application Info")),
+                        ("run", _("Run")),
+                        ("remotes", _("List Remotes")),
+                        ("remote-ls", _("Browse Remote")),
+                        ("remote-add-flathub", _("Add Flathub")),
+                        ("uninstall --unused", _("Uninstall Unused")),
+                        ("repair", _("Repair")),
+                        ("ps", _("List Running")),
+                        ("kill", _("Stop Application")),
+                        ("history", _("History")),
+                        ("override --show", _("Show Overrides")),
+                    ],
+                    tooltip=_("Flatpak operation to perform"),
+                    template_key="action",
+                ),
+                CommandFormField(
+                    id="application",
+                    label=_("Application / Query"),
+                    field_type=FieldType.TEXT,
+                    default_value="",
+                    placeholder=_("e.g., org.mozilla.firefox"),
+                    tooltip=_("Application ID, or the text to search for"),
+                    template_key="application",
+                ),
+                CommandFormField(
+                    id="remote",
+                    label=_("Remote"),
+                    field_type=FieldType.TEXT,
+                    default_value="",
+                    placeholder=_("e.g., flathub"),
+                    tooltip=_("Remote name for install and browse actions"),
+                    template_key="remote",
+                ),
+                CommandFormField(
+                    id="user_scope",
+                    label=_("User Install"),
+                    field_type=FieldType.SWITCH,
+                    default_value=False,
+                    tooltip=_("Manage applications for the current user (--user)"),
+                    command_flag="--user",
+                    template_key="user_scope",
+                ),
+                CommandFormField(
+                    id="assume_yes",
+                    label=_("Assume Yes"),
+                    field_type=FieldType.SWITCH,
+                    default_value=False,
+                    tooltip=_("Skip confirmation prompts for install, update, and uninstall (-y)"),
+                    command_flag="-y",
+                    template_key="assume_yes",
                 ),
             ],
         ),

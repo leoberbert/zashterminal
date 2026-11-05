@@ -9215,3 +9215,111 @@ msgstr ""
 "Procura Releases ou tags mais novas no GitHub ao iniciar o app "
 "(o tip não publicado da main é ignorado, salvo com ZASHTERMINAL_UPDATE_ALLOW_MAIN=1). "
 "Desative por completo com ZASHTERMINAL_DISABLE_AUTO_UPDATE=1."
+
+#: src/zashterminal/data/command_manager_models.py
+msgid "Flatpak"
+msgstr "Flatpak"
+
+#: src/zashterminal/data/command_manager_models.py
+msgid "Install, update, and manage Flatpak applications"
+msgstr "Instale, atualize e gerencie aplicativos Flatpak"
+
+#: src/zashterminal/data/command_manager_models.py
+msgid "List Applications"
+msgstr "Listar aplicativos"
+
+#: src/zashterminal/data/command_manager_models.py
+msgid "Uninstall"
+msgstr "Desinstalar"
+
+#: src/zashterminal/data/command_manager_models.py
+msgid "Update"
+msgstr "Atualizar"
+
+#: src/zashterminal/data/command_manager_models.py
+msgid "Application Info"
+msgstr "Informações do aplicativo"
+
+#: src/zashterminal/data/command_manager_models.py
+msgid "List Remotes"
+msgstr "Listar remotos"
+
+#: src/zashterminal/data/command_manager_models.py
+msgid "Browse Remote"
+msgstr "Navegar no remoto"
+
+#: src/zashterminal/data/command_manager_models.py
+msgid "Add Flathub"
+msgstr "Adicionar Flathub"
+
+#: src/zashterminal/data/command_manager_models.py
+msgid "Uninstall Unused"
+msgstr "Desinstalar não usados"
+
+#: src/zashterminal/data/command_manager_models.py
+msgid "Repair"
+msgstr "Reparar"
+
+#: src/zashterminal/data/command_manager_models.py
+msgid "Stop Application"
+msgstr "Parar aplicativo"
+
+#: src/zashterminal/data/command_manager_models.py
+msgid "History"
+msgstr "Histórico"
+
+#: src/zashterminal/data/command_manager_models.py
+msgid "Show Overrides"
+msgstr "Mostrar substituições"
+
+#: src/zashterminal/data/command_manager_models.py
+msgid "Flatpak operation to perform"
+msgstr "Operação do Flatpak a executar"
+
+#: src/zashterminal/data/command_manager_models.py
+msgid "Application / Query"
+msgstr "Aplicativo / consulta"
+
+#: src/zashterminal/data/command_manager_models.py
+msgid "e.g., org.mozilla.firefox"
+msgstr "ex.: org.mozilla.firefox"
+
+#: src/zashterminal/data/command_manager_models.py
+msgid "Application ID, or the text to search for"
+msgstr "ID do aplicativo, ou o texto da pesquisa"
+
+#: src/zashterminal/data/command_manager_models.py
+msgid "Remote"
+msgstr "Remoto"
+
+#: src/zashterminal/data/command_manager_models.py
+msgid "e.g., flathub"
+msgstr "ex.: flathub"
+
+#: src/zashterminal/data/command_manager_models.py
+msgid "Remote name for install and browse actions"
+msgstr "Nome do remoto para instalar e navegar"
+
+#: src/zashterminal/data/command_manager_models.py
+msgid "User Install"
+msgstr "Instalação de usuário"
+
+#: src/zashterminal/data/command_manager_models.py
+msgid "Manage applications for the current user (--user)"
+msgstr "Gerenciar aplicativos do usuário atual (--user)"
+
+#: src/zashterminal/data/command_manager_models.py
+msgid "Assume Yes"
+msgstr "Assumir sim"
+
+#: src/zashterminal/data/command_manager_models.py
+msgid "Skip confirmation prompts for install, update, and uninstall (-y)"
+msgstr "Pular confirmações de instalação, atualização e desinstalação (-y)"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Background Blur"
+msgstr "Desfoque do fundo"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Higher values blur whatever is behind this window more."
+msgstr "Valores mais altos desfocam mais o que estiver atrás desta janela."

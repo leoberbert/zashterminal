@@ -104,6 +104,7 @@ class SettingsValidator:
         validators = {
             "color_scheme": lambda v: self.validate_color_scheme(v, num_schemes),
             "transparency": self.validate_transparency,
+            "background_blur": self.validate_transparency,
             "font": self.validate_font,
         }
         for key, validator in validators.items():
@@ -615,6 +616,7 @@ class SettingsManager:
                 v, len(self.get_scheme_order())
             ),
             "transparency": self.validator.validate_transparency,
+            "background_blur": self.validator.validate_transparency,
             "font": self.validator.validate_font,
         }
         if base_key in validators and not validators[base_key](value):

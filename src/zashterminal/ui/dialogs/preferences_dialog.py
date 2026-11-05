@@ -127,6 +127,23 @@ class PreferencesDialog(Adw.PreferencesWindow):
         transparency_row.set_activatable_widget(self.transparency_scale)
         misc_group.add(transparency_row)
 
+        blur_row = Adw.ActionRow(
+            title=_("Background Blur"),
+            subtitle=_("Higher values blur whatever is behind this window more."),
+        )
+        self.blur_scale = Gtk.Scale.new_with_range(
+            Gtk.Orientation.HORIZONTAL, 0, 100, 1
+        )
+        self.blur_scale.set_size_request(180, -1)
+        self.blur_scale.set_value(self.settings_manager.get("background_blur", 0))
+        self.blur_scale.set_draw_value(True)
+        self.blur_scale.set_value_pos(Gtk.PositionType.RIGHT)
+        self.blur_scale.set_hexpand(True)
+        self.blur_scale.connect("value-changed", self._on_background_blur_changed)
+        blur_row.add_suffix(self.blur_scale)
+        blur_row.set_activatable_widget(self.blur_scale)
+        misc_group.add(blur_row)
+
         headerbar_transparency_row = Adw.ActionRow(
             title=_("Headerbar Transparency"),
         )
@@ -653,6 +670,9 @@ class PreferencesDialog(Adw.PreferencesWindow):
         value = scale.get_value()
         self.settings_manager.set("transparency", value)
         self.emit("transparency-changed", value)
+
+    def _on_background_blur_changed(self, scale) -> None:
+        self.settings_manager.set("background_blur", scale.get_value())
 
     def _on_headerbar_transparency_changed(self, scale) -> None:
         value = scale.get_value()
