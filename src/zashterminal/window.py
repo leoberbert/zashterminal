@@ -38,15 +38,6 @@ from .utils.security import validate_session_data
 from .utils.translation_utils import _
 
 
-def _application_windows():
-    """Top-level windows of this process. Hidden together while capturing the backdrop."""
-    try:
-        model = Gtk.Window.get_toplevels()
-        return [model.get_item(index) for index in range(model.get_n_items())]
-    except Exception:
-        return []
-
-
 class ZashTerminalWindow(WindowSearchBroadcastMixin, Adw.ApplicationWindow):
     """
     Main application window. Acts as the central orchestrator for all major
@@ -61,6 +52,9 @@ class ZashTerminalWindow(WindowSearchBroadcastMixin, Adw.ApplicationWindow):
 
         # Component Initialization
         self.settings_manager = settings_manager
+        # Strength is per window. Persisted strength is the default for new
+        # windows, not a live broadcast to every terminal in the application.
+        self.background_blur_strength = settings_manager.get("background_blur_strength", 5)
         self.is_main_window = True
         self._cleanup_performed = False
         self._force_closing = False
@@ -208,104 +202,34 @@ class ZashTerminalWindow(WindowSearchBroadcastMixin, Adw.ApplicationWindow):
         # Update tooltip colors based on current theme
         self._update_tooltip_colors()
 
-    def apply_background_blur(self) -> None:
-        """Soften a still of whatever is behind this window as the slider rises."""
-        picture = getattr(self.ui_builder, "blur_picture", None)
-        if picture is None:
-            return
-        from .utils.backdrop_blur import BackdropBlur
+    def background_blur_supported(self) -> bool:
+        """Probe the actual display protocol, not the desktop environment name."""
+        if getattr(self, "_backdrop_blur", None) is None:
+            from .utils.backdrop_blur import BackdropBlur
 
+            self._backdrop_blur = BackdropBlur(self.get_display(), self.logger)
+        return self._backdrop_blur.supported
+
+    def background_blur_strength_supported(self) -> bool:
+        self.background_blur_supported()
+        return self._backdrop_blur.independent_strength
+
+    def apply_background_blur(self, *_args) -> None:
+        """Attach live compositor blur to this surface; GTK stays fully visible."""
+        surface = self.get_surface()
+        if surface is not None:
+            self.background_blur_supported()
+            self._backdrop_blur.apply(
+                surface,
+                self.settings_manager.get("background_blur", False),
+                self.background_blur_strength,
+            )
+
+    def _release_background_blur(self, *_args) -> None:
         controller = getattr(self, "_backdrop_blur", None)
-        if controller is None:
-            controller = BackdropBlur(self.logger)
-            self._backdrop_blur = controller
-        amount = float(self.settings_manager.get("background_blur", 0) or 0)
-        action = controller.plan(amount, (self.get_width(), self.get_height()))
-        if action == "clear":
-            self._blur_generation = getattr(self, "_blur_generation", 0) + 1
-            picture.set_paintable(None)
-            picture.set_visible(False)
-            return
-        if action in {"paint", "refresh"}:
-            self._paint_backdrop(controller, picture, amount)
-        if action in {"capture", "refresh"}:
-            self._schedule_backdrop_capture()
-
-    def _paint_backdrop(self, controller, picture, amount: float) -> None:
-        import threading
-
-        self._blur_generation = getattr(self, "_blur_generation", 0) + 1
-        generation = self._blur_generation
-
-        def work() -> None:
-            png = None
-            try:
-                png = controller.render(amount)
-            except Exception as exc:
-                self.logger.warning(f"Could not blur the backdrop: {exc}")
-
-            def finish() -> bool:
-                if generation != getattr(self, "_blur_generation", 0) or not png:
-                    return GLib.SOURCE_REMOVE
-                try:
-                    picture.set_paintable(Gdk.Texture.new_from_bytes(GLib.Bytes.new(png)))
-                    picture.set_visible(True)
-                except Exception as exc:
-                    self.logger.warning(f"Could not show the blurred backdrop: {exc}")
-                return GLib.SOURCE_REMOVE
-
-            GLib.idle_add(finish)
-
-        threading.Thread(target=work, name="backdrop-blur", daemon=True).start()
-
-    def _schedule_backdrop_capture(self) -> None:
-        source = getattr(self, "_backdrop_capture_source", 0)
-        if source:
-            GLib.source_remove(source)
-
-        def start() -> bool:
-            self._backdrop_capture_source = 0
-            self._capture_backdrop()
-            return GLib.SOURCE_REMOVE
-
-        self._backdrop_capture_source = GLib.timeout_add(80, start)
-
-    def _capture_backdrop(self) -> None:
-        import os
-
-        controller = getattr(self, "_backdrop_blur", None)
-        picture = getattr(self.ui_builder, "blur_picture", None)
-        if controller is None or picture is None:
-            return
-        amount = float(self.settings_manager.get("background_blur", 0) or 0)
-        if amount <= 0:
-            return
-        rect = controller.locate(os.getpid())
-        if rect is None:
-            if controller.remember_wallpaper(self.settings_manager.get("wallpaper_theme")):
-                self._paint_backdrop(controller, picture, amount)
-            return
-        saved = [(widget, widget.get_opacity()) for widget in _application_windows()]
-        for widget, _opacity in saved:
-            widget.set_opacity(0)
-
-        def grab() -> bool:
-            try:
-                image = controller.capture(rect)
-                if image is None:
-                    controller.remember_wallpaper(self.settings_manager.get("wallpaper_theme"))
-                else:
-                    controller.remember(image, (self.get_width(), self.get_height()))
-            finally:
-                for widget, opacity in saved:
-                    widget.set_opacity(opacity or 1)
-            current = float(self.settings_manager.get("background_blur", 0) or 0)
-            if current > 0 and controller.sharp is not None:
-                self._paint_backdrop(controller, picture, current)
-            return GLib.SOURCE_REMOVE
-
-        # One extra beat so the compositor drops our pixels before the shot.
-        GLib.timeout_add(180, grab)
+        if controller is not None:
+            controller.close()
+            self._backdrop_blur = None
 
     def _create_managers_and_ui(self) -> None:
         """
@@ -443,6 +367,8 @@ class ZashTerminalWindow(WindowSearchBroadcastMixin, Adw.ApplicationWindow):
     def _setup_window_events(self) -> None:
         """Set up window-level event handlers."""
         self.connect("close-request", self._on_window_close_request)
+        self.connect("realize", self.apply_background_blur)
+        self.connect("unrealize", self._release_background_blur)
         # Connect window state change signals
         self.connect("notify::default-width", self._on_window_size_changed)
         self.connect("notify::default-height", self._on_window_size_changed)
@@ -986,11 +912,12 @@ class ZashTerminalWindow(WindowSearchBroadcastMixin, Adw.ApplicationWindow):
             self.sidebar_manager.handle_auto_hide_change(new_value)
         elif key == "tab_alignment":
             self.tab_manager._update_tab_alignment()
+        elif key == "background_blur":
+            self.apply_background_blur()
         elif key in [
             "font",
             "color_scheme",
             "transparency",
-            "background_blur",
             "headerbar_transparency",
             "line_spacing",
             "bold_is_bright",
@@ -1014,8 +941,6 @@ class ZashTerminalWindow(WindowSearchBroadcastMixin, Adw.ApplicationWindow):
                 GLib.idle_add(self._update_tooltip_colors)
             if key in ["transparency", "headerbar_transparency"]:
                 self._update_file_manager_transparency()
-            if key == "background_blur":
-                self.apply_background_blur()
             if self.font_sizer_widget and key == "font":
                 self.font_sizer_widget.update_display()
 

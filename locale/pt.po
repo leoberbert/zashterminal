@@ -9321,5 +9321,25 @@ msgid "Background Blur"
 msgstr "Desfoque do fundo"
 
 #: src/zashterminal/ui/dialogs/preferences_dialog.py
-msgid "Higher values blur whatever is behind this window more."
-msgstr "Valores mais altos desfocam mais o que estiver atrás desta janela."
+msgid "Live blur follows the window. Strength is controlled by the desktop's blur effect; requires transparency."
+msgstr "O desfoque acompanha a janela em tempo real. A intensidade é controlada pelo efeito de desfoque da área de trabalho; requer transparência."
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Background blur is not supported by the current compositor."
+msgstr "O compositor atual não oferece suporte ao desfoque do fundo."
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Live blur follows this window. Strength affects only this terminal; requires transparency."
+msgstr "O desfoque acompanha esta janela em tempo real. A intensidade afeta apenas este terminal; requer transparência."
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Blur Strength"
+msgstr "Intensidade do desfoque"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Applies only to this terminal window."
+msgstr "Aplica-se apenas a esta janela do terminal."
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Install the Zashterminal KWin effect to control strength independently."
+msgstr "Instale o efeito KWin do Zashterminal para controlar a intensidade de forma independente."

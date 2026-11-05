@@ -1,0 +1,15 @@
+{
+    "KPlugin": {
+        "Id": "zashterminalblur",
+        "Name": "Zashterminal Per-Window Blur",
+        "Description": "Independent live backdrop blur strength for explicitly requested Zashterminal Wayland surfaces",
+        "Category": "Appearance",
+        "Icon": "preferences-system-windows-effect-blur",
+        "EnabledByDefault": false,
+        "License": "GPL-2.0-or-later",
+        "Website": "https://github.com/leoberbert/zashterminal"
+    },
+    "org.kde.kwin.effect": {
+        "enabledByDefaultMethod": true
+    }
+}

@@ -189,7 +189,8 @@ class DefaultSettings:
             # Persist the applied snapshot; never decode images on startup.
             "wallpaper_theme": None,
             "transparency": 16,
-            "background_blur": 0,
+            "background_blur": False,
+            "background_blur_strength": 5,
             "headerbar_transparency": 12,
             "font": DefaultSettings.get_available_default_font(),
             "line_spacing": 1.0,

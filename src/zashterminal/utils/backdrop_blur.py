@@ -1,462 +1,475 @@
-"""Blur whatever is behind this window, following the slider.
+"""Live compositor blur, never a screenshot painted inside the window.
 
-Plasma's own blur effect is all-or-nothing and paints black through a fully
-transparent window, so the slider cannot drive it. Instead we take one still
-of the backdrop and soften that image as the value rises.
+The optional Zashterminal KWin effect supports independent strength per window.
+Standard Wayland/X11 hints only select a surface/region; their strength belongs
+to the desktop. Neither path captures or paints a static background.
 """
 
 from __future__ import annotations
 
-import os
-import tempfile
-import time
-from typing import Optional
-
-EFFECT_BUS = "org.kde.KWin"
-SCRIPT_NAME = "zashterminal-backdrop"
-CALLBACK_NAME = "org.leoberbert.Zashterminal.Backdrop"
+import ctypes as C
+from ctypes.util import find_library
 
 
-def blur_requested(amount) -> bool:
-    """True when the slider asks for blur."""
-    try:
-        return float(amount) > 0
-    except (TypeError, ValueError):
-        return False
+class _Interface(C.Structure):
+    pass
 
 
-def blur_divisor(amount: float) -> float:
-    """Downsample factor for a blur amount in the 0–100 range.
+class _Message(C.Structure):
+    _fields_ = [
+        ("name", C.c_char_p), ("signature", C.c_char_p),
+        ("types", C.POINTER(C.POINTER(_Interface))),
+    ]
 
-    Small slider values stay close to the original. The high end is much softer.
+
+_Interface._fields_ = [
+    ("name", C.c_char_p), ("version", C.c_int),
+    ("method_count", C.c_int), ("methods", C.POINTER(_Message)),
+    ("event_count", C.c_int), ("events", C.POINTER(_Message)),
+]
+
+
+class _Argument(C.Union):
+    _fields_ = [("u", C.c_uint32), ("s", C.c_char_p), ("o", C.c_void_p)]
+
+
+def _function(library, name, result, *arguments):
+    function = getattr(library, name)
+    function.restype = result
+    function.argtypes = list(arguments)
+    return function
+
+
+def _gpointer(obj):
+    """Use PyGObject's native pointer capsule, not a Python object address."""
+    pointer = C.pythonapi.PyCapsule_GetPointer
+    pointer.restype = C.c_void_p
+    pointer.argtypes = [C.py_object, C.c_char_p]
+    return pointer(obj.__gpointer__, None)
+
+
+def _library(name):
+    path = find_library(name)
+    if path is None:
+        raise OSError(f"Native library not found: {name}")
+    return C.CDLL(path)
+
+
+class _WaylandBlur:
+    """Bind the standard background-effect protocol, or KDE's older blur v1.
+
+    Discovery uses a private queue: roundtrips must not dispatch GTK events
+    reentrantly. GTK owns buffer rendering and the normal event loop. Effect
+    changes on mapped surfaces need their own metadata-only surface commit:
+    GTK may skip a frame if none of its pixels changed.
+    Protocols: https://wayland.app/protocols/ext-background-effect-v1
+    and https://wayland.app/protocols/kde-blur
     """
-    amount = max(0.0, min(100.0, float(amount)))
-    if amount <= 0:
-        return 1.0
-    return 1.0 + (amount / 100.0) ** 1.4 * 23.0
 
+    def __init__(self, display, gtk):
+        self.lib = _library("wayland-client")
+        self._display = _function(
+            gtk, "gdk_wayland_display_get_wl_display", C.c_void_p, C.c_void_p,
+        )(_gpointer(display))
+        self._surface_pointer = _function(
+            gtk, "gdk_wayland_surface_get_wl_surface", C.c_void_p, C.c_void_p,
+        )
+        self._marshal = _function(
+            self.lib, "wl_proxy_marshal_array_flags", C.c_void_p,
+            C.c_void_p, C.c_uint32, C.POINTER(_Interface), C.c_uint32,
+            C.c_uint32, C.POINTER(_Argument),
+        )
+        self._destroy = _function(self.lib, "wl_proxy_destroy", None, C.c_void_p)
+        self._flush = _function(self.lib, "wl_display_flush", C.c_int, C.c_void_p)
+        self._set_queue = _function(self.lib, "wl_proxy_set_queue", None, C.c_void_p, C.c_void_p)
+        self._roundtrip = _function(
+            self.lib, "wl_display_roundtrip_queue", C.c_int, C.c_void_p, C.c_void_p,
+        )
+        self._add_listener = _function(
+            self.lib, "wl_proxy_add_listener", C.c_int,
+            C.c_void_p, C.POINTER(C.c_void_p), C.c_void_p,
+        )
+        self._surface = None
+        self._surface_object = None
+        self._blur = None
+        self._manager = None
+        self._compositor = None
+        self._modern = False
+        self._capabilities = 0
+        self._registry_interface = _Interface.in_dll(self.lib, "wl_registry_interface")
+        self._manager = self._bind_manager()
 
-def intermediate_size(width: int, height: int, amount: float) -> tuple[int, int]:
-    divisor = blur_divisor(amount)
-    return (
-        max(1, int(round(width / divisor))),
-        max(1, int(round(height / divisor))),
-    )
+    def _define_protocol(self):
+        # All interface/type arrays must outlive the proxies referring to them.
+        self._surface_interface = _Interface.in_dll(self.lib, "wl_surface_interface")
+        self._region_interface = _Interface.in_dll(self.lib, "wl_region_interface")
+        name = b"ext_background_effect_surface_v1" if self._modern else b"org_kde_kwin_blur"
+        self._blur_interface = _Interface(name, 1, 0, None, 0, None)
+        self._create_types = (C.POINTER(_Interface) * 2)(
+            C.pointer(self._blur_interface), C.pointer(self._surface_interface),
+        )
+        self._surface_types = (C.POINTER(_Interface) * 1)(C.pointer(self._surface_interface))
+        self._region_types = (C.POINTER(_Interface) * 1)(C.pointer(self._region_interface))
+        if self._modern:
+            self._blur_methods = (_Message * 2)(
+                _Message(b"destroy", b"", None),
+                _Message(b"set_blur_region", b"?o", self._region_types),
+            )
+            self._manager_methods = (_Message * 2)(
+                _Message(b"destroy", b"", None),
+                _Message(b"get_background_effect", b"no", self._create_types),
+            )
+            self._manager_events = (_Message * 1)(_Message(b"capabilities", b"u", None))
+            manager_name = b"ext_background_effect_manager_v1"
+        else:
+            self._blur_methods = (_Message * 3)(
+                _Message(b"commit", b"", None),
+                _Message(b"set_region", b"?o", self._region_types),
+                _Message(b"release", b"", None),
+            )
+            self._manager_methods = (_Message * 2)(
+                _Message(b"create", b"no", self._create_types),
+                _Message(b"unset", b"o", self._surface_types),
+            )
+            self._manager_events = None
+            manager_name = b"org_kde_kwin_blur_manager"
+        self._blur_interface.method_count = len(self._blur_methods)
+        self._blur_interface.methods = self._blur_methods
+        self._manager_interface = _Interface(
+            manager_name, 1, 2, self._manager_methods,
+            int(self._modern), self._manager_events,
+        )
 
+    def _request(self, proxy, opcode, *arguments, interface=None, destroy=False):
+        values = (_Argument * len(arguments))(*arguments) if arguments else None
+        return self._marshal(
+            proxy, opcode, C.pointer(interface) if interface is not None else None,
+            1, int(destroy), values,
+        )
 
-class RawImage:
-    def __init__(self, data: bytes, width: int, height: int, stride: int):
-        self.data = data
-        self.width = width
-        self.height = height
-        self.stride = stride
+    def _discover(self, registry, queue):
+        global_callback = C.CFUNCTYPE(None, C.c_void_p, C.c_void_p, C.c_uint32, C.c_char_p, C.c_uint32)
+        remove_callback = C.CFUNCTYPE(None, C.c_void_p, C.c_void_p, C.c_uint32)
+        globals_found = {}
 
+        @global_callback
+        def on_global(_data, _registry, name, interface, _version):
+            globals_found[interface] = name
 
-class WindowRect:
-    def __init__(self, uuid: str, pid: int, x: int, y: int, width: int, height: int, caption: str = ""):
-        self.uuid = uuid
-        self.pid = pid
-        self.x = x
-        self.y = y
-        self.width = width
-        self.height = height
-        self.caption = caption
+        @remove_callback
+        def on_remove(_data, _registry, name):
+            for interface in list(globals_found):
+                if globals_found[interface] == name:
+                    del globals_found[interface]
+
+        listeners = (C.c_void_p * 2)(C.cast(on_global, C.c_void_p), C.cast(on_remove, C.c_void_p))
+        self._registry_callbacks = (on_global, on_remove, listeners)
+        if self._add_listener(registry, listeners, None) != 0 or self._roundtrip(self._display, queue) < 0:
+            raise RuntimeError("Wayland blur discovery failed")
+        return globals_found
+
+    def _bind(self, registry, name, interface):
+        return self._request(
+            registry, 0, _Argument(u=name), _Argument(s=interface.name),
+            _Argument(u=1), _Argument(o=None), interface=interface,
+        )
+
+    def _watch_capabilities(self, manager, queue):
+        callback = C.CFUNCTYPE(None, C.c_void_p, C.c_void_p, C.c_uint32)
+
+        @callback
+        def on_capabilities(_data, _manager, flags):
+            self._capabilities = flags
+
+        self._capability_callback = on_capabilities
+        self._capability_listener = (C.c_void_p * 1)(C.cast(on_capabilities, C.c_void_p))
+        if (
+            self._add_listener(manager, self._capability_listener, None) != 0
+            or self._roundtrip(self._display, queue) < 0
+        ):
+            raise RuntimeError("Could not read compositor blur capabilities")
+
+    def _bind_manager(self):
+        create_queue = _function(self.lib, "wl_display_create_queue", C.c_void_p, C.c_void_p)
+        destroy_queue = _function(self.lib, "wl_event_queue_destroy", None, C.c_void_p)
+        queue = create_queue(self._display)
+        if not queue:
+            raise RuntimeError("Could not create a Wayland discovery queue")
+        registry = None
+        self._registry_callbacks = None
+        try:
+            registry = self._request(self._display, 1, _Argument(o=None), interface=self._registry_interface)
+            if not registry:
+                raise RuntimeError("Could not get the Wayland registry")
+            self._set_queue(registry, queue)
+            globals_found = self._discover(registry, queue)
+            return self._bind_effect_manager(registry, queue, globals_found)
+        except Exception:
+            self.close()
+            raise
+        finally:
+            if registry:
+                self._destroy(registry)
+            self._registry_callbacks = None
+            destroy_queue(queue)
+
+    def _bind_effect_manager(self, registry, queue, globals_found):
+        self._modern = b"ext_background_effect_manager_v1" in globals_found
+        self._define_protocol()
+        name = globals_found.get(self._manager_interface.name)
+        if name is None:
+            return None
+        self._manager = self._bind(registry, name, self._manager_interface)
+        if not self._manager:
+            raise RuntimeError("Could not bind the compositor blur manager")
+        if self._modern:
+            compositor_name = globals_found.get(b"wl_compositor")
+            if compositor_name is None:
+                raise RuntimeError("The Wayland compositor is unavailable")
+            self._compositor_interface = _Interface.in_dll(self.lib, "wl_compositor_interface")
+            self._compositor = self._bind(
+                registry, compositor_name, self._compositor_interface,
+            )
+            if not self._compositor:
+                raise RuntimeError("Could not bind the Wayland compositor")
+            self._watch_capabilities(self._manager, queue)
+            self._set_queue(self._compositor, None)
+        self._set_queue(self._manager, None)
+        return self._manager
 
     @property
-    def area(self) -> int:
-        return max(0, self.width) * max(0, self.height)
+    def supported(self):
+        return self._manager is not None and (not self._modern or bool(self._capabilities & 1))
+
+    def set_enabled(self, surface, enabled):
+        pointer = self._surface_pointer(_gpointer(surface))
+        if self._surface == pointer and bool(self._blur) == enabled:
+            return
+        self._disable()
+        if enabled and pointer and self.supported:
+            self._surface = pointer
+            self._surface_object = surface
+            self._blur = self._request(
+                self._manager, int(self._modern), _Argument(o=None), _Argument(o=pointer),
+                interface=self._blur_interface,
+            )
+            if not self._blur:
+                raise RuntimeError("Could not create the compositor blur object")
+            self._set_region()
+            if self._modern and surface.get_mapped():
+                # GTK can skip unchanged pixels, so commit effect-only state.
+                self._request(pointer, 6)  # wl_surface.commit; no new buffer.
+        self._flush(self._display)
+
+    def _set_region(self):
+        if self._modern:
+            region = self._request(self._compositor, 1, _Argument(o=None), interface=self._region_interface)
+            if not region:
+                raise RuntimeError("Could not create the compositor blur region")
+            try:
+                # Surface-local coordinates are scale independent and compositor
+                # clipped. A large region follows resize without per-frame IPC.
+                self._request(region, 1, _Argument(u=0), _Argument(u=0),
+                              _Argument(u=2147483647), _Argument(u=2147483647))
+                self._request(self._blur, 1, _Argument(o=region))
+            finally:
+                self._request(region, 0, destroy=True)
+        else:
+            self._request(self._blur, 1, _Argument(o=None))
+            self._request(self._blur, 0)
+
+    def _disable(self):
+        if self._blur:
+            if not self._modern:
+                self._request(self._manager, 1, _Argument(o=self._surface))
+            self._request(self._blur, 0 if self._modern else 2, destroy=True)
+            self._blur = None
+            if self._modern and self._surface_object.get_mapped():
+                # Removal belongs to the old surface, not the next one passed
+                # to set_enabled. Do not leave blur waiting for its next frame.
+                self._request(self._surface, 6)
+        self._surface = None
+        self._surface_object = None
+
+    def close(self):
+        self._disable()
+        if self._manager:
+            if self._modern:
+                self._request(self._manager, 0, destroy=True)
+            else:
+                self._destroy(self._manager)
+            self._manager = None
+        if self._compositor:
+            self._destroy(self._compositor)
+            self._compositor = None
+        self._flush(self._display)
+        self._capability_listener = None
+        self._capability_callback = None
+
+class _X11Blur:
+    """Use the compositor's _KDE_NET_WM_BLUR_BEHIND_REGION hint on X11."""
+
+    def __init__(self, display, gtk):
+        self.lib = _library("X11")
+        self._display = _function(
+            gtk, "gdk_x11_display_get_xdisplay", C.c_void_p, C.c_void_p,
+        )(_gpointer(display))
+        self._surface_pointer = _function(
+            gtk, "gdk_x11_surface_get_xid", C.c_ulong, C.c_void_p,
+        )
+        self._atom = _function(self.lib, "XInternAtom", C.c_ulong, C.c_void_p, C.c_char_p, C.c_int)(
+            self._display, b"_KDE_NET_WM_BLUR_BEHIND_REGION", 0,
+        )
+        self._change = _function(
+            self.lib, "XChangeProperty", C.c_int, C.c_void_p, C.c_ulong, C.c_ulong,
+            C.c_ulong, C.c_int, C.c_int, C.c_void_p, C.c_int,
+        )
+        self._delete = _function(self.lib, "XDeleteProperty", C.c_int, C.c_void_p, C.c_ulong, C.c_ulong)
+        self._flush = _function(self.lib, "XFlush", C.c_int, C.c_void_p)
+        self._surface = None
+        import gi
+
+        gi.require_version("GdkX11", "4.0")
+        from gi.repository import GdkX11
+
+        self.supported = GdkX11.X11Display.get_screen(display).supports_net_wm_hint(
+            "_KDE_NET_WM_BLUR_BEHIND_REGION"
+        )
+
+    def set_enabled(self, surface, enabled):
+        xid = self._surface_pointer(_gpointer(surface))
+        self.close()
+        if enabled:
+            # An empty CARDINAL (6) property requests blur of the entire window.
+            self._change(self._display, xid, self._atom, 6, 32, 0, None, 0)
+            self._surface = xid
+        self._flush(self._display)
+
+    def close(self):
+        if self._surface:
+            self._delete(self._display, self._surface, self._atom)
+            self._surface = None
+            self._flush(self._display)
 
 
-def parse_window_table(text: str) -> list[WindowRect]:
-    """Parse the tab-separated window list produced by the KWin script."""
-    rows = []
-    for line in (text or "").splitlines():
-        parts = line.split("\t")
-        if len(parts) < 6:
-            continue
+class _KWinEffectBlur:
+    """Address one Wayland surface in Zashterminal's optional GPU effect."""
+
+    _PATH = "/org/leoberbert/ZashterminalBlur"
+    _INTERFACE = "org.leoberbert.ZashterminalBlur"
+
+    @classmethod
+    def connect(cls, gtk):
+        from gi.repository import Gio, GLib
+
         try:
-            rows.append(WindowRect(
-                uuid=parts[0],
-                pid=int(float(parts[1])),
-                x=int(float(parts[2])),
-                y=int(float(parts[3])),
-                width=int(float(parts[4])),
-                height=int(float(parts[5])),
-                caption=parts[6] if len(parts) > 6 else "",
-            ))
-        except ValueError:
-            continue
-    return rows
+            connection = Gio.bus_get_sync(Gio.BusType.SESSION, None)
+            loaded = connection.call_sync(
+                "org.kde.KWin", "/Effects", "org.kde.kwin.Effects", "isEffectLoaded",
+                GLib.Variant("(s)", ("zashterminalblur",)), None,
+                Gio.DBusCallFlags.NONE, 1000, None,
+            )
+            if not loaded.unpack()[0]:
+                loaded = connection.call_sync(
+                    "org.kde.KWin", "/Effects", "org.kde.kwin.Effects", "loadEffect",
+                    GLib.Variant("(s)", ("zashterminalblur",)), None,
+                    Gio.DBusCallFlags.NONE, 1000, None,
+                )
+                if not loaded.unpack()[0]:
+                    return None
+            version = connection.call_sync(
+                "org.kde.KWin", cls._PATH, cls._INTERFACE, "protocolVersion",
+                None, None, Gio.DBusCallFlags.NONE, 1000, None,
+            )
+            if version.unpack()[0] != 1:
+                return None
+            return cls(connection, gtk)
+        except GLib.Error:
+            return None  # Optional extension is not installed on this desktop.
 
-
-def preferred_window(windows: list[WindowRect], pid: int) -> Optional[WindowRect]:
-    """Largest window of this process. Dialogs are smaller than the terminal."""
-    ours = [window for window in windows if window.pid == pid and window.area > 0]
-    if not ours:
-        return None
-    return max(ours, key=lambda window: window.area)
-
-
-def rect_from_info(info: dict) -> Optional[WindowRect]:
-    if not info:
-        return None
-    try:
-        rect = WindowRect(
-            uuid=str(info.get("uuid") or ""),
-            pid=int(info.get("pid") or 0),
-            x=int(round(float(info.get("x") or 0))),
-            y=int(round(float(info.get("y") or 0))),
-            width=int(round(float(info.get("width") or 0))),
-            height=int(round(float(info.get("height") or 0))),
-            caption=str(info.get("caption") or ""),
+    def __init__(self, connection, gtk):
+        self._connection = connection
+        self._surface_pointer = _function(
+            gtk, "gdk_wayland_surface_get_wl_surface", C.c_void_p, C.c_void_p,
         )
-    except (TypeError, ValueError):
-        return None
-    if rect.area <= 0:
-        return None
-    return rect
+        self._wayland = _library("wayland-client")
+        self._proxy_id = _function(self._wayland, "wl_proxy_get_id", C.c_uint32, C.c_void_p)
+        self._surface_id = None
+        self._strength = 0
 
+    @property
+    def supported(self):
+        return True
 
-def raw_from_capture(info: dict, blob: bytes) -> Optional[RawImage]:
-    """Accept KWin's raw RGBX/RGBA capture."""
-    if not info or str(info.get("type") or "raw") != "raw":
-        return None
-    try:
-        if int(info.get("format") or 0) not in (16, 17):
-            return None
-        width = int(info["width"])
-        height = int(info["height"])
-        stride = int(info["stride"])
-    except (KeyError, TypeError, ValueError):
-        return None
-    needed = height * stride
-    if width <= 0 or height <= 0 or stride < width * 4 or len(blob) < needed:
-        return None
-    return RawImage(bytes(blob[:needed]), width, height, stride)
+    def _send(self, surface_id, strength):
+        import os
+        from gi.repository import Gio, GLib
 
-
-def window_list_script(bus_name: str) -> str:
-    return (
-        "var lines = [];\n"
-        "var wins = workspace.windowList();\n"
-        "for (var i = 0; i < wins.length; ++i) {\n"
-        "    var win = wins[i];\n"
-        "    var g = win.frameGeometry;\n"
-        "    lines.push(String(win.internalId) + '\\t' + win.pid + '\\t' + Math.round(g.x)"
-        " + '\\t' + Math.round(g.y) + '\\t' + Math.round(g.width) + '\\t' + Math.round(g.height)"
-        " + '\\t' + win.caption);\n"
-        "}\n"
-        f'callDBus("{bus_name}", "/Backdrop", "{bus_name}", "Windows", lines.join("\\n"));\n'
-    )
-
-
-def blur_rgbx(data: bytes, width: int, height: int, stride: int, amount: float, max_edge: int = 1600) -> bytes:
-    """Return a PNG of ``data`` softened by ``amount`` (0–100)."""
-    import gi
-
-    gi.require_version("GdkPixbuf", "2.0")
-    from gi.repository import GdkPixbuf, GLib
-
-    pixbuf = GdkPixbuf.Pixbuf.new_from_bytes(
-        GLib.Bytes.new(data), GdkPixbuf.Colorspace.RGB, True, 8, width, height, stride,
-    )
-    long_edge = max(pixbuf.get_width(), pixbuf.get_height(), 1)
-    if long_edge > max_edge:
-        scale = max_edge / long_edge
-        pixbuf = pixbuf.scale_simple(
-            max(1, int(round(pixbuf.get_width() * scale))),
-            max(1, int(round(pixbuf.get_height() * scale))),
-            GdkPixbuf.InterpType.BILINEAR,
+        reply = self._connection.call_sync(
+            "org.kde.KWin", self._PATH, self._INTERFACE, "setWindowBlur",
+            GLib.Variant("(utu)", (os.getpid(), surface_id, strength)),
+            None, Gio.DBusCallFlags.NONE, 1000, None,
         )
-    target_w = pixbuf.get_width()
-    target_h = pixbuf.get_height()
-    small_w, small_h = intermediate_size(target_w, target_h, amount)
-    if (small_w, small_h) != (target_w, target_h):
-        softened = pixbuf.scale_simple(small_w, small_h, GdkPixbuf.InterpType.BILINEAR)
-        pixbuf = softened.scale_simple(target_w, target_h, GdkPixbuf.InterpType.BILINEAR)
-    _success, encoded = pixbuf.save_to_bufferv("png", [], [])
-    return bytes(encoded)
+        if not reply.unpack()[0]:
+            raise RuntimeError("The KWin effect rejected this window's blur request")
 
+    def apply(self, surface, strength):
+        surface_id = self._proxy_id(self._surface_pointer(_gpointer(surface)))
+        if self._surface_id == surface_id and self._strength == strength:
+            return
+        if self._surface_id is not None and self._surface_id != surface_id:
+            self._send(self._surface_id, 0)
+        self._send(surface_id, strength)
+        self._surface_id = surface_id
+        self._strength = strength
 
-def wallpaper_image(theme=None) -> Optional[RawImage]:
-    """Still of the desktop wallpaper, used when a live capture is unavailable."""
-    path = _wallpaper_path(theme)
-    if not path:
-        return None
-    import gi
+    def close(self):
+        from gi.repository import GLib
 
-    gi.require_version("GdkPixbuf", "2.0")
-    from gi.repository import GdkPixbuf
-
-    pixbuf = GdkPixbuf.Pixbuf.new_from_file(path)
-    if pixbuf is None:
-        return None
-    if not pixbuf.get_has_alpha():
-        pixbuf = pixbuf.add_alpha(False, 0, 0, 0)
-    return RawImage(
-        bytes(pixbuf.get_pixels()),
-        pixbuf.get_width(),
-        pixbuf.get_height(),
-        pixbuf.get_rowstride(),
-    )
-
-
-def _wallpaper_path(theme) -> Optional[str]:
-    if isinstance(theme, dict):
-        path = theme.get("path")
-        if isinstance(path, str) and path and os.path.isfile(path):
-            return path
-    try:
-        from .wallpaper import discover_wallpapers, preferred_wallpaper
-    except Exception:
-        return None
-    try:
-        candidates = discover_wallpapers()
-    except Exception:
-        return None
-    if not candidates:
-        return None
-    index = preferred_wallpaper(candidates, None, None)
-    if index is None:
-        index = 0
-    return candidates[index][1]
+        if self._surface_id is not None:
+            try:
+                self._send(self._surface_id, 0)
+            except GLib.Error:
+                pass  # KWin may already be exiting during GTK teardown.
+            self._surface_id = None
+            self._strength = 0
 
 
 class BackdropBlur:
-    """Decide when to recapture, and render the slider amount from the last still."""
+    """Own the native blur request for one GTK window's surface."""
 
-    def __init__(self, logger=None, kwin=None):
-        self._logger = logger
-        self.kwin = kwin if kwin is not None else KWinBus()
-        self.sharp: Optional[RawImage] = None
-        self.size = None
-        self._warned = False
-
-    def plan(self, amount, window_size=None) -> str:
-        if not blur_requested(amount):
-            self.sharp = None
-            return "clear"
-        if self.sharp is None:
-            return "capture"
-        if window_size and self.size and tuple(window_size) != tuple(self.size):
-            return "refresh"
-        return "paint"
-
-    def remember(self, image: Optional[RawImage], window_size=None) -> None:
-        if image is None:
-            return
-        self.sharp = image
-        if window_size:
-            self.size = tuple(window_size)
-
-    def render(self, amount: float) -> Optional[bytes]:
-        if self.sharp is None:
-            return None
-        return blur_rgbx(
-            self.sharp.data, self.sharp.width, self.sharp.height, self.sharp.stride, amount,
-        )
-
-    def locate(self, pid: int) -> Optional[WindowRect]:
+    def __init__(self, display, logger=None):
+        self._backend = None
         try:
-            return self.kwin.geometry(pid)
-        except Exception as exc:
-            self._warn(f"Could not find this window for backdrop blur: {exc}")
-            return None
+            gtk = _library("gtk-4")
+            name = display.__gtype__.name
+            if name == "GdkWaylandDisplay":
+                self._backend = _KWinEffectBlur.connect(gtk)
+                if self._backend is None:
+                    self._backend = _WaylandBlur(display, gtk)
+            elif name == "GdkX11Display":
+                self._backend = _X11Blur(display, gtk)
+        except (OSError, AttributeError, RuntimeError) as error:
+            if logger:
+                logger.warning(f"Compositor blur unavailable: {error}")
+        self._display = display  # GDK owns the native connection.
 
-    def capture(self, rect: WindowRect) -> Optional[RawImage]:
-        try:
-            return self.kwin.capture_area(rect)
-        except Exception as exc:
-            self._warn(f"Could not capture the backdrop: {exc}")
-            return None
+    @property
+    def supported(self):
+        return self._backend is not None and self._backend.supported
 
-    def remember_wallpaper(self, theme) -> bool:
-        try:
-            image = wallpaper_image(theme)
-        except Exception as exc:
-            self._warn(f"Could not read the wallpaper: {exc}")
-            return False
-        if image is None:
-            return False
-        self.remember(image, self.size)
-        return True
+    @property
+    def independent_strength(self):
+        return isinstance(self._backend, _KWinEffectBlur)
 
-    def _warn(self, message: str) -> None:
-        if self._warned:
-            return
-        self._warned = True
-        if self._logger is not None:
-            self._logger.warning(message)
+    def apply(self, surface, enabled, strength):
+        if surface is not None and self._backend is not None:
+            if self.independent_strength:
+                self._backend.apply(surface, int(strength) if enabled else 0)
+            else:
+                self._backend.set_enabled(surface, bool(enabled) and self.supported)
 
-
-class KWinBus:
-    """Read this process's window rectangle and capture that screen area."""
-
-    def __init__(self, connection=None):
-        self._connection = connection
-        self._uuid = None
-        self._registered = False
-        self._result = None
-
-    def connection(self):
-        if self._connection is None:
-            from gi.repository import Gio
-
-            self._connection = Gio.bus_get_sync(Gio.BusType.SESSION, None)
-        return self._connection
-
-    def geometry(self, pid: int) -> Optional[WindowRect]:
-        if self._uuid:
-            current = self.window_info(self._uuid)
-            if current is not None and current.pid == pid:
-                return current
-            self._uuid = None
-        chosen = preferred_window(self.list_windows(), pid)
-        if chosen is not None:
-            self._uuid = chosen.uuid
-        return chosen
-
-    def window_info(self, uuid: str) -> Optional[WindowRect]:
-        from gi.repository import Gio, GLib
-
-        reply = self.connection().call_sync(
-            EFFECT_BUS, "/KWin", EFFECT_BUS, "getWindowInfo",
-            GLib.Variant("(s)", (uuid,)),
-            GLib.VariantType.new("(a{sv})"),
-            Gio.DBusCallFlags.NONE, 2000, None,
-        )
-        return rect_from_info(reply.unpack()[0])
-
-    def capture_area(self, rect: WindowRect) -> Optional[RawImage]:
-        import os
-
-        from gi.repository import Gio, GLib
-
-        read_fd, write_fd = os.pipe()
-        try:
-            os.set_inheritable(write_fd, True)
-            descriptors = Gio.UnixFDList.new()
-            index = descriptors.append(write_fd)
-            os.close(write_fd)
-            write_fd = -1
-            reply, _out = self.connection().call_with_unix_fd_list_sync(
-                EFFECT_BUS, "/org/kde/KWin/ScreenShot2", "org.kde.KWin.ScreenShot2",
-                "CaptureArea",
-                GLib.Variant("(iiuua{sv}h)", (rect.x, rect.y, rect.width, rect.height, {}, index)),
-                GLib.VariantType.new("(a{sv})"),
-                Gio.DBusCallFlags.NONE, 3000, descriptors, None,
-            )
-            info = reply.unpack()[0]
-            needed = int(info.get("height") or 0) * int(info.get("stride") or 0)
-            return raw_from_capture(info, _read_capture(read_fd, needed))
-        finally:
-            if write_fd >= 0:
-                os.close(write_fd)
-            os.close(read_fd)
-
-    def list_windows(self) -> list[WindowRect]:
-        from gi.repository import Gio, GLib
-
-        self._ensure_callback()
-        connection = self.connection()
-        self._result = None
-        with tempfile.NamedTemporaryFile(
-            mode="w", encoding="utf-8", prefix="zashterminal-backdrop-", suffix=".js",
-        ) as script:
-            script.write(window_list_script(CALLBACK_NAME))
-            script.flush()
-            try:
-                if self._load(connection, script.name) < 0:
-                    self._unload(connection)
-                    if self._load(connection, script.name) < 0:
-                        return []
-                connection.call_sync(
-                    EFFECT_BUS, "/Scripting", "org.kde.kwin.Scripting", "start",
-                    None, None, Gio.DBusCallFlags.NONE, 2000, None,
-                )
-                if self._result is None:
-                    self._wait_for_result(0.8)
-                return parse_window_table(self._result or "")
-            finally:
-                self._unload(connection)
-
-    def _connection_is_fake(self) -> bool:
-        return bool(getattr(self._connection, "skip_own", False))
-
-    def _ensure_callback(self) -> None:
-        if self._registered:
-            return
-        from gi.repository import Gio
-
-        connection = self.connection()
-        if not self._connection_is_fake():
-            Gio.bus_own_name_on_connection(
-                connection, CALLBACK_NAME,
-                Gio.BusNameOwnerFlags.ALLOW_REPLACEMENT | Gio.BusNameOwnerFlags.REPLACE,
-                None, None,
-            )
-        info = Gio.DBusNodeInfo.new_for_xml(
-            "<node><interface name='org.leoberbert.Zashterminal.Backdrop'>"
-            "<method name='Windows'><arg name='text' type='s' direction='in'/></method>"
-            "</interface></node>"
-        )
-        connection.register_object("/Backdrop", info.interfaces[0], self._on_windows, None, None)
-        self._registered = True
-
-    def _on_windows(self, *args) -> None:
-        params, invocation = args[5], args[6]
-        self._result = params.unpack()[0]
-        invocation.return_value(None)
-
-    def _load(self, connection, path: str) -> int:
-        from gi.repository import Gio, GLib
-
-        reply = connection.call_sync(
-            EFFECT_BUS, "/Scripting", "org.kde.kwin.Scripting", "loadScript",
-            GLib.Variant("(ss)", (path, SCRIPT_NAME)),
-            GLib.VariantType.new("(i)"),
-            Gio.DBusCallFlags.NONE, 2000, None,
-        )
-        return int(reply.unpack()[0])
-
-    def _unload(self, connection) -> None:
-        from gi.repository import Gio, GLib
-
-        try:
-            connection.call_sync(
-                EFFECT_BUS, "/Scripting", "org.kde.kwin.Scripting", "unloadScript",
-                GLib.Variant("(s)", (SCRIPT_NAME,)),
-                GLib.VariantType.new("(b)"),
-                Gio.DBusCallFlags.NONE, 2000, None,
-            )
-        except Exception:
-            return
-
-    def _wait_for_result(self, seconds: float) -> None:
-        from gi.repository import GLib
-
-        context = GLib.MainContext.default()
-        deadline = time.monotonic() + seconds
-        while self._result is None and time.monotonic() < deadline:
-            if not context.iteration(False):
-                time.sleep(0.01)
-
-
-def _read_capture(read_fd: int, needed: int) -> bytes:
-    import os
-
-    os.set_blocking(read_fd, False)
-    chunks = []
-    total = 0
-    deadline = time.monotonic() + 1.0
-    while total < needed and time.monotonic() < deadline:
-        try:
-            chunk = os.read(read_fd, max(needed - total, 1))
-        except BlockingIOError:
-            time.sleep(0.005)
-            continue
-        if not chunk:
-            break
-        chunks.append(chunk)
-        total += len(chunk)
-    return b"".join(chunks)
+    def close(self):
+        if self._backend is not None:
+            self._backend.close()
+            self._backend = None

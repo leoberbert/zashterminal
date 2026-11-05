@@ -56,6 +56,10 @@ class SettingsValidator:
             return False
         return 0 <= value <= 100
 
+    @staticmethod
+    def validate_blur_strength(value: Any) -> bool:
+        return type(value) is int and 1 <= value <= 15
+
     def validate_font(self, value: Any) -> bool:
         if not isinstance(value, str) or not value.strip():
             return False
@@ -104,7 +108,7 @@ class SettingsValidator:
         validators = {
             "color_scheme": lambda v: self.validate_color_scheme(v, num_schemes),
             "transparency": self.validate_transparency,
-            "background_blur": self.validate_transparency,
+            "background_blur_strength": self.validate_blur_strength,
             "font": self.validate_font,
         }
         for key, validator in validators.items():
@@ -122,6 +126,7 @@ class SettingsValidator:
             "bell_sound",
             "log_to_file",
             "ai_assistant_enabled",
+            "background_blur",
         ]
         for key in boolean_settings:
             if key in settings and not isinstance(settings[key], bool):
@@ -357,6 +362,13 @@ class SettingsManager:
 
             if not isinstance(settings, dict):
                 raise ValueError("Settings file has invalid structure")
+
+            # The old screenshot-based blur stored a 0–100 intensity. Native
+            # blur is an on/off surface request; strength belongs to the desktop.
+            blur = settings.get("background_blur")
+            if type(blur) in (int, float):
+                settings["background_blur"] = 0 < blur <= 100
+                self._dirty = True
 
             return settings
         except json.JSONDecodeError as e:
@@ -616,7 +628,8 @@ class SettingsManager:
                 v, len(self.get_scheme_order())
             ),
             "transparency": self.validator.validate_transparency,
-            "background_blur": self.validator.validate_transparency,
+            "background_blur": lambda v: isinstance(v, bool),
+            "background_blur_strength": self.validator.validate_blur_strength,
             "font": self.validator.validate_font,
         }
         if base_key in validators and not validators[base_key](value):

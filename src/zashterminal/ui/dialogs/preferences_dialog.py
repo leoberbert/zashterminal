@@ -127,22 +127,42 @@ class PreferencesDialog(Adw.PreferencesWindow):
         transparency_row.set_activatable_widget(self.transparency_scale)
         misc_group.add(transparency_row)
 
-        blur_row = Adw.ActionRow(
+        blur_supported = self.get_transient_for().background_blur_supported()
+        self._blur_strength_supported = self.get_transient_for().background_blur_strength_supported()
+        self.blur_row = Adw.SwitchRow(
             title=_("Background Blur"),
-            subtitle=_("Higher values blur whatever is behind this window more."),
+            subtitle=_(
+                "Live blur follows this window. Strength affects only this terminal; requires transparency."
+            ) if self._blur_strength_supported else _(
+                "Live blur follows the window. Strength is controlled by the desktop's blur effect; requires transparency."
+            ) if blur_supported else _(
+                "Background blur is not supported by the current compositor."
+            ),
+            active=bool(self.settings_manager.get("background_blur", False)),
+            sensitive=blur_supported,
         )
-        self.blur_scale = Gtk.Scale.new_with_range(
-            Gtk.Orientation.HORIZONTAL, 0, 100, 1
+        self.blur_row.connect("notify::active", self._on_background_blur_changed)
+        misc_group.add(self.blur_row)
+
+        self.blur_strength_row = Adw.ActionRow(
+            title=_("Blur Strength"),
+            subtitle=_("Applies only to this terminal window.") if self._blur_strength_supported else _(
+                "Install the Zashterminal KWin effect to control strength independently."
+            ),
+            sensitive=self._blur_strength_supported and self.blur_row.get_active(),
         )
-        self.blur_scale.set_size_request(180, -1)
-        self.blur_scale.set_value(self.settings_manager.get("background_blur", 0))
-        self.blur_scale.set_draw_value(True)
-        self.blur_scale.set_value_pos(Gtk.PositionType.RIGHT)
-        self.blur_scale.set_hexpand(True)
-        self.blur_scale.connect("value-changed", self._on_background_blur_changed)
-        blur_row.add_suffix(self.blur_scale)
-        blur_row.set_activatable_widget(self.blur_scale)
-        misc_group.add(blur_row)
+        self.blur_strength_scale = Gtk.Scale.new_with_range(
+            Gtk.Orientation.HORIZONTAL, 1, 15, 1
+        )
+        self.blur_strength_scale.set_size_request(180, -1)
+        self.blur_strength_scale.set_value(self.get_transient_for().background_blur_strength)
+        self.blur_strength_scale.set_draw_value(True)
+        self.blur_strength_scale.set_value_pos(Gtk.PositionType.RIGHT)
+        self.blur_strength_scale.set_hexpand(True)
+        self.blur_strength_scale.connect("value-changed", self._on_blur_strength_changed)
+        self.blur_strength_row.add_suffix(self.blur_strength_scale)
+        self.blur_strength_row.set_activatable_widget(self.blur_strength_scale)
+        misc_group.add(self.blur_strength_row)
 
         headerbar_transparency_row = Adw.ActionRow(
             title=_("Headerbar Transparency"),
@@ -671,8 +691,16 @@ class PreferencesDialog(Adw.PreferencesWindow):
         self.settings_manager.set("transparency", value)
         self.emit("transparency-changed", value)
 
-    def _on_background_blur_changed(self, scale) -> None:
-        self.settings_manager.set("background_blur", scale.get_value())
+    def _on_background_blur_changed(self, row, _param) -> None:
+        self.settings_manager.set("background_blur", row.get_active())
+        self.blur_strength_row.set_sensitive(self._blur_strength_supported and row.get_active())
+
+    def _on_blur_strength_changed(self, scale) -> None:
+        value = int(scale.get_value())
+        self.settings_manager.set("background_blur_strength", value)
+        window = self.get_transient_for()
+        window.background_blur_strength = value
+        window.apply_background_blur()
 
     def _on_headerbar_transparency_changed(self, scale) -> None:
         value = scale.get_value()
