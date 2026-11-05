@@ -248,6 +248,69 @@ class KWinBusTests(unittest.TestCase):
         connection.call_sync = lambda *args, **kwargs: (_ for _ in ()).throw(RuntimeError("dbus"))
         bus._unload(connection)
 
+    def test_script_is_private_unique_and_does_not_follow_a_planted_symlink(self):
+        with tempfile.TemporaryDirectory() as directory:
+            victim = os.path.join(directory, "unrelated.txt")
+            with open(victim, "w", encoding="utf-8") as handle:
+                handle.write("preserve-me")
+            os.symlink(victim, os.path.join(directory, "zashterminal-backdrop.js"))
+            connection = FakeConnection(TABLE, {}, b"")
+            original_call = connection.call_sync
+            paths = []
+
+            def call_sync(*args, **kwargs):
+                if args[3] == "loadScript":
+                    path = args[4].unpack()[0]
+                    paths.append(path)
+                    self.assertEqual(os.stat(path).st_mode & 0o777, 0o600)
+                    self.assertEqual(os.stat(path).st_uid, os.getuid())
+                return original_call(*args, **kwargs)
+
+            connection.call_sync = call_sync
+            bus = KWinBus(connection)
+            with (
+                patch.dict(os.environ, {"XDG_RUNTIME_DIR": directory}),
+                patch.object(tempfile, "tempdir", directory),
+            ):
+                for _ in range(2):
+                    self.assertEqual(
+                        [window.uuid for window in bus.list_windows()],
+                        ["{main}", "{dialog}", "{other}"],
+                    )
+            self.assertEqual(len(set(paths)), 2)
+            for path in paths:
+                self.assertFalse(os.path.exists(path))
+            with open(victim, encoding="utf-8") as handle:
+                self.assertEqual(handle.read(), "preserve-me")
+
+    def test_script_is_removed_when_kwin_rejects_it_or_dbus_raises(self):
+        for failure in ("rejected", "loadScript", "start"):
+            with self.subTest(failure=failure):
+                connection = FakeConnection(TABLE, {}, b"")
+                original_call = connection.call_sync
+                paths = []
+
+                def call_sync(*args, **kwargs):
+                    method = args[3]
+                    if method == "loadScript":
+                        paths.append(args[4].unpack()[0])
+                        if failure == "rejected":
+                            return Reply(-1)
+                    if method == failure:
+                        raise RuntimeError("dbus")
+                    return original_call(*args, **kwargs)
+
+                connection.call_sync = call_sync
+                bus = KWinBus(connection)
+                if failure == "rejected":
+                    self.assertEqual(bus.list_windows(), [])
+                else:
+                    with self.assertRaisesRegex(RuntimeError, "dbus"):
+                        bus.list_windows()
+                for path in paths:
+                    self.assertFalse(os.path.exists(path))
+                self.assertGreaterEqual(connection.unloaded, 1)
+
 
 class BackgroundBlurSettingTests(unittest.TestCase):
     def test_background_blur_setting_accepts_a_percentage(self):

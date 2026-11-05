@@ -8,6 +8,7 @@ of the backdrop and soften that image as the value rises.
 from __future__ import annotations
 
 import os
+import tempfile
 import time
 from typing import Optional
 
@@ -359,19 +360,25 @@ class KWinBus:
         self._ensure_callback()
         connection = self.connection()
         self._result = None
-        path = self._write_script()
-        if self._load(connection, path) < 0:
-            self._unload(connection)
-            if self._load(connection, path) < 0:
-                return []
-        connection.call_sync(
-            EFFECT_BUS, "/Scripting", "org.kde.kwin.Scripting", "start",
-            None, None, Gio.DBusCallFlags.NONE, 2000, None,
-        )
-        if self._result is None:
-            self._wait_for_result(0.8)
-        self._unload(connection)
-        return parse_window_table(self._result or "")
+        with tempfile.NamedTemporaryFile(
+            mode="w", encoding="utf-8", prefix="zashterminal-backdrop-", suffix=".js",
+        ) as script:
+            script.write(window_list_script(CALLBACK_NAME))
+            script.flush()
+            try:
+                if self._load(connection, script.name) < 0:
+                    self._unload(connection)
+                    if self._load(connection, script.name) < 0:
+                        return []
+                connection.call_sync(
+                    EFFECT_BUS, "/Scripting", "org.kde.kwin.Scripting", "start",
+                    None, None, Gio.DBusCallFlags.NONE, 2000, None,
+                )
+                if self._result is None:
+                    self._wait_for_result(0.8)
+                return parse_window_table(self._result or "")
+            finally:
+                self._unload(connection)
 
     def _connection_is_fake(self) -> bool:
         return bool(getattr(self._connection, "skip_own", False))
@@ -400,12 +407,6 @@ class KWinBus:
         params, invocation = args[5], args[6]
         self._result = params.unpack()[0]
         invocation.return_value(None)
-
-    def _write_script(self) -> str:
-        path = os.path.join(os.environ.get("XDG_RUNTIME_DIR", "/tmp"), "zashterminal-backdrop.js")
-        with open(path, "w", encoding="utf-8") as handle:
-            handle.write(window_list_script(CALLBACK_NAME))
-        return path
 
     def _load(self, connection, path: str) -> int:
         from gi.repository import Gio, GLib
