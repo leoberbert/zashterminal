@@ -83,9 +83,11 @@ class WindowUIBuilder:
 
         # --- Widgets to be created and exposed ---
         self.header_bar = None
+        self.split_view = None
         self.flap = None
         self.sidebar_box = None
         self.sidebar_popover = None
+        self.pin_sidebar_button = None
         self.sidebar_content_stack = None
         self.inline_context_menu_box = None
         self.toggle_sidebar_button = None
@@ -278,25 +280,19 @@ class WindowUIBuilder:
         self.command_toolbar = self._create_command_toolbar()
         main_box.append(self.command_toolbar)
 
-        # Create the main content area (Flap)
-        self.flap = Adw.Flap(transition_type=Adw.FlapTransitionType.SLIDE)
+        # Sessions panel: docked when pinned, overlay when the pin is released.
+        self.split_view = Adw.OverlaySplitView()
+        self.split_view.set_sidebar_position(Gtk.PackType.START)
+        self.split_view.set_sidebar_width_unit(Adw.LengthUnit.PX)
+        self.split_view.set_min_sidebar_width(220)
+        self.split_view.set_max_sidebar_width(280)
+        self.split_view.set_enable_show_gesture(False)
+        self.split_view.set_enable_hide_gesture(False)
+        self.split_view.set_vexpand(True)
         self.sidebar_box = self._create_sidebar()
-        self.flap.set_flap(self.sidebar_box)
-
-        self.sidebar_popover = Gtk.Popover(
-            position=Gtk.PositionType.BOTTOM, has_arrow=True, autohide=True
-        )
-        self.sidebar_popover.add_css_class("zashterminal-popover")
-        self.sidebar_popover.add_css_class(
-            "sidebar-popover"
-        )  # Specific class for sidebar
-        self.sidebar_popover.set_size_request(200, 800)
-
-        content_area = self._create_content_area()
-        self.flap.set_content(content_area)
-
-        # Add the Flap as the main content of the window, which will be revealed/hidden by the SearchBar
-        main_box.append(self.flap)
+        self.split_view.set_sidebar(self.sidebar_box)
+        self.split_view.set_content(self._create_content_area())
+        main_box.append(self.split_view)
         return main_box
 
     def _create_header_bar(self) -> Adw.HeaderBar:
@@ -308,7 +304,7 @@ class WindowUIBuilder:
 
         # Create buttons (tooltips are added via tooltip_helper below)
         self.toggle_sidebar_button = Gtk.ToggleButton()
-        self.toggle_sidebar_button.set_child(icon_image("pin-symbolic"))
+        self.toggle_sidebar_button.set_child(icon_image("computer-symbolic"))
         self.toggle_sidebar_button.add_css_class("sidebar-toggle-button")
 
         self.file_manager_button = Gtk.ToggleButton()
@@ -691,10 +687,11 @@ class WindowUIBuilder:
         # Toolbar with action buttons at the top
         toolbar = Gtk.Box(
             orientation=Gtk.Orientation.HORIZONTAL,
-            spacing=4,
-            halign=Gtk.Align.CENTER,
+            spacing=2,
             margin_top=6,
             margin_bottom=6,
+            margin_start=6,
+            margin_end=6,
             css_classes=["sidebar-toolbar"],
         )
 
@@ -720,6 +717,15 @@ class WindowUIBuilder:
         self.tooltip_helper.add_tooltip(self.remove_button, _("Remove Selected"))
         self.remove_button.add_css_class("destructive")
         toolbar.append(self.remove_button)
+
+        toolbar.append(Gtk.Box(hexpand=True))
+        self.pin_sidebar_button = Gtk.ToggleButton()
+        self.pin_sidebar_button.set_child(icon_image("pin-symbolic"))
+        self.pin_sidebar_button.add_css_class("sidebar-pin-button")
+        self.tooltip_helper.add_tooltip(
+            self.pin_sidebar_button, _("Pin the sessions panel")
+        )
+        toolbar.append(self.pin_sidebar_button)
 
         normal_view.append(toolbar)
 
