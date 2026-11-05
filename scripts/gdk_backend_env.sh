@@ -22,9 +22,9 @@ zash_apply_gdk_backend_policy() {
     /run/current-system/sw/lib
   do
     [ -d "${_zash_d}" ] || continue
-    if find "${_zash_d}" \
-      \( -name '*gdk*wayland*' -o -name '*libgdk-4*wayland*' \) \
-      2>/dev/null | grep -q .
+    # GTK 4 ships the Wayland backend inside libgtk-4 itself (no separate
+    # libgdk-4-wayland file), so probe for its GType symbol in the library.
+    if grep -aq 'gdk_wayland_display_get_type' "${_zash_d}"/libgtk-4.so* 2>/dev/null
     then
       _zash_gdk_wayland=1
       break
