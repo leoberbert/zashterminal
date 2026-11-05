@@ -316,6 +316,8 @@ Highlight rules ship in `data/highlights/` (docker, git, systemctl, kubectl, and
 
 CI runs unit tests on Python 3.10–3.13 with coverage. Pull requests also trigger a [SonarQube Cloud](https://sonarcloud.io) scan when the repository secret `SONAR_TOKEN` is set (optional `SONAR_ORGANIZATION` / `SONAR_PROJECT_KEY`). See `sonar-project.properties`.
 
+Blur protocol regressions run headlessly over private Wayland socketpairs and an isolated D-Bus daemon. They verify compositor-visible pending/committed state, independent surface strengths, cleanup and protocol failures without connecting to the desktop session or requiring the optional KWin effect. Install `libwayland-client` and `libwayland-server` runtime libraries plus `dbus-daemon` for these tests; both CI workflows install them explicitly.
+
 **Important:** in SonarQube Cloud → project → **Administration → Analysis Method**, disable **Automatic Analysis**. CI analysis and Automatic Analysis cannot run together.
 
 Local checks:

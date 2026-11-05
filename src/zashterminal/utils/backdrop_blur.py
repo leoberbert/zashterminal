@@ -90,6 +90,7 @@ class _WaylandBlur:
             C.c_void_p, C.POINTER(C.c_void_p), C.c_void_p,
         )
         self._surface = None
+        self._surface_object = None
         self._blur = None
         self._manager = None
         self._compositor = None
@@ -222,9 +223,12 @@ class _WaylandBlur:
         if not self._manager:
             raise RuntimeError("Could not bind the compositor blur manager")
         if self._modern:
+            compositor_name = globals_found.get(b"wl_compositor")
+            if compositor_name is None:
+                raise RuntimeError("The Wayland compositor is unavailable")
             self._compositor_interface = _Interface.in_dll(self.lib, "wl_compositor_interface")
             self._compositor = self._bind(
-                registry, globals_found[b"wl_compositor"], self._compositor_interface,
+                registry, compositor_name, self._compositor_interface,
             )
             if not self._compositor:
                 raise RuntimeError("Could not bind the Wayland compositor")
@@ -244,6 +248,7 @@ class _WaylandBlur:
         self._disable()
         if enabled and pointer and self.supported:
             self._surface = pointer
+            self._surface_object = surface
             self._blur = self._request(
                 self._manager, int(self._modern), _Argument(o=None), _Argument(o=pointer),
                 interface=self._blur_interface,
@@ -251,11 +256,9 @@ class _WaylandBlur:
             if not self._blur:
                 raise RuntimeError("Could not create the compositor blur object")
             self._set_region()
-        if self._modern and surface.get_mapped():
-            # set_blur_region (including removal) is pending wl_surface state.
-            # A GTK queue_draw can produce identical pixels and no commit,
-            # particularly while Preferences has focus and VTE is idle.
-            self._request(pointer, 6)  # wl_surface.commit; no buffer is attached.
+            if self._modern and surface.get_mapped():
+                # GTK can skip unchanged pixels, so commit effect-only state.
+                self._request(pointer, 6)  # wl_surface.commit; no new buffer.
         self._flush(self._display)
 
     def _set_region(self):
@@ -281,7 +284,12 @@ class _WaylandBlur:
                 self._request(self._manager, 1, _Argument(o=self._surface))
             self._request(self._blur, 0 if self._modern else 2, destroy=True)
             self._blur = None
+            if self._modern and self._surface_object.get_mapped():
+                # Removal belongs to the old surface, not the next one passed
+                # to set_enabled. Do not leave blur waiting for its next frame.
+                self._request(self._surface, 6)
         self._surface = None
+        self._surface_object = None
 
     def close(self):
         self._disable()

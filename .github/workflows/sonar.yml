@@ -57,6 +57,9 @@ jobs:
             libadwaita-1-0 \
             libvte-2.91-gtk4-0 \
             libsecret-1-0 \
+            libwayland-client0 \
+            libwayland-server0 \
+            dbus-daemon \
             imagemagick
 
       - name: Install Python dependencies
