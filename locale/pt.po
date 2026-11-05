@@ -8988,3 +8988,329 @@ msgstr "Importar sessões do PuTTY"
 #: src/zashterminal/ui/window_ui.py
 msgid "Import mRemoteNG Sessions"
 msgstr "Importar sessões do mRemoteNG"
+
+#
+#: src/zashterminal/ui/dialogs/session_edit_dialog.py
+msgid "Broadcast Group"
+msgstr "Grupo de broadcast"
+
+#
+#: src/zashterminal/ui/dialogs/session_edit_dialog.py
+msgid "Name used by Broadcast → Group (e.g. web, db). Panes with the same name receive the command together."
+msgstr "Nome usado em Broadcast → Grupo (ex.: web, db). Painéis com o mesmo nome recebem o comando juntos."
+
+#
+#: src/zashterminal/ui/dialogs/session_edit_dialog.py
+msgid "e.g. web"
+msgstr "ex.: web"
+
+#
+#: src/zashterminal/ui/dialogs/session_edit_dialog.py
+msgid "Session Transcript"
+msgstr "Transcrição da sessão"
+
+#
+#: src/zashterminal/ui/dialogs/session_edit_dialog.py
+msgid "Save this session’s output under {path}. Automatic follows Preferences (off by default). Changing this applies when you reopen the terminal."
+msgstr "Salva a saída desta sessão em {path}. Automático segue Preferências (desligado por padrão). A alteração vale ao reabrir o terminal."
+
+#
+#: src/zashterminal/ui/dialogs/session_edit_dialog.py
+msgid "Automatic (use preferences)"
+msgstr "Automático (usar preferências)"
+
+#
+#: src/zashterminal/ui/dialogs/session_edit_dialog.py
+msgid "Always on"
+msgstr "Sempre ligado"
+
+#
+#: src/zashterminal/ui/dialogs/session_edit_dialog.py
+msgid "Always off"
+msgstr "Sempre desligado"
+
+#
+#: src/zashterminal/ui/dialogs/session_edit_dialog.py
+msgid "ProxyJump"
+msgstr "ProxyJump"
+
+#
+#: src/zashterminal/ui/dialogs/session_edit_dialog.py
+msgid "Bastion/jump host before the destination (OpenSSH -J). Examples: user@bastion  or  user@jump1,user@jump2:2222"
+msgstr "Host bastion/jump antes do destino (OpenSSH -J). Exemplos: user@bastion  ou  user@jump1,user@jump2:2222"
+
+#
+#: src/zashterminal/ui/dialogs/session_edit_dialog.py
+msgid "user@bastion"
+msgstr "user@bastion"
+
+#
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Enable Session Transcripts"
+msgstr "Ativar transcrições de sessão"
+
+#
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Off by default. When enabled, reopen terminals to start recording. Disabling stops open recordings immediately. Files: TIMESTAMP_session_host.log under {path}."
+msgstr "Desligado por padrão. Ao ativar, reabra os terminais para começar a gravar. Desativar interrompe gravações abertas imediatamente. Arquivos: TIMESTAMP_session_host.log em {path}."
+
+#
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Strip ANSI Codes from Transcripts"
+msgstr "Remover códigos ANSI das transcrições"
+
+#
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Remove color/control sequences for readable log files"
+msgstr "Remove sequências de cor/controle para logs legíveis"
+
+#
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Transcript Directory"
+msgstr "Pasta das transcrições"
+
+#
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Leave empty to use {path}. Change takes effect for new sessions."
+msgstr "Deixe vazio para usar {path}. A alteração vale para sessões novas."
+
+#
+#: src/zashterminal/terminal/manager.py
+msgid "Recording transcript to {path}"
+msgstr "Gravando transcrição em {path}"
+
+#
+#: src/zashterminal/window.py
+msgid "Session transcripts enabled. Reopen terminals (or open a new tab) to start recording."
+msgstr "Transcrições de sessão ativadas. Reabra os terminais (ou abra uma nova aba) para começar a gravar."
+
+#
+#: src/zashterminal/window.py
+msgid "Stopped transcript recording on {count} open terminal(s)."
+msgstr "Gravação de transcrição interrompida em {count} terminal(is) aberto(s)."
+
+#
+#: src/zashterminal/window.py
+msgid "Session transcripts disabled."
+msgstr "Transcrições de sessão desativadas."
+
+#
+#: src/zashterminal/window.py
+msgid "Transcript setting saved. Reopen terminals for it to take effect."
+msgstr "Configuração de transcrição salva. Reabra os terminais para aplicar."
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "This pane"
+msgstr "Este painel"
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "All panes"
+msgstr "Todos os painéis"
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "Select…"
+msgstr "Selecionar…"
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "This pane: only the focused terminal. Group: all panes whose session Broadcast Group matches the focused one (set it in Edit Session). All panes: every open terminal (asks to confirm). Select…: choose manually."
+msgstr "Este painel: só o terminal em foco. Grupo: todos os painéis cujo Grupo de broadcast da sessão coincide com o foco (defina em Editar sessão). Todos os painéis: cada terminal aberto (pede confirmação). Selecionar…: escolha manualmente."
+
+#
+#: src/zashterminal/ui/window_search_broadcast.py
+msgid "Focused pane has no broadcast group; set one in the session editor."
+msgstr "O painel em foco não tem grupo de broadcast; defina um no editor de sessão."
+
+#
+#: src/zashterminal/ui/window_search_broadcast.py
+msgid "No terminals matched the broadcast scope."
+msgstr "Nenhum terminal correspondeu ao escopo do broadcast."
+
+#
+#: src/zashterminal/ui/window_search_broadcast.py
+msgid "Broadcast to all panes?"
+msgstr "Enviar para todos os painéis?"
+
+#
+#: src/zashterminal/ui/window_search_broadcast.py
+msgid "Send this command to <b>{count}</b> open terminals?"
+msgstr "Enviar este comando para <b>{count}</b> terminais abertos?"
+
+#
+#: src/zashterminal/sessions/models.py
+msgid "Invalid ProxyJump value: {error}"
+msgstr "Valor de ProxyJump inválido: {error}"
+
+#:
+#: src/zashterminal/ui/menus.py
+msgid "Import Multi PuTTY Sessions"
+msgstr "Importar sessões Multi PuTTY"
+
+#:
+#: src/zashterminal/ui/actions.py
+msgid "Select Multi PuTTY Sessions File"
+msgstr "Selecionar arquivo de sessões Multi PuTTY"
+
+#:
+#: src/zashterminal/ui/actions.py
+msgid "Multi PuTTY (*.dat, *.xml)"
+msgstr "Multi PuTTY (*.dat, *.xml)"
+
+#:
+#: src/zashterminal/ui/actions.py
+msgid "Failed to import Multi PuTTY sessions: {error}"
+msgstr "Falha ao importar sessões Multi PuTTY: {error}"
+
+#:
+#: src/zashterminal/sessions/operations.py
+msgid "Multi PuTTY sessions file not found at {path}"
+msgstr "Arquivo de sessões Multi PuTTY não encontrado em {path}"
+
+#:
+#: src/zashterminal/sessions/operations.py
+msgid "Failed to parse Multi PuTTY file: {error}"
+msgstr "Falha ao analisar arquivo Multi PuTTY: {error}"
+
+#:
+#: src/zashterminal/sessions/operations.py
+msgid "No Multi PuTTY SSH sessions were imported from {path}."
+msgstr "Nenhuma sessão SSH Multi PuTTY foi importada de {path}."
+
+#:
+#: src/zashterminal/sessions/operations.py
+msgid "Imported {count} Multi PuTTY session(s) from {path}."
+msgstr "Importada(s) {count} sessão(ões) Multi PuTTY de {path}."
+
+
+
+#:
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Updates"
+msgstr "Atualizações"
+
+#:
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Check for updates on startup"
+msgstr "Verificar atualizações na inicialização"
+
+#:
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid ""
+"Look for newer Releases or tags on GitHub when the app starts "
+"(unreleased main tip is ignored unless ZASHTERMINAL_UPDATE_ALLOW_MAIN=1). "
+"Disable entirely with ZASHTERMINAL_DISABLE_AUTO_UPDATE=1."
+msgstr ""
+"Procura Releases ou tags mais novas no GitHub ao iniciar o app "
+"(o tip não publicado da main é ignorado, salvo com ZASHTERMINAL_UPDATE_ALLOW_MAIN=1). "
+"Desative por completo com ZASHTERMINAL_DISABLE_AUTO_UPDATE=1."
+
+#: src/zashterminal/data/command_manager_models.py
+msgid "Flatpak"
+msgstr "Flatpak"
+
+#: src/zashterminal/data/command_manager_models.py
+msgid "Install, update, and manage Flatpak applications"
+msgstr "Instale, atualize e gerencie aplicativos Flatpak"
+
+#: src/zashterminal/data/command_manager_models.py
+msgid "List Applications"
+msgstr "Listar aplicativos"
+
+#: src/zashterminal/data/command_manager_models.py
+msgid "Uninstall"
+msgstr "Desinstalar"
+
+#: src/zashterminal/data/command_manager_models.py
+msgid "Update"
+msgstr "Atualizar"
+
+#: src/zashterminal/data/command_manager_models.py
+msgid "Application Info"
+msgstr "Informações do aplicativo"
+
+#: src/zashterminal/data/command_manager_models.py
+msgid "List Remotes"
+msgstr "Listar remotos"
+
+#: src/zashterminal/data/command_manager_models.py
+msgid "Browse Remote"
+msgstr "Navegar no remoto"
+
+#: src/zashterminal/data/command_manager_models.py
+msgid "Add Flathub"
+msgstr "Adicionar Flathub"
+
+#: src/zashterminal/data/command_manager_models.py
+msgid "Uninstall Unused"
+msgstr "Desinstalar não usados"
+
+#: src/zashterminal/data/command_manager_models.py
+msgid "Repair"
+msgstr "Reparar"
+
+#: src/zashterminal/data/command_manager_models.py
+msgid "Stop Application"
+msgstr "Parar aplicativo"
+
+#: src/zashterminal/data/command_manager_models.py
+msgid "History"
+msgstr "Histórico"
+
+#: src/zashterminal/data/command_manager_models.py
+msgid "Show Overrides"
+msgstr "Mostrar substituições"
+
+#: src/zashterminal/data/command_manager_models.py
+msgid "Flatpak operation to perform"
+msgstr "Operação do Flatpak a executar"
+
+#: src/zashterminal/data/command_manager_models.py
+msgid "Application / Query"
+msgstr "Aplicativo / consulta"
+
+#: src/zashterminal/data/command_manager_models.py
+msgid "e.g., org.mozilla.firefox"
+msgstr "ex.: org.mozilla.firefox"
+
+#: src/zashterminal/data/command_manager_models.py
+msgid "Application ID, or the text to search for"
+msgstr "ID do aplicativo, ou o texto da pesquisa"
+
+#: src/zashterminal/data/command_manager_models.py
+msgid "Remote"
+msgstr "Remoto"
+
+#: src/zashterminal/data/command_manager_models.py
+msgid "e.g., flathub"
+msgstr "ex.: flathub"
+
+#: src/zashterminal/data/command_manager_models.py
+msgid "Remote name for install and browse actions"
+msgstr "Nome do remoto para instalar e navegar"
+
+#: src/zashterminal/data/command_manager_models.py
+msgid "User Install"
+msgstr "Instalação de usuário"
+
+#: src/zashterminal/data/command_manager_models.py
+msgid "Manage applications for the current user (--user)"
+msgstr "Gerenciar aplicativos do usuário atual (--user)"
+
+#: src/zashterminal/data/command_manager_models.py
+msgid "Assume Yes"
+msgstr "Assumir sim"
+
+#: src/zashterminal/data/command_manager_models.py
+msgid "Skip confirmation prompts for install, update, and uninstall (-y)"
+msgstr "Pular confirmações de instalação, atualização e desinstalação (-y)"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Background Blur"
+msgstr "Desfoque do fundo"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Higher values blur whatever is behind this window more."
+msgstr "Valores mais altos desfocam mais o que estiver atrás desta janela."

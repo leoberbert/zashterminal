@@ -18,6 +18,7 @@ from ...data.command_manager_models import (
     ExecutionMode,
     DisplayMode,
     FieldType,
+    build_flatpak_command,
     get_command_button_manager,
     generate_id,
 )
@@ -410,6 +411,8 @@ class CommandFormDialog(Adw.Window):
             return self._build_journalctl_command(values)
         elif self.command.id == "builtin_pacman":
             return self._build_pacman_command(values)
+        elif self.command.id == "builtin_flatpak":
+            return build_flatpak_command(values)
 
         # Generic handling for other commands
         return self.command.build_command(values)
