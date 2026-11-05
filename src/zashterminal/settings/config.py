@@ -35,7 +35,7 @@ class AppConstants:
 
     APP_ID = "org.leoberbert.zashterminal"
     APP_TITLE = "Terminal Zash"
-    APP_VERSION = "0.8.19"
+    APP_VERSION = "0.8.27"
     DEVELOPER_NAME = "Leonardo Berbert"
     DEVELOPER_TEAM = ["Leonardo Berbert"]
     COPYRIGHT = "© 2025 Leonardo Berbert"
@@ -239,6 +239,12 @@ class DefaultSettings:
             # Logging Settings
             "log_to_file": False,
             "console_log_level": "ERROR",
+            # Session transcript logging (terminal output capture)
+            "transcript_logging_enabled": False,
+            "transcript_strip_ansi": True,
+            "transcript_directory": "",
+            # Broadcast destination: this | group | all | select
+            "broadcast_default_scope": "select",
             # Remote Editing
             "use_system_tmp_for_edit": False,
             "clear_remote_edit_files_on_exit": True,

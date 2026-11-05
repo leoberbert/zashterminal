@@ -8517,3 +8517,221 @@ msgstr "导入 PuTTY 会话"
 #: src/zashterminal/ui/window_ui.py
 msgid "Import mRemoteNG Sessions"
 msgstr "导入 mRemoteNG 会话"
+
+#
+#: src/zashterminal/ui/dialogs/session_edit_dialog.py
+msgid "Broadcast Group"
+msgstr "广播组"
+
+#
+#: src/zashterminal/ui/dialogs/session_edit_dialog.py
+msgid "Name used by Broadcast → Group (e.g. web, db). Panes with the same name receive the command together."
+msgstr "Broadcast → Group 使用的名称（如 web、db）。同名窗格会一起收到命令。"
+
+#
+#: src/zashterminal/ui/dialogs/session_edit_dialog.py
+msgid "e.g. web"
+msgstr "例如 web"
+
+#
+#: src/zashterminal/ui/dialogs/session_edit_dialog.py
+msgid "Session Transcript"
+msgstr "会话记录"
+
+#
+#: src/zashterminal/ui/dialogs/session_edit_dialog.py
+msgid "Save this session’s output under {path}. Automatic follows Preferences (off by default). Changing this applies when you reopen the terminal."
+msgstr "将此会话输出保存到 {path}。自动遵循偏好设置（默认关闭）。更改需重新打开终端后生效。"
+
+#
+#: src/zashterminal/ui/dialogs/session_edit_dialog.py
+msgid "Automatic (use preferences)"
+msgstr "自动（使用偏好设置）"
+
+#
+#: src/zashterminal/ui/dialogs/session_edit_dialog.py
+msgid "Always on"
+msgstr "始终开启"
+
+#
+#: src/zashterminal/ui/dialogs/session_edit_dialog.py
+msgid "Always off"
+msgstr "始终关闭"
+
+#
+#: src/zashterminal/ui/dialogs/session_edit_dialog.py
+msgid "ProxyJump"
+msgstr "ProxyJump"
+
+#
+#: src/zashterminal/ui/dialogs/session_edit_dialog.py
+msgid "Bastion/jump host before the destination (OpenSSH -J). Examples: user@bastion  or  user@jump1,user@jump2:2222"
+msgstr "到达目标前的跳板主机（OpenSSH -J）。示例：user@bastion 或 user@jump1,user@jump2:2222"
+
+#
+#: src/zashterminal/ui/dialogs/session_edit_dialog.py
+msgid "user@bastion"
+msgstr "user@bastion"
+
+#
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Enable Session Transcripts"
+msgstr "启用会话记录"
+
+#
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Off by default. When enabled, reopen terminals to start recording. Disabling stops open recordings immediately. Files: TIMESTAMP_session_host.log under {path}."
+msgstr "默认关闭。启用后请重新打开终端以开始录制。禁用会立即停止已打开的录制。文件：{path} 下的 TIMESTAMP_session_host.log。"
+
+#
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Strip ANSI Codes from Transcripts"
+msgstr "从会话记录中去除 ANSI 代码"
+
+#
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Remove color/control sequences for readable log files"
+msgstr "去除颜色/控制序列，便于阅读日志"
+
+#
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Transcript Directory"
+msgstr "会话记录目录"
+
+#
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Leave empty to use {path}. Change takes effect for new sessions."
+msgstr "留空则使用 {path}。更改对新建会话生效。"
+
+#
+#: src/zashterminal/terminal/manager.py
+msgid "Recording transcript to {path}"
+msgstr "正在将会话记录写入 {path}"
+
+#
+#: src/zashterminal/window.py
+msgid "Session transcripts enabled. Reopen terminals (or open a new tab) to start recording."
+msgstr "已启用会话记录。请重新打开终端（或打开新标签页）以开始录制。"
+
+#
+#: src/zashterminal/window.py
+msgid "Stopped transcript recording on {count} open terminal(s)."
+msgstr "已停止 {count} 个打开终端上的会话录制。"
+
+#
+#: src/zashterminal/window.py
+msgid "Session transcripts disabled."
+msgstr "已禁用会话记录。"
+
+#
+#: src/zashterminal/window.py
+msgid "Transcript setting saved. Reopen terminals for it to take effect."
+msgstr "会话记录设置已保存。请重新打开终端使其生效。"
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "This pane"
+msgstr "当前窗格"
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "All panes"
+msgstr "所有窗格"
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "Select…"
+msgstr "选择…"
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "This pane: only the focused terminal. Group: all panes whose session Broadcast Group matches the focused one (set it in Edit Session). All panes: every open terminal (asks to confirm). Select…: choose manually."
+msgstr "当前窗格：仅聚焦的终端。组：会话广播组与聚焦窗格相同的所有窗格（在编辑会话中设置）。所有窗格：每个打开的终端（会确认）。选择…：手动挑选。"
+
+#
+#: src/zashterminal/ui/window_search_broadcast.py
+msgid "Focused pane has no broadcast group; set one in the session editor."
+msgstr "聚焦窗格没有广播组；请在会话编辑器中设置。"
+
+#
+#: src/zashterminal/ui/window_search_broadcast.py
+msgid "No terminals matched the broadcast scope."
+msgstr "没有终端匹配广播范围。"
+
+#
+#: src/zashterminal/ui/window_search_broadcast.py
+msgid "Broadcast to all panes?"
+msgstr "广播到所有窗格？"
+
+#
+#: src/zashterminal/ui/window_search_broadcast.py
+msgid "Send this command to <b>{count}</b> open terminals?"
+msgstr "将此命令发送到 <b>{count}</b> 个打开的终端？"
+
+#
+#: src/zashterminal/sessions/models.py
+msgid "Invalid ProxyJump value: {error}"
+msgstr "无效的 ProxyJump 值：{error}"
+
+#:
+#: src/zashterminal/ui/menus.py
+msgid "Import Multi PuTTY Sessions"
+msgstr "Import Multi PuTTY Sessions"
+
+#:
+#: src/zashterminal/ui/actions.py
+msgid "Select Multi PuTTY Sessions File"
+msgstr "Select Multi PuTTY Sessions File"
+
+#:
+#: src/zashterminal/ui/actions.py
+msgid "Multi PuTTY (*.dat, *.xml)"
+msgstr "Multi PuTTY (*.dat, *.xml)"
+
+#:
+#: src/zashterminal/ui/actions.py
+msgid "Failed to import Multi PuTTY sessions: {error}"
+msgstr "Failed to import Multi PuTTY sessions: {error}"
+
+#:
+#: src/zashterminal/sessions/operations.py
+msgid "Multi PuTTY sessions file not found at {path}"
+msgstr "Multi PuTTY sessions file not found at {path}"
+
+#:
+#: src/zashterminal/sessions/operations.py
+msgid "Failed to parse Multi PuTTY file: {error}"
+msgstr "Failed to parse Multi PuTTY file: {error}"
+
+#:
+#: src/zashterminal/sessions/operations.py
+msgid "No Multi PuTTY SSH sessions were imported from {path}."
+msgstr "No Multi PuTTY SSH sessions were imported from {path}."
+
+#:
+#: src/zashterminal/sessions/operations.py
+msgid "Imported {count} Multi PuTTY session(s) from {path}."
+msgstr "Imported {count} Multi PuTTY session(s) from {path}."
+
+#:
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Updates"
+msgstr "Updates"
+
+
+
+#:
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Check for updates on startup"
+msgstr "Check for updates on startup"
+
+#:
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid ""
+"Look for newer Releases or tags on GitHub when the app starts "
+"(unreleased main tip is ignored unless ZASHTERMINAL_UPDATE_ALLOW_MAIN=1). "
+"Disable entirely with ZASHTERMINAL_DISABLE_AUTO_UPDATE=1."
+msgstr ""
+"Look for newer Releases or tags on GitHub when the app starts "
+"(unreleased main tip is ignored unless ZASHTERMINAL_UPDATE_ALLOW_MAIN=1). "
+"Disable entirely with ZASHTERMINAL_DISABLE_AUTO_UPDATE=1."

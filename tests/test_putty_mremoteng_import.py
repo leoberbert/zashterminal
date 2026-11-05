@@ -22,8 +22,10 @@ from zashterminal.utils.mremoteng_import import (
 from zashterminal.utils.putty_import import (
     convert_putty_session,
     decode_putty_session_name,
+    import_multiputty_sessions_from_file,
     import_putty_sessions_from_file,
     normalize_putty_path,
+    parse_multiputty_xml,
     parse_putty_reg_or_ini,
     putty_tunnels_to_forwardings,
     unescape_reg_string,
@@ -172,6 +174,120 @@ class PuttyImportTests(unittest.TestCase):
         with_host, _ = putty_tunnels_to_forwardings("L127.0.0.1:9100=svc:443")
         self.assertEqual(with_host[0]["local_host"], "127.0.0.1")
         self.assertEqual(with_host[0]["local_port"], 9100)
+
+    def test_source_group_overrides_folder(self):
+        entry = convert_putty_session(
+            "leaf",
+            {"Protocol": "ssh", "HostName": "h"},
+            split_folders=False,
+            source_group="/Prod/Web",
+        )
+        self.assertIsNotNone(entry)
+        assert entry is not None
+        self.assertEqual(entry.name, "leaf")
+        self.assertEqual(entry.folder_path, "/Prod/Web")
+
+
+class MultiPuttyImportTests(unittest.TestCase):
+    _SAMPLE = """<?xml version="1.0" encoding="UTF-8"?>
+<config>
+  <container name="Prod">
+    <container name="Web">
+      <connection name="api">
+        <protocol>ssh</protocol>
+        <host>api.example</host>
+        <port>2222</port>
+        <login>deploy</login>
+        <password>s3cret</password>
+        <postcommands>true</postcommands>
+        <command1>tmux a</command1>
+        <command2>htop</command2>
+      </connection>
+    </container>
+    <node type="folder" name="DB">
+      <connection name="pg">
+        <host>db.example</host>
+        <login>admin</login>
+      </connection>
+    </node>
+  </container>
+  <connection name="orphan">
+    <protocol>telnet</protocol>
+    <host>old.example</host>
+  </connection>
+  <connection>
+    <name>from-child</name>
+    <host>child.example</host>
+  </connection>
+</config>
+"""
+
+    def test_parse_folders_and_fields(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "mputty.dat"
+            path.write_text(self._SAMPLE, encoding="utf-8")
+            raw = parse_multiputty_xml(path)
+            sessions, warnings = import_multiputty_sessions_from_file(path)
+
+        by_name = {name: (values, folder) for name, values, folder in raw}
+        self.assertIn("api", by_name)
+        self.assertEqual(by_name["api"][1], "/Prod/Web")
+        self.assertEqual(by_name["api"][0]["HostName"], "api.example")
+        self.assertEqual(by_name["api"][0]["RemoteCommand"], "tmux a\nhtop")
+        self.assertEqual(by_name["pg"][1], "/Prod/DB")
+        self.assertEqual(by_name["from-child"][1], "")
+
+        names = {s.name for s in sessions}
+        self.assertEqual(names, {"api", "pg", "from-child"})
+        api = next(s for s in sessions if s.name == "api")
+        self.assertEqual(api.folder_path, "/Prod/Web")
+        self.assertEqual(api.port, 2222)
+        self.assertEqual(api.user, "deploy")
+        self.assertEqual(api.auth_type, "password")
+        self.assertEqual(api.auth_value, "s3cret")
+        self.assertEqual(api.post_login_command, "tmux a\nhtop")
+        self.assertTrue(any("protocol" in w.lower() for w in warnings))
+
+    def test_invalid_xml_raises(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "broken.xml"
+            path.write_text("<not><closed>", encoding="utf-8")
+            with self.assertRaises(ValueError):
+                import_multiputty_sessions_from_file(path)
+
+    def test_namespace_default_name_and_missing_host(self):
+        from zashterminal.utils.putty_import import _xml_local_name
+
+        self.assertEqual(_xml_local_name("{urn:mputty}connection"), "connection")
+        self.assertEqual(_xml_local_name("host"), "host")
+
+        content = """<?xml version="1.0"?>
+<config xmlns="urn:mputty">
+  <connection>
+    <protocol>ssh</protocol>
+    <host>ns.example</host>
+  </connection>
+  <connection name="nohost">
+    <protocol>ssh</protocol>
+  </connection>
+  <connection name="post-off">
+    <host>cmd.example</host>
+    <postcommands>false</postcommands>
+    <command1>ignored</command1>
+  </connection>
+</config>
+"""
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "ns.xml"
+            path.write_text(content, encoding="utf-8")
+            sessions, warnings = import_multiputty_sessions_from_file(path)
+
+        names = {s.name for s in sessions}
+        self.assertIn("Imported Multi PuTTY Session", names)
+        self.assertIn("post-off", names)
+        post = next(s for s in sessions if s.name == "post-off")
+        self.assertEqual(post.post_login_command, "")
+        self.assertTrue(any("missing host" in w for w in warnings))
 
 
 class MRemoteNgImportTests(unittest.TestCase):

@@ -183,6 +183,10 @@ class MainApplicationMenu:
                 "action": "win.import-putty-sessions",
             },
             {
+                "label": _("Import Multi PuTTY Sessions"),
+                "action": "win.import-multiputty-sessions",
+            },
+            {
                 "label": _("Import mRemoteNG Sessions"),
                 "action": "win.import-mremoteng-sessions",
             },
@@ -199,6 +203,7 @@ class MainApplicationMenu:
             "win.new-window",
             "win.import-securecrt-sessions",
             "win.import-putty-sessions",
+            "win.import-multiputty-sessions",
             "win.import-mremoteng-sessions",
             "win.toggle-tftp-server",
             "win.preferences",

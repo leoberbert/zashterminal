@@ -13,8 +13,9 @@ from urllib.parse import urlparse
 import gi
 
 gi.require_version("Gtk", "4.0")
+gi.require_version("Adw", "1")
 gi.require_version("Vte", "3.91")
-from gi.repository import Gdk, GLib, GObject, Gtk, Vte
+from gi.repository import Adw, Gdk, GLib, GObject, Gtk, Vte
 
 from ..helpers import is_valid_url
 from ..sessions.models import SessionItem
@@ -27,6 +28,11 @@ from ..utils.logger import get_logger, log_terminal_event
 from ..utils.osc7_tracker import OSC7Info, get_osc7_tracker
 from ..utils.platform import get_environment_manager, get_platform_info
 from ..utils.security import validate_session_data
+from ..utils.transcript import (
+    TranscriptWriter,
+    build_transcript_path,
+    resolve_transcript_enabled,
+)
 from ..utils.translation_utils import _
 from .execute_command import pack_execute_user_data
 from .manager_balabit import TerminalBalabitMixin
@@ -828,6 +834,12 @@ class TerminalManager(
         try:
             terminal.zashterminal_handler_ids = []
             terminal.zashterminal_controllers = []
+            if isinstance(identifier, SessionItem):
+                terminal.zashterminal_session_item = identifier
+            else:
+                terminal.zashterminal_session_item = None
+
+            self._attach_transcript_logger(terminal, identifier, terminal_id)
 
             handler_id = terminal.connect(
                 "child-exited", self._on_child_exited, identifier, terminal_id
@@ -861,6 +873,9 @@ class TerminalManager(
             focus_controller = Gtk.EventControllerFocus()
             focus_controller.connect(
                 "enter", self._on_terminal_focus_in, terminal, terminal_id
+            )
+            focus_controller.connect(
+                "leave", self._on_terminal_focus_out_clear_dead_key, terminal
             )
             terminal.add_controller(focus_controller)
             terminal.zashterminal_controllers.append(focus_controller)
@@ -901,6 +916,175 @@ class TerminalManager(
             self.logger.error(
                 f"Failed to configure terminal events for ID {terminal_id}: {e}"
             )
+
+    def _default_transcript_directory(self) -> pathlib.Path:
+        from ..utils.transcript import default_transcript_directory
+
+        return default_transcript_directory(
+            self.settings_manager.get("transcript_directory", "") or ""
+        )
+
+    def _attach_transcript_logger(
+        self,
+        terminal: Vte.Terminal,
+        identifier: Union[str, SessionItem],
+        terminal_id: int,
+    ) -> None:
+        session = identifier if isinstance(identifier, SessionItem) else None
+        global_enabled = bool(
+            self.settings_manager.get("transcript_logging_enabled", False)
+        )
+        override = session.transcript_logging if session else None
+        if not resolve_transcript_enabled(
+            global_enabled=global_enabled, session_override=override
+        ):
+            return
+
+        session_name = (
+            session.name
+            if session
+            else (identifier if isinstance(identifier, str) else f"terminal-{terminal_id}")
+        )
+        host = session.host if session else ""
+        strip_ansi = bool(self.settings_manager.get("transcript_strip_ansi", True))
+        try:
+            path = build_transcript_path(
+                self._default_transcript_directory(),
+                session_name=session_name,
+                host=host,
+            )
+            writer = TranscriptWriter(path, strip_escapes=strip_ansi)
+            terminal._zashterminal_transcript = writer
+            handler_id = terminal.connect(
+                "contents-changed",
+                self._on_terminal_contents_changed_for_transcript,
+            )
+            terminal.zashterminal_handler_ids.append(handler_id)
+            self.logger.info(
+                f"Transcript logging enabled for '{session_name}' → {path}"
+            )
+            self._notify_transcript_started(path)
+        except Exception as exc:
+            self.logger.warning(f"Failed to start transcript logging: {exc}")
+
+    def _notify_transcript_started(self, path: pathlib.Path) -> None:
+        """Surface a short toast so enabling transcripts is visible to the user."""
+        try:
+            window = self.parent_window
+            overlay = getattr(window, "toast_overlay", None) if window else None
+            if overlay is None:
+                return
+            toast = Adw.Toast(
+                title=_("Recording transcript to {path}").format(path=str(path))
+            )
+            toast.set_timeout(5)
+            overlay.add_toast(toast)
+        except Exception as exc:
+            self.logger.debug(f"Transcript toast failed: {exc}")
+
+    def _toast(self, title: str, timeout: int = 5) -> None:
+        try:
+            overlay = getattr(self.parent_window, "toast_overlay", None)
+            if overlay is None:
+                return
+            toast = Adw.Toast(title=title)
+            toast.set_timeout(timeout)
+            overlay.add_toast(toast)
+        except Exception as exc:
+            self.logger.debug(f"Toast failed: {exc}")
+
+    def apply_transcript_preference_change(self, enabled: bool) -> int:
+        """Apply global transcript toggle to open terminals.
+
+        Disabling stops writers immediately (unless the session is Always on).
+        Enabling does not retrofit open tabs — caller should tell the user to
+        reopen them. Returns how many open transcripts were stopped.
+        """
+        stopped = 0
+        for terminal_id in list(self.registry.get_all_terminal_ids()):
+            terminal = self.registry.get_terminal(terminal_id)
+            if terminal is None:
+                continue
+            session = getattr(terminal, "zashterminal_session_item", None)
+            override = (
+                session.transcript_logging
+                if isinstance(session, SessionItem)
+                else None
+            )
+            should_record = resolve_transcript_enabled(
+                global_enabled=bool(enabled), session_override=override
+            )
+            has_writer = (
+                getattr(terminal, "_zashterminal_transcript", None) is not None
+            )
+            if has_writer and not should_record:
+                self._detach_transcript_logger(terminal)
+                stopped += 1
+        return stopped
+
+    def _detach_transcript_logger(self, terminal: Vte.Terminal) -> None:
+        writer = getattr(terminal, "_zashterminal_transcript", None)
+        if writer is None:
+            return
+        try:
+            # Flush any remaining text on the current line before close.
+            self._flush_transcript_line(terminal, writer, force=True)
+        except Exception:
+            pass
+        try:
+            writer.close()
+        except Exception:
+            pass
+        try:
+            delattr(terminal, "_zashterminal_transcript")
+        except Exception:
+            terminal._zashterminal_transcript = None
+
+    def _flush_transcript_line(
+        self,
+        terminal: Vte.Terminal,
+        writer: TranscriptWriter,
+        *,
+        force: bool = False,
+    ) -> None:
+        _col, row = terminal.get_cursor_position()
+        start_row = int(getattr(writer, "last_row", 0) or 0)
+        if row < start_row:
+            # Terminal cleared / scrollback reset — resync cursor row.
+            writer.note_row(max(0, row))
+            return
+        # Normally wait until the cursor advances to a new row (completed line).
+        # On detach/force, also capture the current partial line.
+        if row == start_row and not force:
+            return
+        col_count = max(1, terminal.get_column_count())
+        end_row = row if force else max(start_row, row - 1)
+        if end_row < start_row:
+            return
+        result = terminal.get_text_range_format(
+            Vte.Format.TEXT,
+            start_row,
+            0,
+            end_row,
+            col_count - 1,
+        )
+        text = ""
+        if result:
+            text = result[0] if isinstance(result, (tuple, list)) else str(result)
+        if text:
+            writer.write(text if text.endswith("\n") else text + "\n")
+        writer.note_row(row)
+
+    def _on_terminal_contents_changed_for_transcript(
+        self, terminal: Vte.Terminal
+    ) -> None:
+        writer = getattr(terminal, "_zashterminal_transcript", None)
+        if writer is None:
+            return
+        try:
+            self._flush_transcript_line(terminal, writer, force=False)
+        except Exception as exc:
+            self.logger.debug(f"Transcript append failed: {exc}")
 
     def _setup_context_menu(self, terminal: Vte.Terminal) -> None:
         try:
@@ -1071,6 +1255,7 @@ class TerminalManager(
 
             # Clean up highlight proxy FIRST to stop GLib watches
             self._cleanup_highlight_proxy(terminal_id)
+            self._detach_transcript_logger(terminal)
 
             pid = terminal_info.get("process_id")
             if pid:

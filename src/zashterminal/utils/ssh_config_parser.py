@@ -20,6 +20,7 @@ class SSHConfigHost:
     port: Optional[int] = None
     identity_file: Optional[str] = None
     forward_x11: Optional[bool] = None
+    proxy_jump: Optional[str] = None
 
 
 class SSHConfigParser:
@@ -129,6 +130,8 @@ class SSHConfigParser:
                 entry.identity_file = identity
             if forward := options.get("forwardx11"):
                 entry.forward_x11 = forward.lower() in {"yes", "true", "on"}
+            if proxy_jump := options.get("proxyjump"):
+                entry.proxy_jump = proxy_jump.strip()
 
             self._entries.append(entry)
 

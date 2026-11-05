@@ -1,14 +1,17 @@
 """Parse PuTTY session exports (.reg / portable .ini) into SSH session dicts.
 
+Also imports Multi PuTTY session trees (``.xml`` / ``mputty.dat``).
+
 Ported from ZashCRT (Windows) import logic — Linux uses file exports only.
 """
 
 from __future__ import annotations
 
 import re
+import xml.etree.ElementTree as ET
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 from urllib.parse import unquote
 
 
@@ -157,10 +160,21 @@ def convert_putty_session(
     values: Dict[str, Any],
     *,
     split_folders: bool = True,
+    source_group: Optional[str] = None,
 ) -> Optional[PuttyImportedSession]:
-    """Map one PuTTY session. Returns None for non-SSH / invalid hosts."""
+    """Map one PuTTY session. Returns None for non-SSH / invalid hosts.
+
+    *source_group* overrides folder placement when set (Multi PuTTY XML folders).
+    """
     protocol = _putty_str(values, "Protocol", "ssh").strip().lower()
-    name, folder_path = split_putty_name_group(source_name, split_folders=split_folders)
+    name, folder_from_name = split_putty_name_group(
+        source_name, split_folders=split_folders
+    )
+    group = (source_group or "").strip()
+    if group and group != "/":
+        folder_path = group if group.startswith("/") else f"/{group}"
+    else:
+        folder_path = folder_from_name
     host = _putty_str(values, "HostName").strip()
     warnings: List[str] = []
 
@@ -282,6 +296,106 @@ def import_putty_sessions_from_file(
                 )
             elif not _putty_str(values, "HostName").strip():
                 warnings.append(f"Skipped PuTTY session '{name}' (missing HostName).")
+            continue
+        warnings.extend(entry.warnings)
+        imported.append(entry)
+    return imported, warnings
+
+
+def _xml_local_name(tag: str) -> str:
+    if "}" in tag:
+        return tag.rsplit("}", 1)[-1]
+    return tag
+
+
+def _truthy_xml_flag(value: str) -> bool:
+    return value.strip().lower() in {"1", "true", "yes", "on"}
+
+
+def parse_multiputty_xml(path: Path) -> List[Tuple[str, Dict[str, Any], str]]:
+    """Parse Multi PuTTY XML / ``mputty.dat`` into (name, values, folder_path)."""
+    tree = ET.parse(path)
+    root = tree.getroot()
+    results: List[Tuple[str, Dict[str, Any], str]] = []
+
+    def walk(node: ET.Element, group_stack: List[str]) -> None:
+        tag = _xml_local_name(node.tag).lower()
+        typ = (node.attrib.get("type") or "").strip().lower()
+
+        if tag == "connection":
+            connection_name = (node.attrib.get("name") or "").strip()
+            values: Dict[str, Any] = {}
+            commands: List[str] = []
+            post_commands = False
+            for child in list(node):
+                child_tag = _xml_local_name(child.tag).lower()
+                text = (child.text or "").strip()
+                if child_tag == "name" and text:
+                    connection_name = text
+                elif child_tag == "protocol" and text:
+                    values["Protocol"] = text
+                elif child_tag == "host" and text:
+                    values["HostName"] = text
+                elif child_tag == "port" and text:
+                    values["PortNumber"] = text
+                elif child_tag == "login" and text:
+                    values["UserName"] = text
+                elif child_tag == "password":
+                    values["Password"] = text
+                elif child_tag == "postcommands":
+                    post_commands = _truthy_xml_flag(text)
+                elif child_tag.startswith("command") and text:
+                    commands.append(text)
+            if post_commands and commands:
+                values["RemoteCommand"] = "\n".join(commands)
+            if not connection_name:
+                connection_name = "Imported Multi PuTTY Session"
+            clean_groups = [part for part in group_stack if part and part.strip()]
+            folder_path = f"/{'/'.join(clean_groups)}" if clean_groups else ""
+            results.append((connection_name, values, folder_path))
+            return
+
+        next_stack = group_stack
+        if tag == "container" or typ == "folder":
+            folder_name = (node.attrib.get("name") or "").strip()
+            if folder_name:
+                next_stack = group_stack + [folder_name]
+
+        for child in list(node):
+            walk(child, next_stack)
+
+    walk(root, [])
+    return results
+
+
+def import_multiputty_sessions_from_file(
+    path: Path,
+) -> Tuple[List[PuttyImportedSession], List[str]]:
+    """Import SSH sessions from a Multi PuTTY ``.xml`` / ``mputty.dat`` export."""
+    try:
+        source = parse_multiputty_xml(path)
+    except ET.ParseError as exc:
+        raise ValueError(f"Invalid Multi PuTTY XML: {exc}") from exc
+
+    imported: List[PuttyImportedSession] = []
+    warnings: List[str] = []
+    for name, values, folder_path in source:
+        entry = convert_putty_session(
+            name,
+            values,
+            split_folders=False,
+            source_group=folder_path or None,
+        )
+        if entry is None:
+            protocol = _putty_str(values, "Protocol", "ssh").strip().lower()
+            if protocol and protocol not in {"ssh", "ssh2"}:
+                warnings.append(
+                    f"Skipped Multi PuTTY session '{name}' (protocol '{protocol}')."
+                )
+            elif not _putty_str(values, "HostName").strip():
+                warnings.append(
+                    f"Skipped Multi PuTTY session '{name}' (missing host)."
+                )
             continue
         warnings.extend(entry.warnings)
         imported.append(entry)

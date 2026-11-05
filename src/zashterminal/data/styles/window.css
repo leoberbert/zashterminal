@@ -223,10 +223,13 @@ popover.menu separator {
     background: transparent;
 }
 
-/* Sidebar container - simple box layout */
+/* Sidebar container - width comes from the split view */
 .sidebar-container {
-    min-width: 350px;
     background: @window_bg_color;
+}
+
+.sidebar-pin-button:checked {
+    background-color: alpha(@accent_bg_color, 0.35);
 }
 
 /* Sidebar toolbar */
@@ -236,10 +239,10 @@ popover.menu separator {
 }
 
 .sidebar-toolbar button {
-    min-width: 32px;
-    min-height: 32px;
-    padding: 6px;
-    margin: 2px;
+    min-width: 28px;
+    min-height: 28px;
+    padding: 4px;
+    margin: 0;
     border-radius: 4px;
     transition: background-color 150ms ease;
     border: none;

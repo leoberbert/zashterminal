@@ -713,27 +713,17 @@ class SessionTreeView:
             tree_list_row.set_expanded(not tree_list_row.get_expanded())
             return  # Don't trigger auto-hide for folder operations
 
-        # Auto-hide sidebar if enabled (only for non-folder items)
+        # Close an unpinned panel after a session or layout is opened.
         if self.settings_manager.get("auto_hide_sidebar", False):
-            # Use a longer delay to ensure the activation is fully processed
+
             def delayed_auto_hide():
-                # Double-check we're still in auto-hide mode and popover is visible
-                if (
-                    self.settings_manager.get("auto_hide_sidebar", False)
-                    and hasattr(self.parent_window, "sidebar_popover")
-                    and self.parent_window.sidebar_popover.get_visible()
+                manager = getattr(self.parent_window, "sidebar_manager", None)
+                if manager is not None and self.settings_manager.get(
+                    "auto_hide_sidebar", False
                 ):
-                    # We're in popup mode, close the popover
-                    self.parent_window.sidebar_popover.popdown()
-                    self.parent_window.toggle_sidebar_button.set_active(False)
-                else:
-                    # We're in normal flap mode
-                    self.parent_window.flap.set_reveal_flap(False)
-                    self.parent_window.settings_manager.set_sidebar_visible(False)
-                    self.parent_window.toggle_sidebar_button.set_active(False)
+                    manager.close_if_unpinned()
                 return GLib.SOURCE_REMOVE
 
-            # Use a longer timeout to ensure activation is fully processed
             GLib.timeout_add(100, delayed_auto_hide)
 
     def _on_key_pressed(

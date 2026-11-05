@@ -150,7 +150,7 @@ def main() -> int:
             window.present()
             pump(1.0)
             try:
-                window.flap.set_reveal_flap(True)
+                window.split_view.set_show_sidebar(True)
             except Exception:
                 pass
 
@@ -294,7 +294,7 @@ def main() -> int:
                     print(f"command manager skipped: {exc}")
 
                 try:
-                    window.flap.set_reveal_flap(True)
+                    window.split_view.set_show_sidebar(True)
                     menu_btn = window.ui_builder.menu_button
                     menu_btn.popup()
                     pump(0.6)
@@ -304,7 +304,7 @@ def main() -> int:
                     print(f"menu skipped: {exc}")
 
                 try:
-                    window.flap.set_reveal_flap(True)
+                    window.split_view.set_show_sidebar(True)
                     pump(0.3)
                     capture_widget(window, OUT / "14-sessions-sidebar.png")
                 except Exception as exc:

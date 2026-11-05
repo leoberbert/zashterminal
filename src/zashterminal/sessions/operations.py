@@ -12,7 +12,10 @@ from ..core.signals import AppSignals
 from ..helpers import generate_unique_name
 from ..utils.logger import get_logger
 from ..utils.mremoteng_import import import_mremoteng_sessions_from_file
-from ..utils.putty_import import import_putty_sessions_from_file
+from ..utils.putty_import import (
+    import_multiputty_sessions_from_file,
+    import_putty_sessions_from_file,
+)
 from ..utils.ssh_config_parser import SSHConfigParser
 from ..utils.translation_utils import _
 from .models import SessionFolder, SessionItem
@@ -123,6 +126,10 @@ class SessionOperations:
             )
             original_session.port_forwardings = updated_session.port_forwardings
             original_session.x11_forwarding = updated_session.x11_forwarding
+            original_session.ssh_connection_mode = updated_session.ssh_connection_mode
+            original_session.proxy_jump = updated_session.proxy_jump
+            original_session.broadcast_group = updated_session.broadcast_group
+            original_session.transcript_logging = updated_session.transcript_logging
             # Local terminal options
             original_session.local_working_directory = (
                 updated_session.local_working_directory
@@ -383,6 +390,7 @@ class SessionOperations:
                     auth_type="key",
                     auth_value=candidate_identity,
                     x11_forwarding=bool(entry.forward_x11),
+                    proxy_jump=entry.proxy_jump or "",
                     source="ssh_config",
                 )
 
@@ -663,6 +671,57 @@ class SessionOperations:
                 warnings=warnings,
                 success_template=_(
                     "Imported {count} PuTTY session(s) from {path}."
+                ),
+                path=str(target),
+            )
+
+    def import_sessions_from_multiputty_file(
+        self, file_path: Union[str, Path]
+    ) -> OperationResult:
+        """Import SSH sessions from a Multi PuTTY .xml / mputty.dat export."""
+        with self._operation_lock:
+            target = Path(file_path).expanduser()
+            if not target.exists() or not target.is_file():
+                message = _("Multi PuTTY sessions file not found at {path}").format(
+                    path=str(target)
+                )
+                return OperationResult(False, message)
+
+            try:
+                entries, parse_warnings = import_multiputty_sessions_from_file(target)
+            except Exception as exc:
+                message = _("Failed to parse Multi PuTTY file: {error}").format(
+                    error=exc
+                )
+                self.logger.error(message)
+                return OperationResult(False, message)
+
+            warnings: List[str] = list(parse_warnings)
+            if not entries:
+                message = _(
+                    "No Multi PuTTY SSH sessions were imported from {path}."
+                ).format(path=str(target))
+                return OperationResult(False, message, warnings=warnings)
+
+            return self._commit_imported_ssh_entries(
+                entries=[
+                    {
+                        "name": entry.name,
+                        "folder_path": entry.folder_path,
+                        "host": entry.host,
+                        "user": entry.user,
+                        "port": entry.port,
+                        "auth_type": entry.auth_type,
+                        "auth_value": entry.auth_value,
+                        "post_login_command": entry.post_login_command,
+                        "port_forwardings": entry.port_forwardings,
+                        "source": "multiputty",
+                    }
+                    for entry in entries
+                ],
+                warnings=warnings,
+                success_template=_(
+                    "Imported {count} Multi PuTTY session(s) from {path}."
                 ),
                 path=str(target),
             )

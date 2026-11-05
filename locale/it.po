@@ -8581,3 +8581,221 @@ msgstr "Importa sessioni PuTTY"
 #: src/zashterminal/ui/window_ui.py
 msgid "Import mRemoteNG Sessions"
 msgstr "Importa sessioni mRemoteNG"
+
+#
+#: src/zashterminal/ui/dialogs/session_edit_dialog.py
+msgid "Broadcast Group"
+msgstr "Gruppo di broadcast"
+
+#
+#: src/zashterminal/ui/dialogs/session_edit_dialog.py
+msgid "Name used by Broadcast → Group (e.g. web, db). Panes with the same name receive the command together."
+msgstr "Nome usato da Broadcast → Gruppo (es. web, db). I riquadri con lo stesso nome ricevono il comando insieme."
+
+#
+#: src/zashterminal/ui/dialogs/session_edit_dialog.py
+msgid "e.g. web"
+msgstr "es. web"
+
+#
+#: src/zashterminal/ui/dialogs/session_edit_dialog.py
+msgid "Session Transcript"
+msgstr "Trascrizione sessione"
+
+#
+#: src/zashterminal/ui/dialogs/session_edit_dialog.py
+msgid "Save this session’s output under {path}. Automatic follows Preferences (off by default). Changing this applies when you reopen the terminal."
+msgstr "Salva l'output di questa sessione in {path}. Automatico segue Preferenze (disattivato di default). La modifica vale riaprendo il terminale."
+
+#
+#: src/zashterminal/ui/dialogs/session_edit_dialog.py
+msgid "Automatic (use preferences)"
+msgstr "Automatico (usa preferenze)"
+
+#
+#: src/zashterminal/ui/dialogs/session_edit_dialog.py
+msgid "Always on"
+msgstr "Sempre attivo"
+
+#
+#: src/zashterminal/ui/dialogs/session_edit_dialog.py
+msgid "Always off"
+msgstr "Sempre disattivo"
+
+#
+#: src/zashterminal/ui/dialogs/session_edit_dialog.py
+msgid "ProxyJump"
+msgstr "ProxyJump"
+
+#
+#: src/zashterminal/ui/dialogs/session_edit_dialog.py
+msgid "Bastion/jump host before the destination (OpenSSH -J). Examples: user@bastion  or  user@jump1,user@jump2:2222"
+msgstr "Host bastion/jump prima della destinazione (OpenSSH -J). Esempi: user@bastion  oppure  user@jump1,user@jump2:2222"
+
+#
+#: src/zashterminal/ui/dialogs/session_edit_dialog.py
+msgid "user@bastion"
+msgstr "user@bastion"
+
+#
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Enable Session Transcripts"
+msgstr "Abilita trascrizioni di sessione"
+
+#
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Off by default. When enabled, reopen terminals to start recording. Disabling stops open recordings immediately. Files: TIMESTAMP_session_host.log under {path}."
+msgstr "Disattivato di default. Se abilitato, riapri i terminali per avviare la registrazione. La disattivazione interrompe subito le registrazioni aperte. File: TIMESTAMP_session_host.log in {path}."
+
+#
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Strip ANSI Codes from Transcripts"
+msgstr "Rimuovi codici ANSI dalle trascrizioni"
+
+#
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Remove color/control sequences for readable log files"
+msgstr "Rimuove sequenze di colore/controllo per log leggibili"
+
+#
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Transcript Directory"
+msgstr "Cartella trascrizioni"
+
+#
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Leave empty to use {path}. Change takes effect for new sessions."
+msgstr "Lascia vuoto per usare {path}. La modifica vale per le nuove sessioni."
+
+#
+#: src/zashterminal/terminal/manager.py
+msgid "Recording transcript to {path}"
+msgstr "Registrazione trascrizione in {path}"
+
+#
+#: src/zashterminal/window.py
+msgid "Session transcripts enabled. Reopen terminals (or open a new tab) to start recording."
+msgstr "Trascrizioni di sessione abilitate. Riapri i terminali (o apri una nuova scheda) per avviare la registrazione."
+
+#
+#: src/zashterminal/window.py
+msgid "Stopped transcript recording on {count} open terminal(s)."
+msgstr "Registrazione trascrizione interrotta su {count} terminal(i) aperto/i."
+
+#
+#: src/zashterminal/window.py
+msgid "Session transcripts disabled."
+msgstr "Trascrizioni di sessione disabilitate."
+
+#
+#: src/zashterminal/window.py
+msgid "Transcript setting saved. Reopen terminals for it to take effect."
+msgstr "Impostazione trascrizione salvata. Riapri i terminali perché abbia effetto."
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "This pane"
+msgstr "Questo riquadro"
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "All panes"
+msgstr "Tutti i riquadri"
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "Select…"
+msgstr "Seleziona…"
+
+#
+#: src/zashterminal/ui/window_ui.py
+msgid "This pane: only the focused terminal. Group: all panes whose session Broadcast Group matches the focused one (set it in Edit Session). All panes: every open terminal (asks to confirm). Select…: choose manually."
+msgstr "Questo riquadro: solo il terminale in primo piano. Gruppo: tutti i riquadri il cui gruppo di broadcast della sessione coincide con il focus (impostalo in Modifica sessione). Tutti i riquadri: ogni terminale aperto (chiede conferma). Seleziona…: scegli manualmente."
+
+#
+#: src/zashterminal/ui/window_search_broadcast.py
+msgid "Focused pane has no broadcast group; set one in the session editor."
+msgstr "Il riquadro in primo piano non ha un gruppo di broadcast; impostalo nell'editor della sessione."
+
+#
+#: src/zashterminal/ui/window_search_broadcast.py
+msgid "No terminals matched the broadcast scope."
+msgstr "Nessun terminale corrisponde all'ambito di broadcast."
+
+#
+#: src/zashterminal/ui/window_search_broadcast.py
+msgid "Broadcast to all panes?"
+msgstr "Inviare a tutti i riquadri?"
+
+#
+#: src/zashterminal/ui/window_search_broadcast.py
+msgid "Send this command to <b>{count}</b> open terminals?"
+msgstr "Inviare questo comando a <b>{count}</b> terminali aperti?"
+
+#
+#: src/zashterminal/sessions/models.py
+msgid "Invalid ProxyJump value: {error}"
+msgstr "Valore ProxyJump non valido: {error}"
+
+#:
+#: src/zashterminal/ui/menus.py
+msgid "Import Multi PuTTY Sessions"
+msgstr "Import Multi PuTTY Sessions"
+
+#:
+#: src/zashterminal/ui/actions.py
+msgid "Select Multi PuTTY Sessions File"
+msgstr "Select Multi PuTTY Sessions File"
+
+#:
+#: src/zashterminal/ui/actions.py
+msgid "Multi PuTTY (*.dat, *.xml)"
+msgstr "Multi PuTTY (*.dat, *.xml)"
+
+#:
+#: src/zashterminal/ui/actions.py
+msgid "Failed to import Multi PuTTY sessions: {error}"
+msgstr "Failed to import Multi PuTTY sessions: {error}"
+
+#:
+#: src/zashterminal/sessions/operations.py
+msgid "Multi PuTTY sessions file not found at {path}"
+msgstr "Multi PuTTY sessions file not found at {path}"
+
+#:
+#: src/zashterminal/sessions/operations.py
+msgid "Failed to parse Multi PuTTY file: {error}"
+msgstr "Failed to parse Multi PuTTY file: {error}"
+
+#:
+#: src/zashterminal/sessions/operations.py
+msgid "No Multi PuTTY SSH sessions were imported from {path}."
+msgstr "No Multi PuTTY SSH sessions were imported from {path}."
+
+#:
+#: src/zashterminal/sessions/operations.py
+msgid "Imported {count} Multi PuTTY session(s) from {path}."
+msgstr "Imported {count} Multi PuTTY session(s) from {path}."
+
+#:
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Updates"
+msgstr "Updates"
+
+
+
+#:
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Check for updates on startup"
+msgstr "Check for updates on startup"
+
+#:
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid ""
+"Look for newer Releases or tags on GitHub when the app starts "
+"(unreleased main tip is ignored unless ZASHTERMINAL_UPDATE_ALLOW_MAIN=1). "
+"Disable entirely with ZASHTERMINAL_DISABLE_AUTO_UPDATE=1."
+msgstr ""
+"Look for newer Releases or tags on GitHub when the app starts "
+"(unreleased main tip is ignored unless ZASHTERMINAL_UPDATE_ALLOW_MAIN=1). "
+"Disable entirely with ZASHTERMINAL_DISABLE_AUTO_UPDATE=1."
