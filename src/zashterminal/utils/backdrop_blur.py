@@ -7,6 +7,7 @@ to the desktop. Neither path captures or paints a static background.
 
 from __future__ import annotations
 
+import os
 import ctypes as C
 from ctypes.util import find_library
 
@@ -444,7 +445,8 @@ class BackdropBlur:
             gtk = _library("gtk-4")
             name = display.__gtype__.name
             if name == "GdkWaylandDisplay":
-                self._backend = _KWinEffectBlur.connect(gtk)
+                if "KDE" in os.environ.get("XDG_CURRENT_DESKTOP", "").split(":"):
+                    self._backend = _KWinEffectBlur.connect(gtk)
                 if self._backend is None:
                     self._backend = _WaylandBlur(display, gtk)
             elif name == "GdkX11Display":
