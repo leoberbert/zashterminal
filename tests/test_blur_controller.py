@@ -1,5 +1,6 @@
 """Public blur capabilities and surface isolation over private native protocols."""
 
+import os
 from contextlib import closing
 import logging
 import shutil
@@ -15,6 +16,11 @@ from test_blur_dbus import _PrivateKWin, Gio
 @unittest.skipUnless(available() and Gio is not None and shutil.which("dbus-daemon"),
                      "Wayland libraries, Gio and dbus-daemon required")
 class BlurControllerTests(unittest.TestCase):
+    def setUp(self):
+        desktop = patch.dict(os.environ, {"XDG_CURRENT_DESKTOP": "KDE"})
+        desktop.start()
+        self.addCleanup(desktop.stop)
+
     def bridge(self, compositor, server):
         compositor.display_object.__gtype__ = SimpleNamespace(name="GdkWaylandDisplay")
         original = blur._library
