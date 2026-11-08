@@ -56,15 +56,11 @@ def _library(name):
     return C.CDLL(path)
 
 
-class _WaylandBlur:
-    """Bind the standard background-effect protocol, or KDE's older blur v1.
+class _WaylandClient:
+    """Bind globals on GTK's own Wayland connection.
 
     Discovery uses a private queue: roundtrips must not dispatch GTK events
-    reentrantly. GTK owns buffer rendering and the normal event loop. Effect
-    changes on mapped surfaces need their own metadata-only surface commit:
-    GTK may skip a frame if none of its pixels changed.
-    Protocols: https://wayland.app/protocols/ext-background-effect-v1
-    and https://wayland.app/protocols/kde-blur
+    reentrantly. GTK owns buffer rendering and the normal event loop.
     """
 
     def __init__(self, display, gtk):
@@ -90,6 +86,79 @@ class _WaylandBlur:
             self.lib, "wl_proxy_add_listener", C.c_int,
             C.c_void_p, C.POINTER(C.c_void_p), C.c_void_p,
         )
+        self._registry_interface = _Interface.in_dll(self.lib, "wl_registry_interface")
+
+    def _request(self, proxy, opcode, *arguments, interface=None, destroy=False):
+        values = (_Argument * len(arguments))(*arguments) if arguments else None
+        return self._marshal(
+            proxy, opcode, C.pointer(interface) if interface is not None else None,
+            1, int(destroy), values,
+        )
+
+    def _discover(self, registry, queue):
+        global_callback = C.CFUNCTYPE(None, C.c_void_p, C.c_void_p, C.c_uint32, C.c_char_p, C.c_uint32)
+        remove_callback = C.CFUNCTYPE(None, C.c_void_p, C.c_void_p, C.c_uint32)
+        globals_found = {}
+
+        @global_callback
+        def on_global(_data, _registry, name, interface, _version):
+            globals_found[interface] = name
+
+        @remove_callback
+        def on_remove(_data, _registry, name):
+            for interface in list(globals_found):
+                if globals_found[interface] == name:
+                    del globals_found[interface]
+
+        listeners = (C.c_void_p * 2)(C.cast(on_global, C.c_void_p), C.cast(on_remove, C.c_void_p))
+        self._registry_callbacks = (on_global, on_remove, listeners)
+        if self._add_listener(registry, listeners, None) != 0 or self._roundtrip(self._display, queue) < 0:
+            raise RuntimeError("Wayland global discovery failed")
+        return globals_found
+
+    def _bind(self, registry, name, interface):
+        return self._request(
+            registry, 0, _Argument(u=name), _Argument(s=interface.name),
+            _Argument(u=1), _Argument(o=None), interface=interface,
+        )
+
+    def _bind_globals(self, bind):
+        """Return ``bind(registry, queue, globals_found)``; close() on failure."""
+        create_queue = _function(self.lib, "wl_display_create_queue", C.c_void_p, C.c_void_p)
+        destroy_queue = _function(self.lib, "wl_event_queue_destroy", None, C.c_void_p)
+        queue = create_queue(self._display)
+        if not queue:
+            raise RuntimeError("Could not create a Wayland discovery queue")
+        registry = None
+        self._registry_callbacks = None
+        try:
+            registry = self._request(self._display, 1, _Argument(o=None), interface=self._registry_interface)
+            if not registry:
+                raise RuntimeError("Could not get the Wayland registry")
+            self._set_queue(registry, queue)
+            globals_found = self._discover(registry, queue)
+            return bind(registry, queue, globals_found)
+        except Exception:
+            self.close()
+            raise
+        finally:
+            if registry:
+                self._destroy(registry)
+            self._registry_callbacks = None
+            destroy_queue(queue)
+
+
+class _WaylandBlur(_WaylandClient):
+    """Bind the standard background-effect protocol, or KDE's older blur v1.
+
+    Effect changes on mapped surfaces need their own metadata-only surface
+    commit: GTK may skip a frame if none of its pixels changed.
+    Protocols: https://wayland.app/protocols/ext-background-effect-v1
+    and https://wayland.app/protocols/kde-blur
+    """
+
+    def __init__(self, display, gtk):
+        super().__init__(display, gtk)
         self._surface = None
         self._surface_object = None
         self._blur = None
@@ -97,8 +166,7 @@ class _WaylandBlur:
         self._compositor = None
         self._modern = False
         self._capabilities = 0
-        self._registry_interface = _Interface.in_dll(self.lib, "wl_registry_interface")
-        self._manager = self._bind_manager()
+        self._manager = self._bind_globals(self._bind_effect_manager)
 
     def _define_protocol(self):
         # All interface/type arrays must outlive the proxies referring to them.
@@ -141,40 +209,6 @@ class _WaylandBlur:
             int(self._modern), self._manager_events,
         )
 
-    def _request(self, proxy, opcode, *arguments, interface=None, destroy=False):
-        values = (_Argument * len(arguments))(*arguments) if arguments else None
-        return self._marshal(
-            proxy, opcode, C.pointer(interface) if interface is not None else None,
-            1, int(destroy), values,
-        )
-
-    def _discover(self, registry, queue):
-        global_callback = C.CFUNCTYPE(None, C.c_void_p, C.c_void_p, C.c_uint32, C.c_char_p, C.c_uint32)
-        remove_callback = C.CFUNCTYPE(None, C.c_void_p, C.c_void_p, C.c_uint32)
-        globals_found = {}
-
-        @global_callback
-        def on_global(_data, _registry, name, interface, _version):
-            globals_found[interface] = name
-
-        @remove_callback
-        def on_remove(_data, _registry, name):
-            for interface in list(globals_found):
-                if globals_found[interface] == name:
-                    del globals_found[interface]
-
-        listeners = (C.c_void_p * 2)(C.cast(on_global, C.c_void_p), C.cast(on_remove, C.c_void_p))
-        self._registry_callbacks = (on_global, on_remove, listeners)
-        if self._add_listener(registry, listeners, None) != 0 or self._roundtrip(self._display, queue) < 0:
-            raise RuntimeError("Wayland blur discovery failed")
-        return globals_found
-
-    def _bind(self, registry, name, interface):
-        return self._request(
-            registry, 0, _Argument(u=name), _Argument(s=interface.name),
-            _Argument(u=1), _Argument(o=None), interface=interface,
-        )
-
     def _watch_capabilities(self, manager, queue):
         callback = C.CFUNCTYPE(None, C.c_void_p, C.c_void_p, C.c_uint32)
 
@@ -189,30 +223,6 @@ class _WaylandBlur:
             or self._roundtrip(self._display, queue) < 0
         ):
             raise RuntimeError("Could not read compositor blur capabilities")
-
-    def _bind_manager(self):
-        create_queue = _function(self.lib, "wl_display_create_queue", C.c_void_p, C.c_void_p)
-        destroy_queue = _function(self.lib, "wl_event_queue_destroy", None, C.c_void_p)
-        queue = create_queue(self._display)
-        if not queue:
-            raise RuntimeError("Could not create a Wayland discovery queue")
-        registry = None
-        self._registry_callbacks = None
-        try:
-            registry = self._request(self._display, 1, _Argument(o=None), interface=self._registry_interface)
-            if not registry:
-                raise RuntimeError("Could not get the Wayland registry")
-            self._set_queue(registry, queue)
-            globals_found = self._discover(registry, queue)
-            return self._bind_effect_manager(registry, queue, globals_found)
-        except Exception:
-            self.close()
-            raise
-        finally:
-            if registry:
-                self._destroy(registry)
-            self._registry_callbacks = None
-            destroy_queue(queue)
 
     def _bind_effect_manager(self, registry, queue, globals_found):
         self._modern = b"ext_background_effect_manager_v1" in globals_found

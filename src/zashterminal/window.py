@@ -231,6 +231,24 @@ class ZashTerminalWindow(WindowSearchBroadcastMixin, Adw.ApplicationWindow):
             controller.close()
             self._backdrop_blur = None
 
+    def _claim_niri_server_decorations(self, *_args) -> None:
+        """Stop niri from filling translucent backgrounds with its focus ring."""
+        from .utils.niri_decoration import NiriServerDecoration
+
+        surface = self.get_surface()
+        if surface is None:
+            return
+        if getattr(self, "_niri_decoration", None) is None:
+            self._niri_decoration = NiriServerDecoration.for_display(self.get_display(), self.logger)
+        if self._niri_decoration is not None:
+            self._niri_decoration.apply(surface)
+
+    def _release_niri_server_decorations(self, *_args) -> None:
+        decoration = getattr(self, "_niri_decoration", None)
+        if decoration is not None:
+            decoration.close()
+            self._niri_decoration = None
+
     def _create_managers_and_ui(self) -> None:
         """
         Centralize Component Creation and UI Building.
@@ -369,6 +387,8 @@ class ZashTerminalWindow(WindowSearchBroadcastMixin, Adw.ApplicationWindow):
         self.connect("close-request", self._on_window_close_request)
         self.connect("realize", self.apply_background_blur)
         self.connect("unrealize", self._release_background_blur)
+        self.connect("realize", self._claim_niri_server_decorations)
+        self.connect("unrealize", self._release_niri_server_decorations)
         # Connect window state change signals
         self.connect("notify::default-width", self._on_window_size_changed)
         self.connect("notify::default-height", self._on_window_size_changed)
