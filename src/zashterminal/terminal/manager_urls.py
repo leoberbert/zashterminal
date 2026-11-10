@@ -2,6 +2,7 @@
 """URL/hyperlink detection, click handling, and command-line analysis."""
 
 import re
+import subprocess
 from typing import Optional
 from urllib.parse import urlparse
 
@@ -478,6 +479,14 @@ class TerminalUrlMixin:
                         return hover_uri
                 except Exception as e:
                     self.logger.debug(f"VTE hyperlink detection failed: {e}")
+
+            if hasattr(terminal, "check_match_at"):
+                try:
+                    matched_text, _tag = terminal.check_match_at(x, y)
+                    if matched_text and is_valid_url(matched_text):
+                        return matched_text
+                except Exception as e:
+                    self.logger.debug(f"Pixel match check failed: {e}")
 
             if hasattr(terminal, "match_check"):
                 try:
