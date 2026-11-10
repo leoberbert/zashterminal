@@ -94,8 +94,10 @@ host_install() {
     log "Reusing Distrobox '${DISTROBOX_NAME}'."
   else
     log "Creating Distrobox '${DISTROBOX_NAME}' from ${DISTROBOX_IMAGE}..."
-    distrobox create --yes --name "${DISTROBOX_NAME}" --image "${DISTROBOX_IMAGE}" </dev/null
+    distrobox create --yes --no-entry --name "${DISTROBOX_NAME}" --image "${DISTROBOX_IMAGE}" </dev/null
   fi
+  # Hide the auto-generated "enter container" launcher (Arch logo); only the app shows.
+  rm -f "${XDG_DATA_HOME:-${HOME}/.local/share}/applications/${DISTROBOX_NAME}.desktop"
 
   log "Installing inside '${DISTROBOX_NAME}' (first start initializes the container)..."
   local checkout
