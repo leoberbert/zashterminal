@@ -246,6 +246,10 @@ curl -fsSL https://raw.githubusercontent.com/leoberbert/zashterminal/refs/heads/
 
 The launcher sets `GDK_BACKEND=x11` when GTK was built without Wayland but Distrobox still exports `WAYLAND_DISPLAY` / `GDK_BACKEND=wayland`.
 
+### Immutable / atomic distributions (Distrobox)
+
+Install inside a Distrobox container with the same installer, then run `distrobox-export --app zashterminal`. When Zashterminal detects it is running in a Distrobox (and `distrobox-host-exec` is available), local tabs open your **host** shell, not the container's: the host login shell is used, the working directory and OSC 7 tracking are preserved, and `/tmp` must be shared with the host (the Distrobox default; checked automatically). SSH/SFTP sessions still run the container's `ssh`/`sshpass`. Set `ZASHTERMINAL_SHELL_IN_CONTAINER=1` to keep the container shell. Limitation: SSH-in-tab detection (process tree) does not see host children.
+
 ### NixOS
 
 Uses the project flake into the user profile. Enable flakes and ensure `git` is installed, then:

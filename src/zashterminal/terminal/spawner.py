@@ -38,6 +38,7 @@ from ..utils.security import (
 )
 from ..utils.translation_utils import _
 from ..utils.osc7 import OSC7_HOST_DETECTION_SNIPPET
+from ..utils import host_shell
 
 
 class ProcessTracker:
@@ -196,7 +197,8 @@ class ProcessSpawner:
             A tuple of (command_list, environment_dict, temp_dir_path).
             temp_dir_path is the path to the temporary ZDOTDIR for zsh, or None.
         """
-        shell = Vte.get_user_shell()
+        on_host = host_shell.host_shell_enabled()
+        shell = host_shell.host_user_shell() if on_host else Vte.get_user_shell()
         shell_basename = os.path.basename(shell)
         temp_dir_path: Optional[str] = None
         use_login_shell = self.settings_manager.get("use_login_shell", False)
@@ -317,6 +319,8 @@ class ProcessSpawner:
                 cmd = [shell]
 
 
+        if on_host:
+            cmd = host_shell.wrap_command(cmd, env)
         return cmd, env, temp_dir_path
 
     def _get_ssh_control_path(self, session: "SessionItem") -> str:
