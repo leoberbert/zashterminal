@@ -171,7 +171,7 @@ def main():
 
                     # Both modern and legacy CSS must parse without errors.
                     for modern in (False, True):
-                        params = ThemeEngine.get_theme_params(settings.get_color_scheme_data())
+                        params = ThemeEngine.get_theme_params(settings.get_color_scheme_data(), 0, settings._min_ui_luminance())
                         with patch.object(ThemeEngine, "_supports_modern_css", return_value=modern):
                             css = ThemeEngine.generate_app_css(params, "terminal")
                         provider = Gtk.CssProvider()

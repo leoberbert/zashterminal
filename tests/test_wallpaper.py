@@ -350,3 +350,16 @@ fill_mode = "span"
                 found = discover_wallpapers()
             self.assertEqual(found, [("Noctalia · HDMI-A-1", str(image))])
             self.assertEqual(preferred_wallpaper(found, (1920, 1080), None), 0)
+
+
+class DarkWallpaperInterfaceTests(unittest.TestCase):
+    SCHEME = {"background": "#0a0a19", "foreground": "#c1c1c5", "headerbar_background": "#0a0a19",
+              "accent": "#EC2C4D", "selection_foreground": "#000000"}
+
+    def test_dark_wallpaper_background_still_themes_interface(self):
+        from zashterminal.utils.theme_engine import ThemeEngine
+
+        manual = ThemeEngine.get_theme_params(self.SCHEME)
+        wallpaper = ThemeEngine.get_theme_params(self.SCHEME, 0, 0.0)
+        self.assertEqual(ThemeEngine._get_root_vars_css(manual, "terminal"), "")
+        self.assertIn("--accent-bg-color: #EC2C4D", ThemeEngine._get_root_vars_css(wallpaper, "terminal"))

@@ -55,7 +55,7 @@ class ThemeEngine:
 
     @staticmethod
     def get_theme_params(
-        scheme: Dict[str, Any], transparency: int = 0
+        scheme: Dict[str, Any], transparency: int = 0, min_luminance: float = 0.05
     ) -> Dict[str, Any]:
         """Extract and compute theme parameters from color scheme."""
         bg_color = scheme.get("background", "#000000")
@@ -74,6 +74,7 @@ class ThemeEngine:
             "header_bg_color": header_bg_color,
             "user_transparency": transparency,
             "luminance": luminance,
+            "min_luminance": min_luminance,
             "is_dark_theme": is_dark_theme,
             "accent": scheme.get("accent"),
             "accent_foreground": scheme.get("selection_foreground", "#ffffff"),
@@ -94,7 +95,7 @@ class ThemeEngine:
         if gtk_theme_name != "terminal":
             return ""
 
-        if params["luminance"] < 0.05:
+        if params["luminance"] < params.get("min_luminance", 0.05):
             return ""
 
         fg = params["fg_color"]
