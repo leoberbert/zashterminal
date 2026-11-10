@@ -2,6 +2,7 @@
 """URL/hyperlink detection, click handling, and command-line analysis."""
 
 import re
+import subprocess
 from typing import Optional
 from urllib.parse import urlparse
 
