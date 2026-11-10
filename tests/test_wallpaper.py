@@ -297,6 +297,49 @@ class SettingsTests(unittest.TestCase):
         self.assertEqual(HighlightManager.get_current_theme_palette(manager)["palette"][1], "#f12345")
         self.assertNotEqual(first_signature, manager._current_theme_name)
 
+    def dark_wallpaper(self):
+        value = copy.deepcopy(self.value)
+        value["scheme"].update(background="#0a0a19", headerbar_background="#0a0a19", accent="#EC2C4D")
+        return value
+
+    def test_wallpaper_lowers_the_interface_luminance_floor(self):
+        self.assertEqual(self.manager._min_ui_luminance(), 0.05)
+        self.manager._settings["wallpaper_theme"] = self.dark_wallpaper()
+        self.assertEqual(self.manager._min_ui_luminance(), 0.0)
+
+    def test_app_css_themes_very_dark_wallpaper_only_when_applied(self):
+        from gi.repository import Gtk
+
+        self.manager._app_css_provider = Gtk.CssProvider()
+        self.manager._provider_attached = True
+        self.manager._modern_css_supported = True
+        self.manager._settings["gtk_theme"] = "terminal"
+        loaded = []
+        self.manager._app_css_provider.load_from_data = lambda data: loaded.append(data.decode())
+        with patch("zashterminal.settings.manager.Gdk.Display.get_default", return_value=Mock()):
+            self.manager._settings["wallpaper_theme"] = self.dark_wallpaper()
+            self.manager._update_app_theme_css()
+        self.assertIn("--accent-bg-color: #EC2C4D", loaded[-1])
+
+    def test_terminal_theme_css_includes_surfaces_for_dark_wallpaper(self):
+        self.manager._theme_css_cache = {}
+        self.manager._modern_css_supported = True
+        self.manager._app_css_provider = Mock()
+        self.manager._provider_attached = True
+        self.manager._settings["gtk_theme"] = "terminal"
+        results = {}
+        for name, wallpaper in (("manual", None), ("wallpaper", self.dark_wallpaper())):
+            self.manager._settings["wallpaper_theme"] = wallpaper
+            window = Mock(spec=["header_bar"])
+            provider = Mock()
+            with patch("zashterminal.settings.manager.Gdk.Display.get_default", return_value=Mock()), \
+                    patch("zashterminal.settings.manager.Gtk.StyleContext") as context, \
+                    patch("zashterminal.settings.manager.Gtk.CssProvider", return_value=provider):
+                self.manager._apply_gtk_terminal_theme_full(window)
+            self.assertTrue(context.add_provider_for_display.called, name)
+            results[name] = provider.load_from_data.call_args[0][0].decode()
+        self.assertIn(".sidebar-container", results["wallpaper"])
+
 
 if __name__ == "__main__":
     unittest.main()
