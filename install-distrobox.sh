@@ -10,6 +10,7 @@
 set -euo pipefail
 
 PACKAGE_NAME="zashterminal"
+DESKTOP_FILE="/usr/share/applications/org.leoberbert.zashterminal.desktop"
 DISTROBOX_NAME="${DISTROBOX_NAME:-${PACKAGE_NAME}}"
 DISTROBOX_IMAGE="${DISTROBOX_IMAGE:-docker.io/library/archlinux:latest}"
 INSTALL_SH_URL="${INSTALL_SH_URL:-https://raw.githubusercontent.com/leoberbert/zashterminal/refs/heads/main/install.sh}"
@@ -66,12 +67,15 @@ inner_install() {
     return 0
   fi
   if ! command -v distrobox-export >/dev/null 2>&1; then
-    warn "distrobox-export not found; run manually: distrobox-export --app ${PACKAGE_NAME}"
+    warn "distrobox-export not found; run manually: distrobox-export --app ${DESKTOP_FILE}"
     return 0
   fi
+  # Export by full path: `--app zashterminal` is a substring match that also hits
+  # the host's auto-generated "enter container" entry (shared $HOME), exporting a
+  # broken launcher and overriding the app icon with the Arch logo.
   log "Exporting ${PACKAGE_NAME} to the host application menu..."
-  distrobox-export --app "${PACKAGE_NAME}" || \
-    warn "distrobox-export failed; run manually: distrobox-export --app ${PACKAGE_NAME}"
+  distrobox-export --app "${DESKTOP_FILE}" || \
+    warn "distrobox-export failed; run manually: distrobox-export --app ${DESKTOP_FILE}"
   if command -v distrobox-host-exec >/dev/null 2>&1; then
     log "Local tabs will open your host shell via distrobox-host-exec."
   else
