@@ -248,7 +248,15 @@ The launcher sets `GDK_BACKEND=x11` when GTK was built without Wayland but Distr
 
 ### Immutable / atomic distributions (Distrobox)
 
-Install inside a Distrobox container with the same installer, then run `distrobox-export --app zashterminal`. When Zashterminal detects it is running in a Distrobox (and `distrobox-host-exec` is available), local tabs open your **host** shell, not the container's: the host login shell is used, the working directory and OSC 7 tracking are preserved, and `/tmp` must be shared with the host (the Distrobox default; checked automatically). SSH/SFTP sessions still run the container's `ssh`/`sshpass`. Set `ZASHTERMINAL_SHELL_IN_CONTAINER=1` to keep the container shell. Limitation: SSH-in-tab detection (process tree) does not see host children.
+Use the dedicated `install-distrobox.sh` (works on any distro with Distrobox installed; the regular `install.sh` is unchanged):
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/leoberbert/zashterminal/refs/heads/main/install-distrobox.sh | bash
+```
+
+It creates (or reuses) a container named `zashterminal` from `docker.io/library/archlinux:latest`, runs `install.sh` inside it, and runs `distrobox-export --app zashterminal` so the app appears in the host menu. Override with `DISTROBOX_NAME` or `DISTROBOX_IMAGE`, or skip the export with `ZASH_NO_EXPORT=1`. Running it by hand inside an existing container works too.
+
+When Zashterminal detects it is running in a Distrobox (and `distrobox-host-exec` is available), local tabs open your **host** shell, not the container's: the host login shell is used, the working directory and OSC 7 tracking are preserved, and `/tmp` must be shared with the host (the Distrobox default; checked automatically). SSH/SFTP sessions still run the container's `ssh`/`sshpass`. Set `ZASHTERMINAL_SHELL_IN_CONTAINER=1` to keep the container shell. Limitation: SSH-in-tab detection (process tree) does not see host children.
 
 ### NixOS
 
