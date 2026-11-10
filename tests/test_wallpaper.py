@@ -316,7 +316,11 @@ class SettingsTests(unittest.TestCase):
         self.manager._settings["gtk_theme"] = "terminal"
         loaded = []
         self.manager._app_css_provider.load_from_data = lambda data: loaded.append(data.decode())
-        with patch("zashterminal.settings.manager.Gdk.Display.get_default", return_value=Mock()):
+        from zashterminal.utils.theme_engine import ThemeEngine
+
+        # CI's older GTK would otherwise take the legacy @define-color branch.
+        with patch("zashterminal.settings.manager.Gdk.Display.get_default", return_value=Mock()), \
+                patch.object(ThemeEngine, "_supports_modern_css", return_value=True):
             self.manager._settings["wallpaper_theme"] = self.dark_wallpaper()
             self.manager._update_app_theme_css()
         self.assertIn("--accent-bg-color: #EC2C4D", loaded[-1])
