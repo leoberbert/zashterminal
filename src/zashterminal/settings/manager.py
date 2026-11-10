@@ -689,6 +689,9 @@ class SettingsManager:
         all_schemes = self.get_all_schemes()
         return all_schemes.get(scheme_name, all_schemes[self.get_scheme_order()[0]])
 
+    def _min_ui_luminance(self) -> float:
+        return 0.0 if self._get_wallpaper() else 0.05
+
     def _get_wallpaper(self):
         # Validate once per snapshot, not for each syntax-highlighted token.
         with self._lock:
@@ -996,6 +999,10 @@ class SettingsManager:
             b = int(bg_color[5:7], 16) / 255
             luminance = 0.299 * r + 0.587 * g + 0.114 * b
             is_dark_theme = luminance < 0.5
+            # Manual near-black schemes keep the stock surfaces. A wallpaper
+            # snapshot is an explicit request to theme the interface, and dark
+            # artwork routinely yields backgrounds below this floor.
+            min_luminance = self._min_ui_luminance()
 
             # Create cache key from all parameters that affect CSS output
             cache_key = (
@@ -1007,6 +1014,7 @@ class SettingsManager:
                 tuple(scheme.get("palette", [])),
                 scheme.get("accent"),
                 scheme.get("selection_foreground"),
+                min_luminance,
             )
 
             # Check cache for pre-built CSS
@@ -1235,7 +1243,7 @@ class SettingsManager:
             # === SIDEBAR ===
             # Simple box-based sidebar structure
             # Only apply if luminance >= 5% to avoid very dark backgrounds
-            if luminance >= 0.05:
+            if luminance >= min_luminance:
                 css_parts.append(f"""
                 .sidebar-container {{
                     background: {bg_color};
@@ -1408,7 +1416,7 @@ class SettingsManager:
 
             # === POPOVERS AND CONTEXT MENUS ===
             # Only apply if luminance >= 5% to avoid very dark backgrounds
-            if luminance >= 0.05:
+            if luminance >= min_luminance:
                 # Global popover styling - applies to ALL popovers including right-click menus
                 css_parts.append(f"""
                 /* Global popover styling - fixes right-click context menus everywhere */
@@ -1601,7 +1609,7 @@ class SettingsManager:
             # === SSH ERROR BANNER ===
             # Always apply - uses bg_color which is always defined
             # header_bg_color fallback to bg_color when not available
-            banner_bg = header_bg_color if luminance >= 0.05 else bg_color
+            banner_bg = header_bg_color if luminance >= min_luminance else bg_color
             error_color = palette[1] if len(palette) > 1 else "#e01b24"
             warning_color = palette[3] if len(palette) > 3 else "#f5c211"
             css_parts.append(f"""
@@ -1671,7 +1679,7 @@ class SettingsManager:
 
             # Only apply dialog background colors if luminance >= 5%
             # Very dark themes (< 5% luminance) can cause readability issues
-            apply_dialog_bg = luminance >= 0.05
+            apply_dialog_bg = luminance >= min_luminance
 
             if apply_dialog_bg:
                 css_parts.append(f"""
@@ -2305,7 +2313,9 @@ class SettingsManager:
             gtk_theme = self.get("gtk_theme")
             transparency = self.get("headerbar_transparency", 0)
 
-            params = ThemeEngine.get_theme_params(scheme, transparency)
+            params = ThemeEngine.get_theme_params(
+                scheme, transparency, self._min_ui_luminance()
+            )
             full_css = ThemeEngine.generate_app_css(params, gtk_theme)
             self._app_css_provider.load_from_data(
                 self._normalize_css_for_compat(full_css, self._modern_css_supported).encode("utf-8")

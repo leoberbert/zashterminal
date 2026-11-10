@@ -107,6 +107,9 @@ dynamic wallpaper or the active activity. Detection never changes the desktop.
   custom RGB output and independently themed program content remain their own.
   Turning off the interface switch uses the previous interface preference; if that
   preference already follows terminal colors, it continues to do so.
+- Very dark Pywal backgrounds (below the 5% luminance floor that keeps manual
+  near-black schemes on stock surfaces) still theme the interface, including the
+  accent, window, sidebar, popover and dialog colors.
 
 ## Validation
 
