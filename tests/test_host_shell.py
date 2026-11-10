@@ -1,4 +1,5 @@
 import os
+import subprocess
 import unittest
 from unittest.mock import patch
 
@@ -47,6 +48,36 @@ class HostShellTests(unittest.TestCase):
         host_shell._host_shell = None
         with patch.object(host_shell, "_run_on_host", return_value="/usr/bin/zsh"):
             self.assertEqual(host_shell.host_user_shell(), "/usr/bin/zsh")
+
+    def test_in_distrobox_needs_container_id_and_containerenv(self):
+        with patch.dict(os.environ, {"CONTAINER_ID": "box"}), \
+                patch.object(host_shell.os.path, "exists", return_value=True):
+            self.assertTrue(host_shell.in_distrobox())
+        with patch.dict(os.environ, {"CONTAINER_ID": "box"}), \
+                patch.object(host_shell.os.path, "exists", return_value=False):
+            self.assertFalse(host_shell.in_distrobox())
+        with patch.dict(os.environ, {}, clear=True), \
+                patch.object(host_shell.os.path, "exists", return_value=True):
+            self.assertFalse(host_shell.in_distrobox())
+
+    def test_run_on_host_returns_stripped_stdout_or_none_on_failure(self):
+        done = subprocess.CompletedProcess([], 0, stdout=" /usr/bin/zsh\n")
+        with patch.object(host_shell.subprocess, "run", return_value=done) as run:
+            self.assertEqual(host_shell._run_on_host(["echo"]), "/usr/bin/zsh")
+            self.assertEqual(run.call_args.args[0], ["distrobox-host-exec", "echo"])
+        for error in (OSError("missing"), subprocess.TimeoutExpired("x", 1)):
+            with patch.object(host_shell.subprocess, "run", side_effect=error):
+                self.assertIsNone(host_shell._run_on_host(["echo"]))
+
+    def test_tmp_is_shared_requires_host_to_see_probe_file(self):
+        with patch.object(host_shell, "_run_on_host", return_value="yes") as run:
+            self.assertTrue(host_shell._tmp_is_shared())
+            probe_path = run.call_args.args[0][-1]
+            self.assertIn("zashterminal_probe_", probe_path)
+        with patch.object(host_shell, "_run_on_host", return_value=""):
+            self.assertFalse(host_shell._tmp_is_shared())
+        with patch.object(host_shell, "_run_on_host", return_value=None):
+            self.assertFalse(host_shell._tmp_is_shared())
 
 
 if __name__ == "__main__":
