@@ -361,5 +361,8 @@ class DarkWallpaperInterfaceTests(unittest.TestCase):
 
         manual = ThemeEngine.get_theme_params(self.SCHEME)
         wallpaper = ThemeEngine.get_theme_params(self.SCHEME, 0, 0.0)
-        self.assertEqual(ThemeEngine._get_root_vars_css(manual, "terminal"), "")
-        self.assertIn("--accent-bg-color: #EC2C4D", ThemeEngine._get_root_vars_css(wallpaper, "terminal"))
+        # Older GTK (CI) takes the legacy @define-color branch; cover both.
+        for modern, marker in ((True, "--accent-bg-color: #EC2C4D"), (False, "@define-color accent_bg_color #EC2C4D")):
+            with patch.object(ThemeEngine, "_supports_modern_css", return_value=modern):
+                self.assertEqual(ThemeEngine._get_root_vars_css(manual, "terminal"), "")
+                self.assertIn(marker, ThemeEngine._get_root_vars_css(wallpaper, "terminal"))
