@@ -317,6 +317,98 @@ class _WaylandBlur(_WaylandClient):
         self._capability_listener = None
         self._capability_callback = None
 
+def _gtk_owns_background_effect():
+    """Return True when GTK itself binds ext-background-effect (GTK >= 4.23.3).
+
+    Since GTK 4.23.3 (stable in 4.24), GDK creates one
+    ``ext_background_effect_surface_v1`` for *every* wl_surface as soon as the
+    compositor advertises the manager, and derives its blur region from the
+    widget tree (CSS ``backdrop-filter: blur()``). The protocol allows only one
+    such object per surface, so creating a second one ourselves raises the
+    fatal ``background_effect_exists`` error and the compositor drops the
+    whole GTK connection.
+    """
+    try:
+        import gi
+
+        gi.require_version("Gtk", "4.0")
+        from gi.repository import Gtk
+
+        return Gtk.check_version(4, 23, 3) is None
+    except (ImportError, ValueError, AttributeError):
+        return False
+
+
+class _GtkBackgroundEffectBlur:
+    """Request standard Wayland blur through GTK's own background-effect object.
+
+    GTK reports a blur region for the parts of the surface that sit behind a
+    ``backdrop-filter: blur()`` of at least 10px (GSK's threshold). Putting
+    that filter on the toplevel window marks the whole window, never the CSD
+    shadow, and GTK commits it with its next frame. The compositor decides the
+    actual strength, exactly as with the hand-written protocol path.
+
+    ``probe`` is a ``_WaylandBlur`` used only to read the compositor's
+    capability; it never creates a per-surface object.
+    """
+
+    CSS_CLASS = "zashterminal-background-blur"
+    _CSS = (
+        f".{CSS_CLASS} {{ backdrop-filter: blur(20px); }}"
+    )
+
+    def __init__(self, probe):
+        self._probe = probe
+        self._widget = None
+        self._provider = None
+
+    @property
+    def supported(self):
+        return self._probe.supported
+
+    def _ensure_provider(self, widget):
+        if self._provider is not None:
+            return
+        from gi.repository import Gtk
+
+        self._provider = Gtk.CssProvider()
+        self._provider.load_from_string(self._CSS)
+        Gtk.StyleContext.add_provider_for_display(
+            widget.get_display(), self._provider,
+            Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION + 1,
+        )
+
+    def set_enabled(self, surface, enabled):
+        from gi.repository import Gtk
+
+        widget = Gtk.Native.get_for_surface(surface)
+        if self._widget is not None and self._widget is not widget:
+            self._widget.remove_css_class(self.CSS_CLASS)
+            self._widget = None
+        if widget is None:
+            return
+        if enabled and self.supported:
+            self._ensure_provider(widget)
+            widget.add_css_class(self.CSS_CLASS)
+            self._widget = widget
+        else:
+            widget.remove_css_class(self.CSS_CLASS)
+            self._widget = None
+
+    def close(self):
+        if self._widget is not None:
+            self._widget.remove_css_class(self.CSS_CLASS)
+            self._widget = None
+        if self._provider is not None:
+            from gi.repository import Gdk, Gtk
+
+            display = Gdk.Display.get_default()
+            if display is not None:
+                Gtk.StyleContext.remove_provider_for_display(display, self._provider)
+            self._provider = None
+        self._probe.close()
+
+
 class _X11Blur:
     """Use the compositor's _KDE_NET_WM_BLUR_BEHIND_REGION hint on X11."""
 
@@ -458,7 +550,13 @@ class BackdropBlur:
                 if "KDE" in os.environ.get("XDG_CURRENT_DESKTOP", "").split(":"):
                     self._backend = _KWinEffectBlur.connect(gtk)
                 if self._backend is None:
-                    self._backend = _WaylandBlur(display, gtk)
+                    wayland = _WaylandBlur(display, gtk)
+                    if wayland._modern and _gtk_owns_background_effect():
+                        # GTK already holds this surface's effect object; a
+                        # second one is a fatal protocol error.
+                        self._backend = _GtkBackgroundEffectBlur(wayland)
+                    else:
+                        self._backend = wayland
             elif name == "GdkX11Display":
                 self._backend = _X11Blur(display, gtk)
         except (OSError, AttributeError, RuntimeError) as error:

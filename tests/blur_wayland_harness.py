@@ -235,6 +235,14 @@ class WaylandCompositor:
                     self.resource_destroy(resource)
                 elif (modern and opcode == 1) or (not modern and opcode == 0):
                     surface = arguments[1].o
+                    if modern and any(
+                        effect["modern"] and effect["surface"] == surface
+                        for effect in self.effects.values()
+                    ):
+                        # ext-background-effect-v1: one object per wl_surface.
+                        # GTK >= 4.23.3 already owns one for every surface.
+                        self.post_error(resource, 0, b"surface already has a background effect object")
+                        return 0
                     interface = self.effect_interface if modern else self.legacy_effect_interface
                     effect = self._resource(client, interface, 1, arguments[0].u)
                     self.effects[effect] = dict(surface=surface, region=None, modern=modern)

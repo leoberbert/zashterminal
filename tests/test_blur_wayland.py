@@ -160,6 +160,22 @@ class WaylandBlurTests(unittest.TestCase):
             self.assertEqual(compositor.effects, {})
             self.assertEqual(compositor.regions, {})
 
+    def test_second_effect_object_for_a_surface_is_a_fatal_protocol_error(self):
+        # GTK >= 4.23.3 creates its own ext_background_effect_surface_v1 for
+        # every wl_surface. Creating another one, as _WaylandBlur does, makes
+        # the compositor drop the whole connection. BackdropBlur must therefore
+        # route through GTK (CSS backdrop-filter) on those GTK versions.
+        with WaylandCompositor() as compositor:
+            surface = compositor.surface()
+            gtk_owned = self.blur(compositor)
+            gtk_owned.set_enabled(surface, True)
+            compositor.sync()
+            ours = self.blur(compositor)
+            ours.set_enabled(surface, True)
+            with self.assertRaises(RuntimeError):
+                compositor.sync()
+            compositor.drop_connection()
+
     def test_legacy_effect_commits_independently_and_unsets_on_switch_and_close(self):
         with WaylandCompositor(protocol="legacy") as compositor:
             old_surface = compositor.surface(mapped=False)
