@@ -1120,15 +1120,13 @@ class ProcessSpawner:
                 "fi"
             )
             # The remote login shell may be fish/csh, which cannot parse POSIX
-            # syntax; force sh to interpret the bootstrap.
-            shell_bootstrap = f"exec sh -c {shlex.quote(posix_bootstrap)}"
-
-            remote_parts = []
+            # syntax; force sh to interpret the initial command and bootstrap.
+            script_parts = []
             if initial_command:
-                remote_parts.append(initial_command)
-            remote_parts.append(shell_bootstrap)
+                script_parts.append(initial_command)
+            script_parts.append(posix_bootstrap)
 
-            full_remote_command = "; ".join(remote_parts)
+            full_remote_command = f"exec sh -c {shlex.quote('; '.join(script_parts))}"
 
             if "-t" not in cmd:
                 cmd.insert(1, "-t")
