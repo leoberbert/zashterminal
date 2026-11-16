@@ -100,10 +100,10 @@ Cada item tem: problema, mudança, arquivos principais e critério de aceite.
 - **Aceite:** strings novas compilam (`python3 scripts/compile_locales.py pt de fr ru zh en`); UI em pt_BR
   sem textos em inglês novos. Ver UX-13 para os erros antigos que impedem compilar todos.
 
-### UX-13 `[ ]` Dívida de tradução: placeholders inválidos (anterior a esta branch)
-- **Problema:** `msgfmt --check-format` falha em 12 catálogos (cs, sk, da, es, et, hu, it, ja, nl, no, sv, tr)
-  por placeholders traduzidos (ex.: `{local_host}` → `{host_local}`). `compile_locales.py` para no 1º erro.
-- **Mudança:** corrigir os `msgstr` afetados para usar os mesmos nomes de placeholder do `msgid`.
+### UX-13 `[x]` Dívida de tradução: placeholders inválidos (anterior a esta branch)
+- **Problema:** `msgfmt --check-format` falhava em 14 catálogos (cs, sk, da, el, es, et, hu, it, ja, ko, nl, no,
+  sv, tr) por placeholders traduzidos (ex.: `{local_host}` → `{host_local}`).
+- **Feito:** 15 `msgstr` corrigidos com os nomes de placeholder do `msgid`.
 - **Aceite:** `python3 scripts/compile_locales.py` (todos) termina com código 0.
 
 ---
@@ -175,3 +175,5 @@ Cada item tem: problema, mudança, arquivos principais e critério de aceite.
 | 2026-11-16 | UX-08 | ff25695 | Testes dos atalhos alternativos |
 | 2026-11-16 | UX-30 | 9ce81bf | Paleta de comandos |
 | 2026-11-16 | UX-31 | f55b628 | Títulos de grupo e links nas Preferências (parcial) |
+| 2026-11-16 | UX-12 | ac1e84a | Traduções da fase 3 (28 idiomas) |
+| 2026-11-16 | UX-13 | 1da06bb | Placeholders corrigidos; todos os catálogos compilam |
