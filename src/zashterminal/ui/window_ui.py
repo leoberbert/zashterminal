@@ -700,14 +700,7 @@ class WindowUIBuilder:
 
         normal_view.append(toolbar)
 
-        # Session tree in scrolled window (main content)
-        scrolled_window = Gtk.ScrolledWindow(vexpand=True)
-        scrolled_window.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
-        scrolled_window.set_child(self.session_tree.get_widget())
-        scrolled_window.add_css_class("sidebar-session-tree")
-        normal_view.append(scrolled_window)
-
-        # Search entry at the bottom
+        # Search sits above the list so filtering is the first thing reached.
         search_container = Gtk.Box(
             orientation=Gtk.Orientation.VERTICAL, css_classes=["sidebar-search"]
         )
@@ -718,6 +711,32 @@ class WindowUIBuilder:
         self.sidebar_search_entry.set_margin_end(6)
         search_container.append(self.sidebar_search_entry)
         normal_view.append(search_container)
+
+        # Session tree in scrolled window (main content)
+        scrolled_window = Gtk.ScrolledWindow(vexpand=True)
+        scrolled_window.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
+        scrolled_window.set_child(self.session_tree.get_widget())
+        scrolled_window.add_css_class("sidebar-session-tree")
+
+        self.sidebar_list_stack = Gtk.Stack(vexpand=True)
+        self.sidebar_list_stack.add_named(scrolled_window, "tree")
+        self.sidebar_list_stack.add_named(self._create_sidebar_empty_state(), "empty")
+        self.sidebar_list_stack.add_named(
+            Adw.StatusPage(
+                icon_name="edit-find-symbolic",
+                title=_("No Matching Sessions"),
+                css_classes=["compact"],
+            ),
+            "no-results",
+        )
+        normal_view.append(self.sidebar_list_stack)
+        self.session_tree.filter_model.connect(
+            "items-changed", lambda *_args: self.update_sidebar_placeholder()
+        )
+        self.sidebar_search_entry.connect(
+            "search-changed", lambda *_args: self.update_sidebar_placeholder()
+        )
+        self.update_sidebar_placeholder()
 
         self.sidebar_main_stack.add_named(normal_view, "normal")
 
@@ -734,6 +753,48 @@ class WindowUIBuilder:
         self.sidebar_content_stack = self.sidebar_main_stack
 
         return sidebar_box
+
+    def _create_sidebar_empty_state(self) -> Gtk.Widget:
+        """First-run guidance shown while there are no sessions, folders or layouts."""
+        actions = Gtk.Box(
+            orientation=Gtk.Orientation.VERTICAL, spacing=8, halign=Gtk.Align.CENTER
+        )
+        add_button = Gtk.Button(
+            label=_("Add Session"),
+            action_name="win.add-session-root",
+            css_classes=["suggested-action", "pill"],
+        )
+        actions.append(add_button)
+
+        imports = Gio.Menu()
+        imports.append("SecureCRT…", "win.import-securecrt-sessions")
+        imports.append("PuTTY…", "win.import-putty-sessions")
+        imports.append("Multi PuTTY…", "win.import-multiputty-sessions")
+        imports.append("mRemoteNG…", "win.import-mremoteng-sessions")
+        import_button = Gtk.MenuButton(
+            label=_("Import Sessions"), menu_model=imports, css_classes=["pill"]
+        )
+        actions.append(import_button)
+
+        return Adw.StatusPage(
+            icon_name="network-server-symbolic",
+            title=_("No Saved Sessions"),
+            description=_(
+                "Save SSH hosts, keys and jump hosts to connect with one click."
+            ),
+            child=actions,
+            css_classes=["compact"],
+        )
+
+    def update_sidebar_placeholder(self) -> None:
+        """Show the list, the first-run guidance, or the no-results message."""
+        if self.session_tree.filter_model.get_n_items() > 0:
+            page = "tree"
+        elif self.sidebar_search_entry.get_text().strip():
+            page = "no-results"
+        else:
+            page = "empty"
+        self.sidebar_list_stack.set_visible_child_name(page)
 
     def _create_content_area(self) -> Gtk.Widget:
         """Create the main content area with tabs, file manager, and AI panel."""

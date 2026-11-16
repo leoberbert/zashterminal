@@ -180,10 +180,9 @@ popover.menu separator {
     background-color: alpha(@destructive_color, 0.18);
 }
 
-/* Sidebar search */
+/* Sidebar search (above the session list) */
 .sidebar-search {
-    padding: 8px 12px 12px 12px;
-    /* background: @window_bg_color; removed */
+    padding: 0 6px 6px 6px;
 }
 
 .sidebar-search entry {

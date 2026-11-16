@@ -7,7 +7,7 @@ import gi
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
 gi.require_version("Gdk", "4.0")
-from gi.repository import Gdk, Gio, GLib, GObject, Graphene, Gtk
+from gi.repository import Gdk, Gio, GLib, GObject, Graphene, Gtk, Pango
 
 from ..core.signals import AppSignals
 from ..helpers import create_themed_popover_menu
@@ -346,8 +346,13 @@ class SessionTreeView:
         spacer.set_name("indent-spacer")  # Assign a name to find it later
         box.append(spacer)
 
+        # Disclosure arrow for folders (blank for other rows, keeps alignment)
+        arrow = Gtk.Image(pixel_size=12)
+        arrow.set_size_request(12, -1)
+        arrow.add_css_class("dim-label")
         icon = Gtk.Image()
-        label = Gtk.Label(xalign=0.0, hexpand=True)
+        label = Gtk.Label(xalign=0.0, hexpand=True, ellipsize=Pango.EllipsizeMode.END)
+        box.append(arrow)
         box.append(icon)
         box.append(label)
         list_item.set_child(box)
@@ -377,12 +382,14 @@ class SessionTreeView:
         box = list_item.get_child()
         # MODIFIED: Find widgets by their position/type
         spacer = box.get_first_child()
-        icon = spacer.get_next_sibling()
+        arrow = spacer.get_next_sibling()
+        icon = arrow.get_next_sibling()
         label = icon.get_next_sibling()
 
         tree_list_row = list_item.get_item()
         item = tree_list_row.get_item()
-        label.set_label(item.name)
+        label.set_markup(self._row_markup(item))
+        arrow.clear()
 
         # MODIFIED: Dynamic indentation using the spacer widget
         depth = tree_list_row.get_depth()
@@ -414,12 +421,15 @@ class SessionTreeView:
                     )
                 )
 
-                icon_name = (
-                    "folder-open-symbolic"
-                    if row.get_expanded()
-                    else ("folder-new-symbolic" if has_children else "folder-symbolic")
+                if has_children:
+                    arrow.set_from_icon_name(
+                        "pan-down-symbolic" if row.get_expanded() else "pan-end-symbolic"
+                    )
+                else:
+                    arrow.clear()
+                icon.set_from_icon_name(
+                    "folder-open-symbolic" if row.get_expanded() else "folder-symbolic"
                 )
-                icon.set_from_icon_name(icon_name)
 
             update_folder_icon(tree_list_row)
             icon_handler_id = tree_list_row.connect(
@@ -429,6 +439,15 @@ class SessionTreeView:
                 "notify::expanded", self._on_folder_expansion_changed
             )
             list_item.handler_ids = [icon_handler_id, expansion_handler_id]
+
+    @staticmethod
+    def _row_markup(item) -> str:
+        """Row text: the name, plus a dim ``user@host`` for SSH sessions."""
+        name = GLib.markup_escape_text(item.name or "")
+        if isinstance(item, SessionItem) and item.is_ssh() and item.host:
+            target = GLib.markup_escape_text(item.get_connection_string())
+            return f"{name}  <span size='small' alpha='55%'>{target}</span>"
+        return name
 
     def _on_factory_unbind(
         self, factory: Gtk.SignalListItemFactory, list_item: Gtk.ListItem
