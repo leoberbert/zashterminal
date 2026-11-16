@@ -122,9 +122,12 @@ Cada item tem: problema, mudança, arquivos principais e critério de aceite.
   `usuário@host` esmaecido nas sessões SSH; setas de expansão nas pastas (substitui o ícone de pasta com "+").
 - **Arquivos:** `ui/window_ui.py`, `sessions/tree.py`, `data/styles/window.css`.
 
-### UX-22 `[ ]` Seções Conectadas / Favoritas
-- **Mudança:** campo `favorite` na sessão; seções no topo do painel. Exige migração compatível do JSON.
-- **Arquivos:** `sessions/models.py`, `sessions/storage.py`, `sessions/tree.py`.
+### UX-22 `[~]` Favoritas
+- **Feito:** campo `favorite` em `SessionItem` (JSON antigo sem o campo vira `False`); interruptor "Favorita" em
+  Avançado no editor; estrela ★ na árvore; favoritas primeiro na paleta de comandos. Teste: `tests/test_session_favorite.py`.
+- **Pendente:** seções "Conectadas" e "Favoritas" fixas no topo do painel (a árvore é um `Gtk.TreeListModel`
+  com pastas; seções exigem um modelo de lista separado — decidir se vale a troca).
+- **Arquivos:** `sessions/models.py`, `sessions/tree.py`, `ui/dialogs/session_edit_dialog.py`, `ui/command_palette.py`.
 
 ### UX-23 `[x]` Broadcast evidente nos painéis
 - **Feito:** com a barra aberta, terminais-alvo ganham contorno laranja e a barra mostra "Envia para N: nomes",
@@ -177,3 +180,4 @@ Cada item tem: problema, mudança, arquivos principais e critério de aceite.
 | 2026-11-16 | UX-31 | f55b628 | Títulos de grupo e links nas Preferências (parcial) |
 | 2026-11-16 | UX-12 | ac1e84a | Traduções da fase 3 (28 idiomas) |
 | 2026-11-16 | UX-13 | 1da06bb | Placeholders corrigidos; todos os catálogos compilam |
+| 2026-11-16 | UX-22 | (ver git log) | Sessões favoritas (parcial) |
