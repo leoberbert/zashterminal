@@ -741,24 +741,49 @@ class TabManager:
             self.logger.warning(f"Could not parse color '{bg_color_str}': {e}")
             return "#000000"
 
-    def _apply_tab_color(self, widget: Gtk.Widget, color_string: Optional[str]):
+    @staticmethod
+    def _contrast_text_color(color_string: str) -> str:
+        """Black or white, whichever reads better on `color_string`."""
+        rgba = Gdk.RGBA()
+        if not rgba.parse(color_string):
+            return "white"
+        luminance = 0.299 * rgba.red + 0.587 * rgba.green + 0.114 * rgba.blue
+        return "black" if luminance > 0.6 else "white"
+
+    @staticmethod
+    def _set_widget_css(widget: Gtk.Widget, css: Optional[str]) -> None:
+        """Replace the per-widget session-color CSS (None removes it)."""
         style_context = widget.get_style_context()
         if hasattr(widget, "_color_provider"):
             style_context.remove_provider(widget._color_provider)
             del widget._color_provider
-
-        if color_string:
+        if css:
             provider = Gtk.CssProvider()
-
-            # Apply color only to the top part of the tab (top border)
-            css = f"""
-                .custom-tab-button {{
-                    border: 1px solid {color_string};
-                }}
-            """
             provider.load_from_data(css.encode("utf-8"))
             style_context.add_provider(provider, Gtk.STYLE_PROVIDER_PRIORITY_USER)
             widget._color_provider = provider
+
+    def _apply_tab_color(self, widget: Gtk.Widget, color_string: Optional[str]):
+        """Session color: thin outline on the tab, solid fill while it is active."""
+        widget._session_color = color_string or None
+        if not color_string:
+            self._set_widget_css(widget, None)
+            return
+        text = self._contrast_text_color(color_string)
+        self._set_widget_css(
+            widget,
+            f"""
+            .custom-tab-button {{
+                border: 1px solid {color_string};
+            }}
+            .custom-tab-button.active {{
+                background-image: none;
+                background-color: {color_string};
+                color: {text};
+                box-shadow: 0 2px 10px alpha({color_string}, 0.55);
+            }}
+            """,
+        )
 
     def _create_tab_widget(
         self, page: Adw.ViewStackPage, session: SessionItem
@@ -1679,10 +1704,25 @@ class TabManager:
         self._find_panes_recursive(page.get_child(), panes)
         for pane in panes:
             pane.remove_css_class("pane-focused")
+            self._set_widget_css(pane, None)
 
         focused_pane = self._find_pane_for_terminal(page, terminal)
         if focused_pane:
             focused_pane.add_css_class("pane-focused")
+            # The focus ring follows the session color of the tab, if any.
+            tab = next((t for t, pg in self.pages.items() if pg is page), None)
+            color = getattr(tab, "_session_color", None)
+            if color:
+                self._set_widget_css(
+                    focused_pane,
+                    f"""
+                    .terminal-pane.pane-focused {{
+                        border-color: {color};
+                        box-shadow: 0 0 0 1px alpha({color}, 0.6),
+                                    0 6px 22px alpha({color}, 0.28);
+                    }}
+                    """,
+                )
 
     def _schedule_terminal_focus(self, terminal: Vte.Terminal) -> None:
         """Schedules a deferred focus call for the terminal, ensuring the UI is ready."""

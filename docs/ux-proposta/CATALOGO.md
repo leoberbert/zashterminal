@@ -188,8 +188,15 @@ Cada item tem: problema, mudança, arquivos principais e critério de aceite.
 
 ## Fase 4 — redesenho visual
 
-### VIS-01 `[?]` Escolher a direção visual
-- Três direções renderizadas sobre o app real em `docs/ux-proposta/visual/` (PNG + rascunho de CSS):
-  `A-aurora` (gradiente violeta/azul, painéis flutuantes), `B-console` (compacto, sóbrio, verde),
-  `C-sessao` (cor da sessão tinge cabeçalho e foco; no rascunho a cor é fixa em vermelho).
-- **Aguardando:** escolha do mantenedor. Depois: aplicar em `data/styles/*.css`, tema claro, diálogos.
+### VIS-01 `[x]` Direção visual: Aurora + cor da sessão
+- **Escolha:** direção A (Aurora) com a cor da sessão na aba ativa e na borda de foco.
+- **Feito:** `data/styles/window.css` (cores `@zash_brand`/`@zash_brand_2`, abas em pílula com gradiente, painéis
+  flutuantes arredondados, cabeçalho com leve tom da marca, seleção e busca do painel lateral);
+  `terminal/tabs.py` (cor da aba da sessão preenche a aba ativa e colore o foco do painel).
+- **Imagens:** `visual/aplicado-padrao.png`, `visual/aplicado-cor-da-sessao.png`. As direções B e C ficam só como referência.
+
+### VIS-02 `[ ]` Pendências do redesenho visual
+- Conferir tema claro e tema "Terminal" (não verificados em captura), transparência/desfoque em compositor real.
+- Levar o estilo aos diálogos (preferências, editor de sessão, paleta, gerenciador de comandos) e ao gerenciador de arquivos.
+- Atualizar `docs/gallery` e o README com o novo visual.
+| 2026-11-16 | VIS-01 | (ver git log) | Visual Aurora + cor da sessão aplicado |
