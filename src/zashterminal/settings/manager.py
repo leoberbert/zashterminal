@@ -738,21 +738,35 @@ class SettingsManager:
 
     def apply_terminal_settings(self, terminal, window) -> None:
         user_transparency = self.get("transparency", 0)
-        style_context = window.get_style_context()
+        display = window.get_display()
 
-        # Handle terminal transparency
-        if hasattr(window, "_transparency_css_provider"):
-            style_context.remove_provider(window._transparency_css_provider)
+        # Handle terminal transparency. VTE installs its own opaque
+        # `vte-terminal { background-color: @text_view_bg }` rule on the widget,
+        # so the override must live at a higher priority than APPLICATION.
+        old_provider = getattr(window, "_transparency_css_provider", None)
+        if old_provider is not None:
+            Gtk.StyleContext.remove_provider_for_display(display, old_provider)
+            window._transparency_css_provider = None
         if user_transparency > 0:
             css_provider = Gtk.CssProvider()
-            css = ".terminal-tab-view > .view { background-color: transparent; } .background { background: transparent; }"
+            css = (
+                ".zashterminal-transparent .terminal-tab-view > .view,"
+                " .zashterminal-transparent vte-terminal"
+                " { background-color: transparent; } "
+                "window.zashterminal-transparent,"
+                " .zashterminal-transparent .background { background: transparent; }"
+            )
             css_provider.load_from_data(
                 self._normalize_css_for_compat(css, self._modern_css_supported).encode("utf-8")
             )
-            style_context.add_provider(
-                css_provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
+            Gtk.StyleContext.add_provider_for_display(
+                display, css_provider, Gtk.STYLE_PROVIDER_PRIORITY_USER
             )
             window._transparency_css_provider = css_provider
+        if user_transparency > 0:
+            window.add_css_class("zashterminal-transparent")
+        else:
+            window.remove_css_class("zashterminal-transparent")
 
         self.apply_terminal_colors(terminal)
         self._apply_terminal_behavior(terminal)

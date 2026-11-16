@@ -280,6 +280,39 @@ class SettingsTests(unittest.TestCase):
         terminal.set_color_highlight.assert_called_with(None)
         terminal.set_color_highlight_foreground.assert_called_with(None)
 
+    def test_transparency_overrides_vte_background_and_is_replaced_not_stacked(self):
+        # VTE ships an opaque `vte-terminal` rule; the override must be a
+        # display-wide provider above APPLICATION priority, scoped to the window.
+        terminal = Mock()
+        window = Mock(spec=["get_display", "add_css_class", "remove_css_class"])
+        self.manager._modern_css_supported = True
+        self.manager._settings["transparency"] = 66
+        with patch("zashterminal.settings.manager.Gtk") as gtk:
+            gtk.STYLE_PROVIDER_PRIORITY_USER = 800
+            first, second = Mock(), Mock()
+            gtk.CssProvider.side_effect = [first, second]
+            self.manager.apply_terminal_settings(terminal, window)
+            css = first.load_from_data.call_args.args[0].decode()
+            self.assertIn("vte-terminal", css)
+            gtk.StyleContext.add_provider_for_display.assert_called_once_with(
+                window.get_display(), first, 800
+            )
+            window.add_css_class.assert_called_with("zashterminal-transparent")
+
+            self.manager.apply_terminal_settings(terminal, window)
+            gtk.StyleContext.remove_provider_for_display.assert_called_once_with(
+                window.get_display(), first
+            )
+            self.assertIs(window._transparency_css_provider, second)
+
+            self.manager._settings["transparency"] = 0
+            self.manager.apply_terminal_settings(terminal, window)
+            gtk.StyleContext.remove_provider_for_display.assert_called_with(
+                window.get_display(), second
+            )
+            self.assertIsNone(window._transparency_css_provider)
+            window.remove_css_class.assert_called_with("zashterminal-transparent")
+
     def test_highlight_cache_tracks_the_resolved_palette(self):
         from zashterminal.settings.highlights import HighlightManager
         manager = Mock()
