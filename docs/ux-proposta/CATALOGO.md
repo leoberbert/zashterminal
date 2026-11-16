@@ -140,12 +140,19 @@ Cada item tem: problema, mudança, arquivos principais e critério de aceite.
 
 ## Fase 3 — estrutura
 
-### UX-30 `[ ]` Paleta de comandos (`Ctrl+Shift+P`)
-- Busca única em sessões, comandos salvos, layouts, ações e preferências (mockup `02`).
+### UX-30 `[x]` Paleta de comandos (`Ctrl+Shift+P`)
+- **Feito:** busca única em sessões, layouts, comandos salvos e ações (com atalho exibido). `@` filtra
+  sessões/layouts, `>` filtra ações; Enter executa, Esc fecha. Também no menu principal e no diálogo de atalhos.
+- **Pendente:** buscar preferências individuais (ex.: "fonte") e ação secundária "Conectar via SFTP".
+- **Arquivos:** `ui/command_palette.py`, `ui/actions.py`. Teste: `tests/test_command_palette.py`.
 
-### UX-31 `[ ]` Preferências como central única
-- Navegação lateral; Cores e destaque, IA e Atalhos como páginas; remover duplicação do grupo
-  "Cores do papel de parede" (hoje em dois diálogos). Mockup `06`.
+### UX-31 `[~]` Preferências como central única
+- **Feito:** todos os grupos de Preferências têm título; página Aparência termina com "Mais configurações"
+  (Cores e Destaque, Assistente de IA, Atalhos de Teclado).
+- **Constatação:** a duplicação do grupo "Cores do papel de parede" vem de `ui/color_scheme_dialog.py:ColorSchemeDialog`,
+  que **não é aberto por nenhum caminho do app** (só por `scripts/capture_gallery.py` e
+  `scripts/test_wallpaper_ui.py`). Remover a classe exige adaptar esses scripts e a imagem 06 da galeria.
+- **Pendente:** navegação lateral com Cores/IA/Atalhos como páginas internas (mockup `06`).
 
 ---
 
@@ -166,3 +173,5 @@ Cada item tem: problema, mudança, arquivos principais e critério de aceite.
 | 2026-11-16 | UX-23/24 | 8c9c5b8 | Alvos de broadcast e menu do painel |
 | 2026-11-16 | UX-12 | 7702811 | Traduções da fase 2 (28 idiomas) |
 | 2026-11-16 | UX-08 | ff25695 | Testes dos atalhos alternativos |
+| 2026-11-16 | UX-30 | 9ce81bf | Paleta de comandos |
+| 2026-11-16 | UX-31 | f55b628 | Títulos de grupo e links nas Preferências (parcial) |
