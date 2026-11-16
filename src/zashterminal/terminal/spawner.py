@@ -1130,7 +1130,11 @@ class ProcessSpawner:
                 script_parts.append(initial_command)
             script_parts.append(posix_bootstrap)
 
-            full_remote_command = f"exec sh -c {shlex.quote('; '.join(script_parts))}"
+            # initial_command is a user-configured session command by design and
+            # the whole script is shell-quoted as a single argument.
+            full_remote_command = (
+                f"exec sh -c {shlex.quote('; '.join(script_parts))}"  # NOSONAR
+            )
 
             if "-t" not in cmd:
                 cmd.insert(1, "-t")
