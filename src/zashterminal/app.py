@@ -38,6 +38,7 @@ from .utils.cli_args import parse_launch_cli_args
 from .utils.updater import UpdateManager
 from .utils.exceptions import handle_exception
 from .utils.logger import enable_debug_mode, get_logger, log_app_shutdown, log_app_start
+from .helpers import normalize_accelerator
 from .utils.translation_utils import _
 
 # Lazy imports for startup performance - these are used infrequently
@@ -239,47 +240,62 @@ class ZashTerminalApp(Adw.Application):
         try:
             self.set_accels_for_action("app.quit", ["<Control><Shift>q"])
             self.set_accels_for_action("app.preferences", ["<Control><Shift>comma"])
-            self._update_window_shortcuts()
+            self.apply_window_shortcuts()
         except Exception as e:
             self.logger.error(f"Failed to setup keyboard shortcuts: {e}")
 
-    def _update_window_shortcuts(self) -> None:
-        """Update window-level keyboard shortcuts from settings."""
+    # Extra accelerators that mirror other terminals. They never replace the
+    # configured shortcut and are skipped when another action already uses them.
+    SHORTCUT_ALIASES = {
+        "zoom-in": ["<Control>equal"],
+        "copy": ["<Control><Shift>c"],
+        "next-tab": ["<Control>Page_Down"],
+        "previous-tab": ["<Control>Page_Up"],
+    }
+
+    WINDOW_SHORTCUT_ACTIONS = (
+        "new-local-tab",
+        "close-tab",
+        "copy",
+        "paste",
+        "select-all",
+        "clear-session",
+        "toggle-sidebar",
+        "toggle-file-manager",
+        "toggle-search",
+        "show-command-manager",
+        "new-window",
+        "zoom-in",
+        "zoom-out",
+        "zoom-reset",
+        "split-horizontal",
+        "split-vertical",
+        "close-pane",
+        "focus-pane-up",
+        "focus-pane-down",
+        "focus-pane-left",
+        "focus-pane-right",
+        "next-tab",
+        "previous-tab",
+        "toggle-broadcast",
+        "ai-assistant",
+    )
+
+    def apply_window_shortcuts(self) -> None:
+        """(Re)apply window-level keyboard shortcuts from settings plus aliases."""
         try:
             if not self.settings_manager:
                 return
-            shortcut_actions = [
-                "new-local-tab",
-                "close-tab",
-                "copy",
-                "paste",
-                "select-all",
-                "clear-session",
-                "toggle-sidebar",
-                "toggle-file-manager",
-                "toggle-search",
-                "show-command-manager",
-                "new-window",
-                "zoom-in",
-                "zoom-out",
-                "zoom-reset",
-                "split-horizontal",
-                "split-vertical",
-                "close-pane",
-                "focus-pane-up",
-                "focus-pane-down",
-                "focus-pane-left",
-                "focus-pane-right",
-                "next-tab",
-                "previous-tab",
-                "toggle-broadcast",
-                "ai-assistant",
-            ]
-            for action_name in shortcut_actions:
-                shortcut = self.settings_manager.get_shortcut(action_name)
+            primary = {
+                name: self.settings_manager.get_shortcut(name)
+                for name in self.WINDOW_SHORTCUT_ACTIONS
+            }
+            used = {normalize_accelerator(a) for a in primary.values() if a}
+            for action_name, shortcut in primary.items():
                 accels = [shortcut] if shortcut else []
-                if action_name == "zoom-in":
-                    accels.append("<Control>equal")
+                for alias in self.SHORTCUT_ALIASES.get(action_name, []):
+                    if normalize_accelerator(alias) not in used:
+                        accels.append(alias)
                 self.set_accels_for_action(f"win.{action_name}", accels)
         except Exception as e:
             self.logger.error(f"Failed to update window shortcuts: {e}")

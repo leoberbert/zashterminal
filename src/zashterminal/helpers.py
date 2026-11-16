@@ -64,6 +64,17 @@ def generate_unique_name(base_name: str, existing_names: Set[str]) -> str:
         return f"{base_name} ({counter})"
 
 
+def normalize_accelerator(accelerator: str) -> str:
+    """Canonical GTK form, so "<Control><Shift>c" equals "<Shift><Control>c"."""
+    if not accelerator:
+        return ""
+    parsed = Gtk.accelerator_parse(accelerator)
+    key, mods = parsed[-2], parsed[-1]
+    if not key:
+        return accelerator
+    return Gtk.accelerator_name(key, mods)
+
+
 def accelerator_to_label(accelerator: str) -> str:
     """Convert GTK accelerator string to a human-readable label."""
     if not accelerator:

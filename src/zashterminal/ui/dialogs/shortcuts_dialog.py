@@ -6,7 +6,7 @@ gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
 from gi.repository import Adw, Gdk, Gtk
 
-from ...helpers import accelerator_to_label
+from ...helpers import accelerator_to_label, normalize_accelerator
 from ...utils.tooltip_helper import get_tooltip_helper
 from ...utils.translation_utils import _
 
@@ -78,7 +78,7 @@ class ShortcutsDialog(Adw.PreferencesWindow):
         super().__init__(
             transient_for=parent_window,
             title=_("Keyboard Shortcuts"),
-            search_enabled=False,
+            search_enabled=True,
             default_width=700,
             default_height=600,
         )
@@ -143,14 +143,9 @@ class ShortcutsDialog(Adw.PreferencesWindow):
 
     def _create_shortcut_row(self, action_name: str, title: str) -> Adw.ActionRow:
         """Creates a single row for a shortcut with an edit button."""
-        action_prefix = "app" if action_name in ["quit"] else "win"
-        full_action_name = f"{action_prefix}.{action_name}"
-        accels = self.app.get_accels_for_action(full_action_name)
-        current_accel = accels[0] if accels else ""
-
         row = Adw.ActionRow(
             title=title,
-            subtitle=accelerator_to_label(current_accel) or _("Not set"),
+            subtitle=self._accels_label(action_name),
             activatable=False,
         )
         row.set_title_selectable(False)
@@ -212,24 +207,24 @@ class ShortcutsDialog(Adw.PreferencesWindow):
             new_shortcut_ref[0] = shortcut_string
             label_text = accelerator_to_label(shortcut_string)
 
-            # Check for conflicts
-            conflict_action = None
-            for action in self.app.list_actions():
-                accels = self.app.get_accels_for_action(action)
-                if shortcut_string in accels:
-                    conflict_action = action
-                    break
-
+            conflict_action = self._find_conflicting_action(
+                shortcut_string, own_action=shortcut_key
+            )
             if conflict_action:
                 feedback_label.set_label(
                     _("Current: {}\nNew: {} (Conflicts with {})").format(
-                        current_label, label_text, conflict_action.split('.')[-1].replace('-', ' ').title()
+                        current_label,
+                        label_text,
+                        self._action_title(conflict_action),
                     )
                 )
             else:
                 feedback_label.set_label(
                     _("Current: {}\nNew: {}").format(current_label, label_text)
                 )
+            # A shortcut already used by another action would silently steal
+            # or lose that action; require choosing a free combination.
+            dialog.set_response_enabled("save", conflict_action is None)
             return Gdk.EVENT_STOP
 
         key_controller.connect("key-pressed", on_key_pressed)
@@ -238,6 +233,7 @@ class ShortcutsDialog(Adw.PreferencesWindow):
         dialog.add_response("clear", _("Clear"))
         dialog.add_response("save", _("Set Shortcut"))
         dialog.set_default_response("save")
+        dialog.set_response_enabled("save", False)
         dialog.set_response_appearance("save", Adw.ResponseAppearance.SUGGESTED)
         dialog.set_response_appearance("clear", Adw.ResponseAppearance.DESTRUCTIVE)
 
@@ -258,9 +254,8 @@ class ShortcutsDialog(Adw.PreferencesWindow):
                 self.app.set_accels_for_action(
                     full_action_name, [new_shortcut] if new_shortcut else []
                 )
-                row_to_update.set_subtitle(
-                    accelerator_to_label(new_shortcut) or _("Not set")
-                )
+                self._reapply_window_shortcuts()
+                row_to_update.set_subtitle(self._accels_label(shortcut_key))
 
             dlg.close()
 
@@ -297,10 +292,42 @@ class ShortcutsDialog(Adw.PreferencesWindow):
                         full_action_name, [current_shortcut] if current_shortcut else []
                     )
 
-                    # Update the corresponding row in the UI directly
-                    row = self.shortcut_rows[action_name]
-                    row.set_subtitle(accelerator_to_label(current_shortcut) or _("Not set"))
+                self._reapply_window_shortcuts()
+                for action_name, row in self.shortcut_rows.items():
+                    row.set_subtitle(self._accels_label(action_name))
             dlg.close()
 
         dialog.connect("response", on_reset_response)
         dialog.present()
+
+    def _accels_label(self, action_name: str) -> str:
+        """All accelerators of an action, e.g. "Alt+Page Down · Ctrl+Page Down"."""
+        action_prefix = "app" if action_name in ["quit"] else "win"
+        accels = self.app.get_accels_for_action(f"{action_prefix}.{action_name}")
+        labels = [accelerator_to_label(a) for a in accels if a]
+        return " · ".join(labels) or _("Not set")
+
+    def _reapply_window_shortcuts(self) -> None:
+        """Restore conventional aliases (e.g. Ctrl+Shift+C) around the edited set."""
+        if hasattr(self.app, "apply_window_shortcuts"):
+            self.app.apply_window_shortcuts()
+
+    def _find_conflicting_action(self, shortcut: str, own_action: str):
+        """Return the detailed name of another action already bound to `shortcut`."""
+        wanted = normalize_accelerator(shortcut)
+        for action in self.app.list_action_descriptions():
+            if action.split(".", 1)[-1] == own_action:
+                continue
+            accels = self.app.get_accels_for_action(action)
+            if wanted in {normalize_accelerator(a) for a in accels}:
+                return action
+        return None
+
+    @staticmethod
+    def _action_title(full_action_name: str) -> str:
+        action = full_action_name.split(".", 1)[-1]
+        for group in SHORTCUT_DATA:
+            for name, title in group["shortcuts"]:
+                if name == action:
+                    return title
+        return action.replace("-", " ").title()
