@@ -80,7 +80,7 @@ class PreferencesDialog(Adw.PreferencesWindow):
         )
         self.add(page)
 
-        font_group = Adw.PreferencesGroup()
+        font_group = Adw.PreferencesGroup(title=_("Font"))
         page.add(font_group)
 
         font_row = Adw.ActionRow(
@@ -109,7 +109,7 @@ class PreferencesDialog(Adw.PreferencesWindow):
         line_spacing_row.set_activatable_widget(self.spacing_spin)
         font_group.add(line_spacing_row)
 
-        misc_group = Adw.PreferencesGroup()
+        misc_group = Adw.PreferencesGroup(title=_("Window"))
         page.add(misc_group)
 
         transparency_row = Adw.ActionRow(
@@ -262,6 +262,27 @@ class PreferencesDialog(Adw.PreferencesWindow):
         )
         misc_group.add(headerbar_buttons_row)
 
+        page.add(self._create_related_settings_group())
+
+    def _create_related_settings_group(self) -> Adw.PreferencesGroup:
+        """Entry points to settings that live in their own dialogs."""
+        group = Adw.PreferencesGroup(title=_("More Settings"))
+        for title, action in (
+            (_("Colors & Highlighting"), "win.highlight-settings"),
+            (_("AI Assistant"), "win.configure-ai"),
+            (_("Keyboard Shortcuts"), "win.shortcuts"),
+        ):
+            row = Adw.ActionRow(title=title, activatable=True)
+            row.add_suffix(Gtk.Image.new_from_icon_name("go-next-symbolic"))
+            row.connect("activated", self._on_related_settings_activated, action)
+            group.add(row)
+        return group
+
+    def _on_related_settings_activated(self, _row, action: str) -> None:
+        parent = self.get_transient_for()
+        if parent is not None:
+            parent.activate_action(action, None)
+
     def _setup_terminal_page(self) -> None:
         page = Adw.PreferencesPage(
             title=_("Terminal"), icon_name="utilities-terminal-symbolic"
@@ -269,7 +290,7 @@ class PreferencesDialog(Adw.PreferencesWindow):
         self.add(page)
 
         # Behavior group at the top of Terminal page
-        behavior_group = Adw.PreferencesGroup()
+        behavior_group = Adw.PreferencesGroup(title=_("Behavior"))
         page.add(behavior_group)
 
         # New instance behavior setting
@@ -303,7 +324,7 @@ class PreferencesDialog(Adw.PreferencesWindow):
             )
         )
 
-        cursor_group = Adw.PreferencesGroup()
+        cursor_group = Adw.PreferencesGroup(title=_("Cursor"))
         page.add(cursor_group)
 
         cursor_shape_row = Adw.ComboRow(
@@ -326,7 +347,7 @@ class PreferencesDialog(Adw.PreferencesWindow):
         cursor_blink_row.connect("notify::selected", self._on_cursor_blink_changed)
         cursor_group.add(cursor_blink_row)
 
-        scrolling_group = Adw.PreferencesGroup()
+        scrolling_group = Adw.PreferencesGroup(title=_("Scrolling"))
         page.add(scrolling_group)
 
         scrollback_row = Adw.ActionRow(
@@ -381,7 +402,7 @@ class PreferencesDialog(Adw.PreferencesWindow):
         )
         scrolling_group.add(scroll_on_insert_row)
 
-        shell_group = Adw.PreferencesGroup()
+        shell_group = Adw.PreferencesGroup(title=_("Shell"))
         page.add(shell_group)
 
         login_shell_row = self._create_switch_row(
@@ -406,7 +427,7 @@ class PreferencesDialog(Adw.PreferencesWindow):
         )
         self.add(page)
 
-        startup_group = Adw.PreferencesGroup()
+        startup_group = Adw.PreferencesGroup(title=_("Startup"))
         page.add(startup_group)
 
         restore_policy_row = Adw.ComboRow(
@@ -430,7 +451,7 @@ class PreferencesDialog(Adw.PreferencesWindow):
         )
         startup_group.add(restore_policy_row)
 
-        backup_group = Adw.PreferencesGroup()
+        backup_group = Adw.PreferencesGroup(title=_("Backup"))
         page.add(backup_group)
 
         backup_now_row = Adw.ActionRow(
@@ -454,7 +475,7 @@ class PreferencesDialog(Adw.PreferencesWindow):
         restore_row.set_activatable_widget(restore_button)
         backup_group.add(restore_row)
 
-        remote_edit_group = Adw.PreferencesGroup()
+        remote_edit_group = Adw.PreferencesGroup(title=_("Remote Editing"))
         page.add(remote_edit_group)
 
         use_tmp_dir_row = self._create_switch_row(
@@ -473,7 +494,7 @@ class PreferencesDialog(Adw.PreferencesWindow):
         )
         remote_edit_group.add(clear_on_exit_row)
 
-        ssh_group = Adw.PreferencesGroup()
+        ssh_group = Adw.PreferencesGroup(title="SSH")
         page.add(ssh_group)
 
         persist_row = Adw.ActionRow(
@@ -496,7 +517,7 @@ class PreferencesDialog(Adw.PreferencesWindow):
         )
         self.add(advanced_page)
 
-        features_group = Adw.PreferencesGroup()
+        features_group = Adw.PreferencesGroup(title=_("Text Rendering"))
         advanced_page.add(features_group)
 
         bidi_row = self._create_switch_row(
@@ -523,7 +544,7 @@ class PreferencesDialog(Adw.PreferencesWindow):
         )
         features_group.add(sixel_row)
 
-        compatibility_group = Adw.PreferencesGroup()
+        compatibility_group = Adw.PreferencesGroup(title=_("Compatibility"))
         advanced_page.add(compatibility_group)
 
         backspace_row = Adw.ComboRow(
@@ -567,7 +588,7 @@ class PreferencesDialog(Adw.PreferencesWindow):
         cjk_width_row.connect("notify::selected", self._on_cjk_width_changed)
         compatibility_group.add(cjk_width_row)
 
-        selection_group = Adw.PreferencesGroup()
+        selection_group = Adw.PreferencesGroup(title=_("Selection"))
         advanced_page.add(selection_group)
 
         word_chars_row = Adw.EntryRow(
@@ -594,7 +615,7 @@ class PreferencesDialog(Adw.PreferencesWindow):
         )
         updates_group.add(auto_update_row)
 
-        log_group = Adw.PreferencesGroup()
+        log_group = Adw.PreferencesGroup(title=_("Logs & Transcripts"))
         advanced_page.add(log_group)
 
         log_to_file_row = self._create_switch_row(
