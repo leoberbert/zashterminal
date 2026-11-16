@@ -1346,24 +1346,18 @@ class ZashTerminalWindow(WindowSearchBroadcastMixin, Adw.ApplicationWindow):
         self.sidebar_manager.update_sidebar_sizes()
 
     def _update_tab_layout(self):
-        """Update tab layout and window title based on tab count."""
+        """Show the tab bar whenever a tab exists so the header never re-flows.
+
+        The plain title is only shown while the window has no tabs.
+        """
         tab_count = self.tab_manager.get_tab_count()
         self.set_title(_("Terminal Zash"))
 
-        if tab_count > 1:
+        if tab_count >= 1:
             self.title_stack.set_visible_child_name("tabs-view")
         else:
             self.title_stack.set_visible_child_name("title-view")
-            if tab_count == 1:
-                page = self.tab_manager.view_stack.get_page(
-                    self.tab_manager.view_stack.get_visible_child()
-                )
-                if page:
-                    self.single_tab_title_widget.set_title(
-                        f"{_('Terminal Zash')} - {page.get_title()}"
-                    )
-            else:
-                self.single_tab_title_widget.set_title(_("Terminal Zash"))
+            self.single_tab_title_widget.set_title(_("Terminal Zash"))
 
     def _update_font_sizer_widget(self):
         if self.font_sizer_widget:
