@@ -7607,7 +7607,7 @@ msgstr "Määra õigused {count} elemendi jaoks"
 #: NEEDS WORK
 #, python-brace-format
 msgid "Permissions for {name}"
-msgstr "{ name } õigused"
+msgstr "{name} õigused"
 # 
 # File: usr/share/zashterminal/filemanager/manager.py, line: 1179
 #: NEEDS WORK

@@ -6263,7 +6263,7 @@ msgstr "設定のリセットに失敗しました: {}"
 #: NEEDS WORK
 #, python-brace-format
 msgid "Move {item_type}"
-msgstr "アイテムタイプを移動"
+msgstr "{item_type}を移動"
 # 
 # File: usr/share/zashterminal/ui/dialogs.py, line: 2183
 #: NEEDS WORK

@@ -3285,7 +3285,7 @@ msgstr "Nepodařilo se načíst modely: {error}"
 #: NEEDS WORK
 #, python-brace-format
 msgid "{count} models available"
-msgstr "{k} modelů k dispozici"
+msgstr "{count} modelů k dispozici"
 # 
 # File: src/zashterminal/ui/dialogs/ai_config_dialog.py, line: 492
 #: NEEDS WORK

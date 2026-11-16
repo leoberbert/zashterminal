@@ -4841,7 +4841,7 @@ msgstr "SSH Φιλοξενούμενος"
 #: NEEDS WORK
 #, python-brace-format
 msgid "{local_host}:{local_port} → {remote_host}:{remote_port}"
-msgstr "{τοπικός_υπολογιστής}:{τοπική_θύρα} → {απομακρυσμένος_υπολογιστής}:{απομακρυσμένη_θύρα}"
+msgstr "{local_host}:{local_port} → {remote_host}:{remote_port}"
 # 
 # File: usr/share/zashterminal/ui/dialogs/session_edit_dialog.py, line: 484
 #: NEEDS WORK
