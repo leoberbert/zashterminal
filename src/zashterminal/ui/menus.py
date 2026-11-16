@@ -164,6 +164,7 @@ class MainApplicationMenu:
 
         window_section = Gio.Menu()
         window_section.append(_("New Window"), "win.new-window")
+        window_section.append(_("Command Palette"), "win.command-palette")
         menu.append_section(None, window_section)
 
         customize = Gio.Menu()

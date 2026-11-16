@@ -279,6 +279,7 @@ class ZashTerminalApp(Adw.Application):
         "previous-tab",
         "toggle-broadcast",
         "ai-assistant",
+        "command-palette",
     )
 
     def apply_window_shortcuts(self) -> None:

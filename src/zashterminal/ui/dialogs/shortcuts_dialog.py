@@ -60,6 +60,7 @@ SHORTCUT_DATA = [
             ("toggle-sidebar", _("Sessions Panel")),
             ("toggle-file-manager", _("File Manager")),
             ("show-command-manager", _("Command Manager")),
+            ("command-palette", _("Command Palette")),
             ("new-window", _("New Window")),
             ("preferences", _("Preferences")),
             ("quit", _("Quit Application")),

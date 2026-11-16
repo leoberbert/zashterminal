@@ -81,6 +81,7 @@ class WindowActions:
             "shortcuts": self.shortcuts,
             "new-window": self.new_window,
             "save-layout": self.save_layout,
+            "command-palette": self.command_palette,
         }
         for name, callback in actions_map.items():
             action = Gio.SimpleAction.new(name, None)
@@ -417,6 +418,12 @@ class WindowActions:
         self.window.broadcast_button.set_active(
             not self.window.broadcast_button.get_active()
         )
+
+    def command_palette(self, *_args):
+        self._hide_tooltip()
+        from .command_palette import CommandPalette
+
+        CommandPalette(self.window).present(self.window)
 
     def show_command_manager(self, *_args):
         self._hide_tooltip()
