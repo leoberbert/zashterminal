@@ -1111,7 +1111,7 @@ class ProcessSpawner:
                 f"{OSC7_HOST_DETECTION_SNIPPET} "
                 'printf "\\033]7;file://%s%s\\007" "$ZASHTERMINAL_OSC7_HOST" "$PWD"'
             )
-            shell_bootstrap = (
+            posix_bootstrap = (
                 'if [ -n "$SHELL" ] && echo "$SHELL" | grep -qi "fish"; then '
                 'exec "$SHELL" -l; '
                 "else "
@@ -1119,6 +1119,9 @@ class ProcessSpawner:
                 'exec "$SHELL" -l; '
                 "fi"
             )
+            # The remote login shell may be fish/csh, which cannot parse POSIX
+            # syntax; force sh to interpret the bootstrap.
+            shell_bootstrap = f"exec sh -c {shlex.quote(posix_bootstrap)}"
 
             remote_parts = []
             if initial_command:
