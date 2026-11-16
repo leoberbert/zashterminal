@@ -282,8 +282,10 @@ class SidebarManager:
         return Gdk.EVENT_PROPAGATE
 
     def _update_sidebar_button_icon(self) -> None:
-        set_button_icon(self.toggle_sidebar_button, "computer-symbolic")
-        get_tooltip_helper().add_tooltip(self.toggle_sidebar_button, _("Show Sessions"))
+        set_button_icon(self.toggle_sidebar_button, "sidebar-show-symbolic")
+        get_tooltip_helper().add_tooltip_with_shortcut(
+            self.toggle_sidebar_button, _("Sessions Panel"), "toggle-sidebar"
+        )
 
     def _focus_first_item(self):
         """Focus on the first item in the session tree for keyboard navigation."""

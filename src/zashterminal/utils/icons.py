@@ -19,7 +19,7 @@ from typing import Optional
 
 import gi
 
-from .tooltip_helper import get_tooltip_helper
+from .tooltip_helper import get_tooltip_helper, set_accessible_label
 
 gi.require_version("Gtk", "4.0")
 from gi.repository import Gtk, Gio
@@ -195,6 +195,7 @@ def create_icon_button(
             helper.add_tooltip(button, tooltip)
         else:
             button.set_tooltip_text(tooltip)
+            set_accessible_label(button, tooltip)
 
     if css_classes:
         for css_class in css_classes:
