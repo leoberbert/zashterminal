@@ -8780,3 +8780,59 @@ msgstr ""
 "Look for newer Releases or tags on GitHub when the app starts "
 "(unreleased main tip is ignored unless ZASHTERMINAL_UPDATE_ALLOW_MAIN=1). "
 "Disable entirely with ZASHTERMINAL_DISABLE_AUTO_UPDATE=1."
+
+#: src/zashterminal/ui/window_ui.py
+msgid "Previous match"
+msgstr "Попередній збіг"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "Next match"
+msgstr "Наступний збіг"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "Broadcast Command"
+msgstr "Транслювати команду"
+
+#: src/zashterminal/ui/window_search_broadcast.py
+msgid "Select None"
+msgstr "Зняти виділення"
+
+#: src/zashterminal/ui/window_search_broadcast.py
+msgid "Command sent to {name}"
+msgstr "Команду надіслано до {name}"
+
+#: src/zashterminal/ui/window_search_broadcast.py
+msgid "Command sent to {count} terminals: {names}"
+msgstr "Команду надіслано до терміналів ({count}): {names}"
+
+#: src/zashterminal/ui/menus.py
+msgid "Colors & Highlighting"
+msgstr "Кольори та підсвічування"
+
+#: src/zashterminal/ui/menus.py
+msgid "Customize"
+msgstr "Налаштувати"
+
+#: src/zashterminal/ui/menus.py
+msgid "Tools"
+msgstr "Інструменти"
+
+#: src/zashterminal/ui/menus.py
+msgid "Import Sessions"
+msgstr "Імпортувати сеанси"
+
+#: src/zashterminal/ui/menus.py
+msgid "Start TFTP Server"
+msgstr "Запустити TFTP-сервер"
+
+#: src/zashterminal/ui/menus.py
+msgid "Stop TFTP Server"
+msgstr "Зупинити TFTP-сервер"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Copy on Select"
+msgstr "Копіювати під час виділення"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Selecting text copies it to the clipboard"
+msgstr "Виділений текст копіюється в буфер обміну"

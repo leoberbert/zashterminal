@@ -8776,3 +8776,59 @@ msgstr ""
 "Look for newer Releases or tags on GitHub when the app starts "
 "(unreleased main tip is ignored unless ZASHTERMINAL_UPDATE_ALLOW_MAIN=1). "
 "Disable entirely with ZASHTERMINAL_DISABLE_AUTO_UPDATE=1."
+
+#: src/zashterminal/ui/window_ui.py
+msgid "Previous match"
+msgstr "Предыдущее совпадение"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "Next match"
+msgstr "Следующее совпадение"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "Broadcast Command"
+msgstr "Транслировать команду"
+
+#: src/zashterminal/ui/window_search_broadcast.py
+msgid "Select None"
+msgstr "Снять выделение"
+
+#: src/zashterminal/ui/window_search_broadcast.py
+msgid "Command sent to {name}"
+msgstr "Команда отправлена в {name}"
+
+#: src/zashterminal/ui/window_search_broadcast.py
+msgid "Command sent to {count} terminals: {names}"
+msgstr "Команда отправлена в терминалы ({count}): {names}"
+
+#: src/zashterminal/ui/menus.py
+msgid "Colors & Highlighting"
+msgstr "Цвета и подсветка"
+
+#: src/zashterminal/ui/menus.py
+msgid "Customize"
+msgstr "Настроить"
+
+#: src/zashterminal/ui/menus.py
+msgid "Tools"
+msgstr "Инструменты"
+
+#: src/zashterminal/ui/menus.py
+msgid "Import Sessions"
+msgstr "Импорт сеансов"
+
+#: src/zashterminal/ui/menus.py
+msgid "Start TFTP Server"
+msgstr "Запустить TFTP-сервер"
+
+#: src/zashterminal/ui/menus.py
+msgid "Stop TFTP Server"
+msgstr "Остановить TFTP-сервер"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Copy on Select"
+msgstr "Копировать при выделении"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Selecting text copies it to the clipboard"
+msgstr "Выделенный текст копируется в буфер обмена"

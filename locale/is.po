@@ -8779,3 +8779,59 @@ msgstr ""
 "Look for newer Releases or tags on GitHub when the app starts "
 "(unreleased main tip is ignored unless ZASHTERMINAL_UPDATE_ALLOW_MAIN=1). "
 "Disable entirely with ZASHTERMINAL_DISABLE_AUTO_UPDATE=1."
+
+#: src/zashterminal/ui/window_ui.py
+msgid "Previous match"
+msgstr "Fyrri samsvörun"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "Next match"
+msgstr "Næsta samsvörun"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "Broadcast Command"
+msgstr "Senda skipun út"
+
+#: src/zashterminal/ui/window_search_broadcast.py
+msgid "Select None"
+msgstr "Velja ekkert"
+
+#: src/zashterminal/ui/window_search_broadcast.py
+msgid "Command sent to {name}"
+msgstr "Skipun send til {name}"
+
+#: src/zashterminal/ui/window_search_broadcast.py
+msgid "Command sent to {count} terminals: {names}"
+msgstr "Skipun send til {count} útstöðva: {names}"
+
+#: src/zashterminal/ui/menus.py
+msgid "Colors & Highlighting"
+msgstr "Litir og áherslur"
+
+#: src/zashterminal/ui/menus.py
+msgid "Customize"
+msgstr "Sérsníða"
+
+#: src/zashterminal/ui/menus.py
+msgid "Tools"
+msgstr "Verkfæri"
+
+#: src/zashterminal/ui/menus.py
+msgid "Import Sessions"
+msgstr "Flytja inn setur"
+
+#: src/zashterminal/ui/menus.py
+msgid "Start TFTP Server"
+msgstr "Ræsa TFTP-þjón"
+
+#: src/zashterminal/ui/menus.py
+msgid "Stop TFTP Server"
+msgstr "Stöðva TFTP-þjón"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Copy on Select"
+msgstr "Afrita við val"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Selecting text copies it to the clipboard"
+msgstr "Valinn texti er afritaður á klippispjaldið"

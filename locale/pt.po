@@ -9343,3 +9343,59 @@ msgstr "Aplica-se apenas a esta janela do terminal."
 #: src/zashterminal/ui/dialogs/preferences_dialog.py
 msgid "Install the Zashterminal KWin effect to control strength independently."
 msgstr "Instale o efeito KWin do Zashterminal para controlar a intensidade de forma independente."
+
+#: src/zashterminal/ui/window_ui.py
+msgid "Previous match"
+msgstr "Correspondência anterior"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "Next match"
+msgstr "Próxima correspondência"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "Broadcast Command"
+msgstr "Transmitir Comando"
+
+#: src/zashterminal/ui/window_search_broadcast.py
+msgid "Select None"
+msgstr "Selecionar Nenhum"
+
+#: src/zashterminal/ui/window_search_broadcast.py
+msgid "Command sent to {name}"
+msgstr "Comando enviado para {name}"
+
+#: src/zashterminal/ui/window_search_broadcast.py
+msgid "Command sent to {count} terminals: {names}"
+msgstr "Comando enviado para {count} terminais: {names}"
+
+#: src/zashterminal/ui/menus.py
+msgid "Colors & Highlighting"
+msgstr "Cores e Destaque"
+
+#: src/zashterminal/ui/menus.py
+msgid "Customize"
+msgstr "Personalizar"
+
+#: src/zashterminal/ui/menus.py
+msgid "Tools"
+msgstr "Ferramentas"
+
+#: src/zashterminal/ui/menus.py
+msgid "Import Sessions"
+msgstr "Importar Sessões"
+
+#: src/zashterminal/ui/menus.py
+msgid "Start TFTP Server"
+msgstr "Iniciar Servidor TFTP"
+
+#: src/zashterminal/ui/menus.py
+msgid "Stop TFTP Server"
+msgstr "Parar Servidor TFTP"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Copy on Select"
+msgstr "Copiar ao Selecionar"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Selecting text copies it to the clipboard"
+msgstr "Selecionar texto o copia para a área de transferência"

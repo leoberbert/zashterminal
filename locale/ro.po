@@ -8799,3 +8799,59 @@ msgstr ""
 "Look for newer Releases or tags on GitHub when the app starts "
 "(unreleased main tip is ignored unless ZASHTERMINAL_UPDATE_ALLOW_MAIN=1). "
 "Disable entirely with ZASHTERMINAL_DISABLE_AUTO_UPDATE=1."
+
+#: src/zashterminal/ui/window_ui.py
+msgid "Previous match"
+msgstr "Potrivirea anterioară"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "Next match"
+msgstr "Potrivirea următoare"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "Broadcast Command"
+msgstr "Difuzează comanda"
+
+#: src/zashterminal/ui/window_search_broadcast.py
+msgid "Select None"
+msgstr "Nu selecta nimic"
+
+#: src/zashterminal/ui/window_search_broadcast.py
+msgid "Command sent to {name}"
+msgstr "Comandă trimisă către {name}"
+
+#: src/zashterminal/ui/window_search_broadcast.py
+msgid "Command sent to {count} terminals: {names}"
+msgstr "Comandă trimisă către {count} terminale: {names}"
+
+#: src/zashterminal/ui/menus.py
+msgid "Colors & Highlighting"
+msgstr "Culori și evidențiere"
+
+#: src/zashterminal/ui/menus.py
+msgid "Customize"
+msgstr "Personalizează"
+
+#: src/zashterminal/ui/menus.py
+msgid "Tools"
+msgstr "Instrumente"
+
+#: src/zashterminal/ui/menus.py
+msgid "Import Sessions"
+msgstr "Importă sesiuni"
+
+#: src/zashterminal/ui/menus.py
+msgid "Start TFTP Server"
+msgstr "Pornește serverul TFTP"
+
+#: src/zashterminal/ui/menus.py
+msgid "Stop TFTP Server"
+msgstr "Oprește serverul TFTP"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Copy on Select"
+msgstr "Copiere la selectare"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Selecting text copies it to the clipboard"
+msgstr "Selectarea textului îl copiază în clipboard"

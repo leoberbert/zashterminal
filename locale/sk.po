@@ -8783,3 +8783,59 @@ msgstr ""
 "Look for newer Releases or tags on GitHub when the app starts "
 "(unreleased main tip is ignored unless ZASHTERMINAL_UPDATE_ALLOW_MAIN=1). "
 "Disable entirely with ZASHTERMINAL_DISABLE_AUTO_UPDATE=1."
+
+#: src/zashterminal/ui/window_ui.py
+msgid "Previous match"
+msgstr "Predchádzajúca zhoda"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "Next match"
+msgstr "Ďalšia zhoda"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "Broadcast Command"
+msgstr "Rozoslať príkaz"
+
+#: src/zashterminal/ui/window_search_broadcast.py
+msgid "Select None"
+msgstr "Nevybrať nič"
+
+#: src/zashterminal/ui/window_search_broadcast.py
+msgid "Command sent to {name}"
+msgstr "Príkaz odoslaný do {name}"
+
+#: src/zashterminal/ui/window_search_broadcast.py
+msgid "Command sent to {count} terminals: {names}"
+msgstr "Príkaz odoslaný do terminálov ({count}): {names}"
+
+#: src/zashterminal/ui/menus.py
+msgid "Colors & Highlighting"
+msgstr "Farby a zvýraznenie"
+
+#: src/zashterminal/ui/menus.py
+msgid "Customize"
+msgstr "Prispôsobiť"
+
+#: src/zashterminal/ui/menus.py
+msgid "Tools"
+msgstr "Nástroje"
+
+#: src/zashterminal/ui/menus.py
+msgid "Import Sessions"
+msgstr "Importovať relácie"
+
+#: src/zashterminal/ui/menus.py
+msgid "Start TFTP Server"
+msgstr "Spustiť server TFTP"
+
+#: src/zashterminal/ui/menus.py
+msgid "Stop TFTP Server"
+msgstr "Zastaviť server TFTP"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Copy on Select"
+msgstr "Kopírovať pri výbere"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Selecting text copies it to the clipboard"
+msgstr "Vybraný text sa skopíruje do schránky"
