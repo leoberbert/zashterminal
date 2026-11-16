@@ -8944,3 +8944,19 @@ msgstr "Избранное"
 #: src/zashterminal/ui/dialogs/session_edit_dialog.py
 msgid "Mark with a star and list it first in the Command Palette"
 msgstr "Отметить звёздочкой и показывать первым в палитре команд"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "SFTP: {name}"
+msgstr "SFTP: {name}"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Settings"
+msgstr "Настройки"
+
+#: src/zashterminal/ui/session_edit_dialog.py
+msgid "Jump Host, Tunnels and More"
+msgstr "Jump Host, туннели и прочее"
+
+#: src/zashterminal/ui/session_edit_dialog.py
+msgid "ProxyJump, X11, SFTP directories and port forwarding"
+msgstr "ProxyJump, X11, каталоги SFTP и проброс портов"

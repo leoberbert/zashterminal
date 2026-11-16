@@ -9511,3 +9511,19 @@ msgstr "Favorita"
 #: src/zashterminal/ui/dialogs/session_edit_dialog.py
 msgid "Mark with a star and list it first in the Command Palette"
 msgstr "Marca com estrela e lista primeiro na Paleta de Comandos"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "SFTP: {name}"
+msgstr "SFTP: {name}"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Settings"
+msgstr "Configurações"
+
+#: src/zashterminal/ui/session_edit_dialog.py
+msgid "Jump Host, Tunnels and More"
+msgstr "Jump Host, Túneis e Mais"
+
+#: src/zashterminal/ui/session_edit_dialog.py
+msgid "ProxyJump, X11, SFTP directories and port forwarding"
+msgstr "ProxyJump, X11, diretórios SFTP e redirecionamento de portas"

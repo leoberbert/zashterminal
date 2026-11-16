@@ -8947,3 +8947,19 @@ msgstr "Favorit"
 #: src/zashterminal/ui/dialogs/session_edit_dialog.py
 msgid "Mark with a star and list it first in the Command Palette"
 msgstr "Označi zvjezdicom i prikaži prvo u paleti naredbi"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "SFTP: {name}"
+msgstr "SFTP: {name}"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Settings"
+msgstr "Postavke"
+
+#: src/zashterminal/ui/session_edit_dialog.py
+msgid "Jump Host, Tunnels and More"
+msgstr "Jump Host, tuneli i više"
+
+#: src/zashterminal/ui/session_edit_dialog.py
+msgid "ProxyJump, X11, SFTP directories and port forwarding"
+msgstr "ProxyJump, X11, SFTP direktoriji i prosljeđivanje portova"

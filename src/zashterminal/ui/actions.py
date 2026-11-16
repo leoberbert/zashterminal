@@ -451,7 +451,7 @@ class WindowActions:
         )
         dialog.present()
 
-    def preferences(self, *_args):
+    def preferences(self, *_args, page: str = ""):
         self._hide_tooltip()
         from .dialogs import PreferencesDialog
         dialog = PreferencesDialog(self.window, self.window.settings_manager)
@@ -467,6 +467,8 @@ class WindowActions:
             "font-changed",
             lambda d, f: self.window.terminal_manager.apply_settings_to_all_terminals(),
         )
+        if page:
+            dialog.set_visible_page_name(page)
         dialog.present()
 
     def import_securecrt_sessions(self, *_args):

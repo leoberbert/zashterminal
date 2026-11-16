@@ -83,6 +83,30 @@ def _action_entries(window: "ZashTerminalWindow") -> List[PaletteEntry]:
     return entries
 
 
+def _preferences_entries(window: "ZashTerminalWindow") -> List[PaletteEntry]:
+    """One entry per Preferences page (page names are set in preferences_dialog)."""
+    pages = (
+        ("appearance", _("Appearance"), "preferences-desktop-display-symbolic"),
+        ("terminal", _("Terminal"), "utilities-terminal-symbolic"),
+        ("profiles", _("Profiles & Data"), "folder-saved-search-symbolic"),
+        ("advanced", _("Advanced"), "preferences-other-symbolic"),
+    )
+
+    def open_page(name: str) -> None:
+        window.action_handler.preferences(page=name)
+
+    return [
+        PaletteEntry(
+            kind="setting",
+            title=_("Preferences") + ": " + title,
+            subtitle="",
+            icon_name=icon,
+            activate=lambda n=name: open_page(n),
+        )
+        for name, title, icon in pages
+    ]
+
+
 def build_entries(window: "ZashTerminalWindow") -> List[PaletteEntry]:
     entries: List[PaletteEntry] = []
 
@@ -107,6 +131,16 @@ def build_entries(window: "ZashTerminalWindow") -> List[PaletteEntry]:
                 activate=lambda s=session: window._on_session_activated(s),
             )
         )
+        if session.is_ssh():
+            entries.append(
+                PaletteEntry(
+                    kind="session",
+                    title=_("SFTP: {name}").format(name=session.name),
+                    subtitle=session.get_connection_string(),
+                    icon_name="folder-remote-symbolic",
+                    activate=lambda s=session: window.tab_manager.create_sftp_tab(s),
+                )
+            )
 
     for layout in getattr(window, "layouts", []) or []:
         entries.append(
@@ -142,10 +176,11 @@ def build_entries(window: "ZashTerminalWindow") -> List[PaletteEntry]:
         pass
 
     entries.extend(_action_entries(window))
+    entries.extend(_preferences_entries(window))
     return entries
 
 
-_KIND_ORDER = {"session": 0, "layout": 1, "command": 2, "action": 3}
+_KIND_ORDER = {"session": 0, "layout": 1, "command": 2, "action": 3, "setting": 4}
 
 
 def filter_entries(entries: List[PaletteEntry], query: str) -> List[PaletteEntry]:
@@ -155,7 +190,7 @@ def filter_entries(entries: List[PaletteEntry], query: str) -> List[PaletteEntry
     if query.startswith(SESSION_PREFIX):
         kinds, query = {"session", "layout"}, query[1:]
     elif query.startswith(ACTION_PREFIX):
-        kinds, query = {"action"}, query[1:]
+        kinds, query = {"action", "setting"}, query[1:]
     terms = query.casefold().split()
 
     matched = []
@@ -174,6 +209,7 @@ _KIND_TITLES = {
     "layout": lambda: _("Layouts"),
     "command": lambda: _("Saved Commands"),
     "action": lambda: _("Actions"),
+    "setting": lambda: _("Settings"),
 }
 
 

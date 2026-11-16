@@ -5,6 +5,8 @@ import threading
 from pathlib import Path
 from typing import Optional
 
+from types import SimpleNamespace
+
 import gi
 
 gi.require_version("Gtk", "4.0")
@@ -811,6 +813,21 @@ class SessionEditDialog(BaseDialog):
 
         # Other SSH options in a separate group
         options_group = Adw.PreferencesGroup()
+        # Rarely needed options live in one collapsible row; it starts open
+        # when any of them is already configured.
+        session = self.editing_session
+        options_expander = Adw.ExpanderRow(
+            title=_("Jump Host, Tunnels and More"),
+            subtitle=_("ProxyJump, X11, SFTP directories and port forwarding"),
+            expanded=bool(
+                session.proxy_jump
+                or session.x11_forwarding
+                or session.sftp_session_enabled
+                or session.ssh_connection_mode == "network_device"
+                or getattr(session, "port_forwardings", None)
+            ),
+        )
+        options_group.add(options_expander)
 
         self.ssh_mode_combo = Adw.ComboRow(
             title=_("SSH Session Type"),
@@ -825,7 +842,7 @@ class SessionEditDialog(BaseDialog):
             else 0
         )
         self.ssh_mode_combo.connect("notify::selected", self._on_ssh_mode_changed)
-        options_group.add(self.ssh_mode_combo)
+        options_expander.add_row(self.ssh_mode_combo)
 
         # X11 Forwarding toggle
         self.x11_switch = Adw.SwitchRow(
@@ -834,7 +851,7 @@ class SessionEditDialog(BaseDialog):
         )
         self.x11_switch.set_active(self.editing_session.x11_forwarding)
         self.x11_switch.connect("notify::active", self._on_x11_toggled)
-        options_group.add(self.x11_switch)
+        options_expander.add_row(self.x11_switch)
 
         # ProxyJump / bastion
         self.proxy_jump_row, self.proxy_jump_entry = self._create_described_entry_row(
@@ -846,7 +863,7 @@ class SessionEditDialog(BaseDialog):
             text=self.editing_session.proxy_jump or "",
             placeholder=_("user@bastion"),
         )
-        options_group.add(self.proxy_jump_row)
+        options_expander.add_row(self.proxy_jump_row)
 
         # SFTP toggle
         self.sftp_switch = Adw.SwitchRow(
@@ -855,7 +872,7 @@ class SessionEditDialog(BaseDialog):
         )
         self.sftp_switch.set_active(self.editing_session.sftp_session_enabled)
         self.sftp_switch.connect("notify::active", self._on_sftp_toggle)
-        options_group.add(self.sftp_switch)
+        options_expander.add_row(self.sftp_switch)
 
         # SFTP Local Directory - using helper
         self.sftp_local_entry = self._create_entry_row(
@@ -863,7 +880,7 @@ class SessionEditDialog(BaseDialog):
             text=self.editing_session.sftp_local_directory or "",
             on_changed=self._on_sftp_local_changed,
         )
-        options_group.add(self.sftp_local_entry)
+        options_expander.add_row(self.sftp_local_entry)
         self.sftp_local_row = self.sftp_local_entry
 
         # SFTP Remote Directory - using helper
@@ -872,11 +889,13 @@ class SessionEditDialog(BaseDialog):
             text=self.editing_session.sftp_remote_directory or "",
             on_changed=self._on_sftp_remote_changed,
         )
-        options_group.add(self.sftp_remote_entry)
+        options_expander.add_row(self.sftp_remote_entry)
         self.sftp_remote_row = self.sftp_remote_entry
 
         # Port Forwarding section (inside SSH Options)
-        self._create_port_forward_widgets(options_group)
+        self._create_port_forward_widgets(
+            SimpleNamespace(add=options_expander.add_row)
+        )
 
         self.ssh_options_group = options_group
         parent.add(options_group)

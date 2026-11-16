@@ -113,7 +113,8 @@ Cada item tem: problema, mudança, arquivos principais e critério de aceite.
 ### UX-20 `[~]` Editor de sessão: essencial primeiro
 - **Feito:** ordem Nome/Tipo → Conexão → Organização (pasta + cor da aba) → Opções SSH → Avançado
   (grupo de broadcast, transcrição) → Destaque; aviso "Experimental" só aparece ao personalizar.
-- **Pendente:** Opções SSH em seções expansíveis (mockup `04`); botão "Salvar e conectar".
+- **Feito também:** opções raras (modo SSH, X11, ProxyJump, SFTP, túneis) numa linha expansível "Jump Host, Túneis e Mais", aberta se algo já estiver configurado.
+- **Pendente:** botão "Salvar e conectar".
 - **Decisão:** autenticação padrão continua "Senha" — "Chave SSH" exige arquivo de chave válido para salvar.
 - **Arquivos:** `ui/dialogs/session_edit_dialog.py`.
 
@@ -146,7 +147,7 @@ Cada item tem: problema, mudança, arquivos principais e critério de aceite.
 ### UX-30 `[x]` Paleta de comandos (`Ctrl+Shift+P`)
 - **Feito:** busca única em sessões, layouts, comandos salvos e ações (com atalho exibido). `@` filtra
   sessões/layouts, `>` filtra ações; Enter executa, Esc fecha. Também no menu principal e no diálogo de atalhos.
-- **Pendente:** buscar preferências individuais (ex.: "fonte") e ação secundária "Conectar via SFTP".
+- **Feito também:** entradas "SFTP: <sessão>" e "Preferências: <página>" (abre a página). Buscar uma preferência individual não foi feito.
 - **Arquivos:** `ui/command_palette.py`, `ui/actions.py`. Teste: `tests/test_command_palette.py`.
 
 ### UX-31 `[~]` Preferências como central única

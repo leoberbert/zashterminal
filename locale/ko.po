@@ -8905,3 +8905,19 @@ msgstr "즐겨찾기"
 #: src/zashterminal/ui/dialogs/session_edit_dialog.py
 msgid "Mark with a star and list it first in the Command Palette"
 msgstr "별표로 표시하고 명령 팔레트에서 가장 먼저 나열합니다"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "SFTP: {name}"
+msgstr "SFTP: {name}"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Settings"
+msgstr "설정"
+
+#: src/zashterminal/ui/session_edit_dialog.py
+msgid "Jump Host, Tunnels and More"
+msgstr "Jump Host, 터널 및 기타"
+
+#: src/zashterminal/ui/session_edit_dialog.py
+msgid "ProxyJump, X11, SFTP directories and port forwarding"
+msgstr "ProxyJump, X11, SFTP 디렉터리 및 포트 포워딩"
