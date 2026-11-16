@@ -325,6 +325,7 @@ class ZashTerminalWindow(WindowSearchBroadcastMixin, Adw.ApplicationWindow):
         self.broadcast_button = self.ui_builder.broadcast_button
         self.broadcast_entry = self.ui_builder.broadcast_entry
         self.broadcast_scope_combo = self.ui_builder.broadcast_scope_combo
+        self.broadcast_targets_label = self.ui_builder.broadcast_targets_label
         self._broadcast_remember_choice = False
         self._broadcast_last_selection: List[str] = []
         # Assign the correctly named widgets

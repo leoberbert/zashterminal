@@ -229,6 +229,13 @@ class WindowUIBuilder:
         self.broadcast_entry.add_css_class("broadcast-entry")
         self.broadcast_entry.set_icon_from_icon_name(Gtk.EntryIconPosition.PRIMARY, "utilities-terminal-symbolic")
         broadcast_box.append(self.broadcast_entry)
+        # Live summary of who will receive the command (scope-dependent)
+        self.broadcast_targets_label = Gtk.Label(
+            css_classes=["dim-label"],
+            ellipsize=Pango.EllipsizeMode.END,
+            max_width_chars=40,
+        )
+        broadcast_box.append(self.broadcast_targets_label)
         self.broadcast_bar.set_child(broadcast_box)
         main_box.append(self.broadcast_bar)
 

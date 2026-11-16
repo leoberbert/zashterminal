@@ -37,6 +37,7 @@ def _create_terminal_pane(
     title: str,
     on_close_callback: Callable[[Vte.Terminal], None],
     on_move_to_tab_callback: Callable[[Vte.Terminal], None],
+    on_split_callback: Callable[[Vte.Terminal, Gtk.Orientation], None],
     settings_manager: SettingsManagerType,
 ) -> Adw.ToolbarView:
     """
@@ -60,13 +61,44 @@ def _create_terminal_pane(
     title_label.set_halign(Gtk.Align.START)
     header_box.append(title_label)
 
-    # Action buttons (using bundled icons)
-    move_to_tab_button = icon_button(
-        "go-next-symbolic", size=14, tooltip=_("Move to New Tab")
+    # Per-pane actions, scoped to this pane's terminal (not the focused one)
+    pane_actions = Gio.SimpleActionGroup()
+    for name, handler in (
+        ("move-to-tab", lambda *_: on_move_to_tab_callback(terminal)),
+        (
+            "split-horizontal",
+            lambda *_: on_split_callback(terminal, Gtk.Orientation.HORIZONTAL),
+        ),
+        (
+            "split-vertical",
+            lambda *_: on_split_callback(terminal, Gtk.Orientation.VERTICAL),
+        ),
+        ("close", lambda *_: on_close_callback(terminal)),
+    ):
+        action = Gio.SimpleAction.new(name, None)
+        action.connect("activate", handler)
+        pane_actions.add_action(action)
+    header_box.insert_action_group("pane", pane_actions)
+
+    pane_menu = Gio.Menu()
+    pane_menu.append(_("Move to New Tab"), "pane.move-to-tab")
+    split_section = Gio.Menu()
+    split_section.append(_("Split Left/Right"), "pane.split-horizontal")
+    split_section.append(_("Split Top/Bottom"), "pane.split-vertical")
+    pane_menu.append_section(None, split_section)
+    close_section = Gio.Menu()
+    close_section.append(_("Close Pane"), "pane.close")
+    pane_menu.append_section(None, close_section)
+
+    menu_button = Gtk.MenuButton(
+        icon_name="view-more-symbolic",
+        menu_model=pane_menu,
+        css_classes=["flat"],
+        valign=Gtk.Align.CENTER,
     )
-    move_to_tab_button.add_css_class("flat")
-    move_to_tab_button.set_size_request(26, 26)
-    move_to_tab_button.connect("clicked", lambda _: on_move_to_tab_callback(terminal))
+    menu_button.set_size_request(26, 26)
+    menu_button.set_tooltip_text(_("Pane Actions"))
+    menu_button.update_property([Gtk.AccessibleProperty.LABEL], [_("Pane Actions")])
 
     close_button = icon_button(
         "window-close-symbolic", size=16, tooltip=_("Close Pane")
@@ -75,7 +107,7 @@ def _create_terminal_pane(
     close_button.set_size_request(26, 26)
     close_button.connect("clicked", lambda _: on_close_callback(terminal))
 
-    header_box.append(move_to_tab_button)
+    header_box.append(menu_button)
     header_box.append(close_button)
 
     toolbar_view.add_top_bar(header_box)
@@ -90,7 +122,7 @@ def _create_terminal_pane(
     # Attach important widgets for later access
     toolbar_view.terminal = terminal
     toolbar_view.title_label = title_label
-    toolbar_view.move_button = move_to_tab_button
+    toolbar_view.menu_button = menu_button
     toolbar_view.close_button = close_button
     # MODIFIED: Store a reference to the header box for live updates
     toolbar_view.header_box = header_box
@@ -2291,6 +2323,7 @@ class TabManager:
                 new_pane_title,
                 self.close_pane,
                 self._on_move_to_tab_callback,
+                self._split_terminal,
                 self.terminal_manager.settings_manager,
             )
             self._setup_pane_hover_focus(new_pane, new_terminal)
@@ -2323,6 +2356,7 @@ class TabManager:
                     title,
                     self.close_pane,
                     self._on_move_to_tab_callback,
+                    self._split_terminal,
                     self.terminal_manager.settings_manager,
                 )
                 self._setup_pane_hover_focus(pane_being_split, focused_terminal)
@@ -2562,6 +2596,7 @@ class TabManager:
                 title,
                 self.close_pane,
                 self._on_move_to_tab_callback,
+                self._split_terminal,
                 self.terminal_manager.settings_manager,
             )
             self._setup_pane_hover_focus(pane_widget, terminal)

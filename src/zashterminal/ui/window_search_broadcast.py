@@ -70,6 +70,10 @@ class WindowSearchBroadcastMixin:
             GObject.BindingFlags.BIDIRECTIONAL,
         )
         self.broadcast_entry.connect("activate", self._on_broadcast_activate)
+        # Re-resolve targets while typing: focus may have moved to another pane.
+        self.broadcast_entry.connect(
+            "changed", lambda *_args: self._refresh_broadcast_targets()
+        )
         self.broadcast_bar.connect(
             "notify::search-mode-enabled", self._on_broadcast_mode_changed
         )
@@ -90,6 +94,40 @@ class WindowSearchBroadcastMixin:
         self.settings_manager.set(
             "broadcast_default_scope", reverse.get(idx, "select")
         )
+        self._refresh_broadcast_targets()
+
+    def _refresh_broadcast_targets(self) -> None:
+        """Outline the terminals that will receive the command and summarize them."""
+        active = self.broadcast_bar.get_search_mode()
+        all_terminals = self.tab_manager.get_all_terminals_across_tabs()
+        targets = (
+            self._resolve_broadcast_terminals(all_terminals, notify=False)
+            if active
+            else []
+        )
+        target_ids = {id(t) for t in targets or []}
+        for terminal in all_terminals:
+            holder = terminal.get_parent()
+            if holder is None:
+                continue
+            if id(terminal) in target_ids:
+                holder.add_css_class("broadcast-target")
+            else:
+                holder.remove_css_class("broadcast-target")
+
+        label = getattr(self, "broadcast_targets_label", None)
+        if label is None:
+            return
+        if targets is None:
+            label.set_text(_("Choose targets on Enter"))
+        elif not targets:
+            label.set_text(_("No targets"))
+        else:
+            label.set_text(
+                _("Sends to {count}: {names}").format(
+                    count=len(targets), names=self._format_terminal_names(targets)
+                )
+            )
 
     def _broadcast_scope_index(self) -> int:
         if hasattr(self, "broadcast_scope_combo") and self.broadcast_scope_combo:
@@ -112,7 +150,7 @@ class WindowSearchBroadcastMixin:
         return ""
 
     def _resolve_broadcast_terminals(
-        self, all_terminals: List[Vte.Terminal]
+        self, all_terminals: List[Vte.Terminal], notify: bool = True
     ) -> Optional[List[Vte.Terminal]]:
         """Return terminals for the current scope, or None to open the picker."""
         scope = self._broadcast_scope_index()
@@ -124,14 +162,15 @@ class WindowSearchBroadcastMixin:
                 return []
             group = self._terminal_broadcast_group(selected)
             if not group:
-                self.toast_overlay.add_toast(
-                    Adw.Toast(
-                        title=_(
-                            "Focused pane has no broadcast group; "
-                            "set one in the session editor."
+                if notify:
+                    self.toast_overlay.add_toast(
+                        Adw.Toast(
+                            title=_(
+                                "Focused pane has no broadcast group; "
+                                "set one in the session editor."
+                            )
                         )
                     )
-                )
                 return []
             matched = [
                 t
@@ -155,6 +194,7 @@ class WindowSearchBroadcastMixin:
             self._on_search_stop(self.terminal_search_entry)
 
     def _on_broadcast_mode_changed(self, broadcast_bar, param):
+        self._refresh_broadcast_targets()
         if broadcast_bar.get_search_mode():
             self.broadcast_entry.grab_focus()
         else:
@@ -449,10 +489,10 @@ class WindowSearchBroadcastMixin:
     def _format_terminal_names(
         self, terminals: List[Vte.Terminal], limit: int = 3
     ) -> str:
-        """Short, human-readable list of target terminals (first `limit` names)."""
-        names = [self._get_terminal_display_name(t) for t in terminals[:limit]]
-        if len(terminals) > limit:
-            names.append("…")
+        """Short list of distinct target names (panes of one tab share a name)."""
+        names = list(dict.fromkeys(self._get_terminal_display_name(t) for t in terminals))
+        if len(names) > limit:
+            names = names[:limit] + ["…"]
         return ", ".join(names)
 
     def _make_broadcast_terminal_key(self, terminal: Vte.Terminal) -> str:
