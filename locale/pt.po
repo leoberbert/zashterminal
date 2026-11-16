@@ -9527,3 +9527,11 @@ msgstr "Jump Host, Túneis e Mais"
 #: src/zashterminal/ui/session_edit_dialog.py
 msgid "ProxyJump, X11, SFTP directories and port forwarding"
 msgstr "ProxyJump, X11, diretórios SFTP e redirecionamento de portas"
+
+#: src/zashterminal/sessions/tree.py
+msgid "Connected"
+msgstr "Conectadas"
+
+#: src/zashterminal/sessions/tree.py
+msgid "Favorites"
+msgstr "Favoritas"

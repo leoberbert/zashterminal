@@ -1353,6 +1353,8 @@ class ZashTerminalWindow(WindowSearchBroadcastMixin, Adw.ApplicationWindow):
         """
         tab_count = self.tab_manager.get_tab_count()
         self.set_title(_("Terminal Zash"))
+        if getattr(self, "session_tree", None) is not None:
+            GLib.idle_add(self.session_tree.refresh_if_connections_changed)
 
         if tab_count >= 1:
             self.title_stack.set_visible_child_name("tabs-view")

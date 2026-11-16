@@ -8921,3 +8921,11 @@ msgstr "Jump Host, 터널 및 기타"
 #: src/zashterminal/ui/session_edit_dialog.py
 msgid "ProxyJump, X11, SFTP directories and port forwarding"
 msgstr "ProxyJump, X11, SFTP 디렉터리 및 포트 포워딩"
+
+#: src/zashterminal/sessions/tree.py
+msgid "Connected"
+msgstr "연결됨"
+
+#: src/zashterminal/sessions/tree.py
+msgid "Favorites"
+msgstr "즐겨찾기"

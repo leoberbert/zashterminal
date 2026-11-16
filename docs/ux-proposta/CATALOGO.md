@@ -123,12 +123,11 @@ Cada item tem: problema, mudança, arquivos principais e critério de aceite.
   `usuário@host` esmaecido nas sessões SSH; setas de expansão nas pastas (substitui o ícone de pasta com "+").
 - **Arquivos:** `ui/window_ui.py`, `sessions/tree.py`, `data/styles/window.css`.
 
-### UX-22 `[~]` Favoritas
-- **Feito:** campo `favorite` em `SessionItem` (JSON antigo sem o campo vira `False`); interruptor "Favorita" em
-  Avançado no editor; estrela ★ na árvore; favoritas primeiro na paleta de comandos. Teste: `tests/test_session_favorite.py`.
-- **Pendente:** seções "Conectadas" e "Favoritas" fixas no topo do painel (a árvore é um `Gtk.TreeListModel`
-  com pastas; seções exigem um modelo de lista separado — decidir se vale a troca).
-- **Arquivos:** `sessions/models.py`, `sessions/tree.py`, `ui/dialogs/session_edit_dialog.py`, `ui/command_palette.py`.
+### UX-22 `[x]` Conectadas / Favoritas
+- **Feito:** campo `favorite` (JSON antigo vira `False`), interruptor em Avançado, ★ na árvore; o painel tem as
+  seções "Conectadas" (sessões salvas com terminal aberto, atualizada ao abrir/fechar abas), "Favoritas" e "Todas".
+  Cabeçalhos não são selecionáveis/arrastáveis; durante a busca as seções do topo somem para não duplicar resultados.
+- **Arquivos:** `sessions/models.py`, `sessions/tree.py` (`SectionHeader`), `window.py`, `ui/dialogs/session_edit_dialog.py`.
 
 ### UX-23 `[x]` Broadcast evidente nos painéis
 - **Feito:** com a barra aberta, terminais-alvo ganham contorno laranja e a barra mostra "Envia para N: nomes",
@@ -156,7 +155,9 @@ Cada item tem: problema, mudança, arquivos principais e critério de aceite.
 - **Constatação:** a duplicação do grupo "Cores do papel de parede" vem de `ui/color_scheme_dialog.py:ColorSchemeDialog`,
   que **não é aberto por nenhum caminho do app** (só por `scripts/capture_gallery.py` e
   `scripts/test_wallpaper_ui.py`). Remover a classe exige adaptar esses scripts e a imagem 06 da galeria.
-- **Pendente:** navegação lateral com Cores/IA/Atalhos como páginas internas (mockup `06`).
+- **Decidido não fazer:** navegação lateral exigiria trocar `Adw.PreferencesWindow` e perder a busca embutida;
+  incorporar Cores/IA/Atalhos como páginas exigiria embutir diálogos de milhares de linhas. Mantidos títulos de
+  grupo, links "Mais Configurações" e a entrada "Preferências: <página>" na paleta.
 
 ---
 
@@ -182,3 +183,4 @@ Cada item tem: problema, mudança, arquivos principais e critério de aceite.
 | 2026-11-16 | UX-12 | ac1e84a | Traduções da fase 3 (28 idiomas) |
 | 2026-11-16 | UX-13 | 1da06bb | Placeholders corrigidos; todos os catálogos compilam |
 | 2026-11-16 | UX-22 | (ver git log) | Sessões favoritas (parcial) |
+| 2026-11-16 | UX-22 | (ver git log) | Seções Conectadas/Favoritas no painel |

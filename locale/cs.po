@@ -8961,3 +8961,11 @@ msgstr "Jump Host, tunely a další"
 #: src/zashterminal/ui/session_edit_dialog.py
 msgid "ProxyJump, X11, SFTP directories and port forwarding"
 msgstr "ProxyJump, X11, adresáře SFTP a přesměrování portů"
+
+#: src/zashterminal/sessions/tree.py
+msgid "Connected"
+msgstr "Připojené"
+
+#: src/zashterminal/sessions/tree.py
+msgid "Favorites"
+msgstr "Oblíbené"

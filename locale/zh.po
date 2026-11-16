@@ -8919,3 +8919,11 @@ msgstr "Jump Host、隧道及更多"
 #: src/zashterminal/ui/session_edit_dialog.py
 msgid "ProxyJump, X11, SFTP directories and port forwarding"
 msgstr "ProxyJump、X11、SFTP 目录和端口转发"
+
+#: src/zashterminal/sessions/tree.py
+msgid "Connected"
+msgstr "已连接"
+
+#: src/zashterminal/sessions/tree.py
+msgid "Favorites"
+msgstr "收藏夹"

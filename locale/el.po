@@ -8993,3 +8993,11 @@ msgstr "Jump Host, τούνελ και άλλα"
 #: src/zashterminal/ui/session_edit_dialog.py
 msgid "ProxyJump, X11, SFTP directories and port forwarding"
 msgstr "ProxyJump, X11, κατάλογοι SFTP και προώθηση θυρών"
+
+#: src/zashterminal/sessions/tree.py
+msgid "Connected"
+msgstr "Συνδεδεμένες"
+
+#: src/zashterminal/sessions/tree.py
+msgid "Favorites"
+msgstr "Αγαπημένες"

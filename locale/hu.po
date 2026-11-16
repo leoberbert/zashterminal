@@ -8982,3 +8982,11 @@ msgstr "Jump Host, alagutak és egyebek"
 #: src/zashterminal/ui/session_edit_dialog.py
 msgid "ProxyJump, X11, SFTP directories and port forwarding"
 msgstr "ProxyJump, X11, SFTP könyvtárak és portátirányítás"
+
+#: src/zashterminal/sessions/tree.py
+msgid "Connected"
+msgstr "Csatlakoztatva"
+
+#: src/zashterminal/sessions/tree.py
+msgid "Favorites"
+msgstr "Kedvencek"

@@ -8964,3 +8964,11 @@ msgstr "Jump Host, Tüneller ve Daha Fazlası"
 #: src/zashterminal/ui/session_edit_dialog.py
 msgid "ProxyJump, X11, SFTP directories and port forwarding"
 msgstr "ProxyJump, X11, SFTP dizinleri ve bağlantı noktası yönlendirme"
+
+#: src/zashterminal/sessions/tree.py
+msgid "Connected"
+msgstr "Bağlı"
+
+#: src/zashterminal/sessions/tree.py
+msgid "Favorites"
+msgstr "Favoriler"
