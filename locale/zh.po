@@ -8819,3 +8819,79 @@ msgstr "发送到 {count} 个：{names}"
 #: src/zashterminal/terminal/tabs.py
 msgid "Pane Actions"
 msgstr "窗格操作"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Command Palette"
+msgstr "命令面板"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Search sessions, commands and actions"
+msgstr "搜索会话、命令和操作"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "@ sessions only · > actions only · Enter to run · Esc to close"
+msgstr "@ 仅会话 · > 仅操作 · Enter 运行 · Esc 关闭"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "No Results"
+msgstr "无结果"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Layouts"
+msgstr "布局"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Saved Commands"
+msgstr "已保存的命令"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Saved layout"
+msgstr "已保存的布局"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Font"
+msgstr "字体"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Window"
+msgstr "窗口"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Behavior"
+msgstr "行为"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Scrolling"
+msgstr "滚动"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Shell"
+msgstr "Shell"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Startup"
+msgstr "启动"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Backup"
+msgstr "备份"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Remote Editing"
+msgstr "远程编辑"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Text Rendering"
+msgstr "文本渲染"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Compatibility"
+msgstr "兼容性"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Logs & Transcripts"
+msgstr "日志与记录"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "More Settings"
+msgstr "更多设置"

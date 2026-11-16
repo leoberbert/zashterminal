@@ -8873,3 +8873,79 @@ msgstr "Изпраща към {count}: {names}"
 #: src/zashterminal/terminal/tabs.py
 msgid "Pane Actions"
 msgstr "Действия с панела"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Command Palette"
+msgstr "Палитра с команди"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Search sessions, commands and actions"
+msgstr "Търсене на сесии, команди и действия"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "@ sessions only · > actions only · Enter to run · Esc to close"
+msgstr "@ само сесии · > само действия · Enter за изпълнение · Esc за затваряне"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "No Results"
+msgstr "Няма резултати"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Layouts"
+msgstr "Оформления"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Saved Commands"
+msgstr "Запазени команди"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Saved layout"
+msgstr "Запазено оформление"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Font"
+msgstr "Шрифт"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Window"
+msgstr "Прозорец"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Behavior"
+msgstr "Поведение"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Scrolling"
+msgstr "Превъртане"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Shell"
+msgstr "Обвивка"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Startup"
+msgstr "Стартиране"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Backup"
+msgstr "Резервно копие"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Remote Editing"
+msgstr "Отдалечено редактиране"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Text Rendering"
+msgstr "Изобразяване на текст"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Compatibility"
+msgstr "Съвместимост"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Logs & Transcripts"
+msgstr "Журнали и записи"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "More Settings"
+msgstr "Още настройки"

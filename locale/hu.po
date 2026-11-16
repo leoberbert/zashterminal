@@ -8882,3 +8882,79 @@ msgstr "Küldés ide ({count}): {names}"
 #: src/zashterminal/terminal/tabs.py
 msgid "Pane Actions"
 msgstr "Panelműveletek"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Command Palette"
+msgstr "Parancspaletta"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Search sessions, commands and actions"
+msgstr "Munkamenetek, parancsok és műveletek keresése"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "@ sessions only · > actions only · Enter to run · Esc to close"
+msgstr "@ csak munkamenetek · > csak műveletek · Enter a futtatáshoz · Esc a bezáráshoz"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "No Results"
+msgstr "Nincs találat"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Layouts"
+msgstr "Elrendezések"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Saved Commands"
+msgstr "Mentett parancsok"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Saved layout"
+msgstr "Mentett elrendezés"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Font"
+msgstr "Betűtípus"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Window"
+msgstr "Ablak"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Behavior"
+msgstr "Viselkedés"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Scrolling"
+msgstr "Görgetés"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Shell"
+msgstr "Shell"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Startup"
+msgstr "Indítás"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Backup"
+msgstr "Biztonsági mentés"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Remote Editing"
+msgstr "Távoli szerkesztés"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Text Rendering"
+msgstr "Szövegmegjelenítés"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Compatibility"
+msgstr "Kompatibilitás"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Logs & Transcripts"
+msgstr "Naplók és átiratok"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "More Settings"
+msgstr "További beállítások"

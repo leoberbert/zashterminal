@@ -8871,3 +8871,79 @@ msgstr "Lähetetään {count} kohteeseen: {names}"
 #: src/zashterminal/terminal/tabs.py
 msgid "Pane Actions"
 msgstr "Paneelin toiminnot"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Command Palette"
+msgstr "Komentopaletti"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Search sessions, commands and actions"
+msgstr "Hae istuntoja, komentoja ja toimintoja"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "@ sessions only · > actions only · Enter to run · Esc to close"
+msgstr "@ vain istunnot · > vain toiminnot · Enter suorittaa · Esc sulkee"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "No Results"
+msgstr "Ei tuloksia"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Layouts"
+msgstr "Asettelut"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Saved Commands"
+msgstr "Tallennetut komennot"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Saved layout"
+msgstr "Tallennettu asettelu"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Font"
+msgstr "Fontti"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Window"
+msgstr "Ikkuna"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Behavior"
+msgstr "Toiminta"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Scrolling"
+msgstr "Vieritys"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Shell"
+msgstr "Komentotulkki"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Startup"
+msgstr "Käynnistys"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Backup"
+msgstr "Varmuuskopio"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Remote Editing"
+msgstr "Etämuokkaus"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Text Rendering"
+msgstr "Tekstin hahmonnus"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Compatibility"
+msgstr "Yhteensopivuus"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Logs & Transcripts"
+msgstr "Lokit ja tallenteet"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "More Settings"
+msgstr "Lisää asetuksia"

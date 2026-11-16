@@ -8904,3 +8904,79 @@ msgstr "Sendet an {count}: {names}"
 #: src/zashterminal/terminal/tabs.py
 msgid "Pane Actions"
 msgstr "Bereichsaktionen"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Command Palette"
+msgstr "Befehlspalette"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Search sessions, commands and actions"
+msgstr "Sitzungen, Befehle und Aktionen durchsuchen"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "@ sessions only · > actions only · Enter to run · Esc to close"
+msgstr "@ nur Sitzungen · > nur Aktionen · Enter zum Ausführen · Esc zum Schließen"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "No Results"
+msgstr "Keine Ergebnisse"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Layouts"
+msgstr "Layouts"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Saved Commands"
+msgstr "Gespeicherte Befehle"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Saved layout"
+msgstr "Gespeichertes Layout"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Font"
+msgstr "Schrift"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Window"
+msgstr "Fenster"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Behavior"
+msgstr "Verhalten"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Scrolling"
+msgstr "Bildlauf"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Shell"
+msgstr "Shell"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Startup"
+msgstr "Start"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Backup"
+msgstr "Sicherung"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Remote Editing"
+msgstr "Fernbearbeitung"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Text Rendering"
+msgstr "Textdarstellung"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Compatibility"
+msgstr "Kompatibilität"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Logs & Transcripts"
+msgstr "Protokolle & Mitschriften"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "More Settings"
+msgstr "Weitere Einstellungen"

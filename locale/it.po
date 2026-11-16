@@ -8883,3 +8883,79 @@ msgstr "Invia a {count}: {names}"
 #: src/zashterminal/terminal/tabs.py
 msgid "Pane Actions"
 msgstr "Azioni del riquadro"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Command Palette"
+msgstr "Tavolozza comandi"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Search sessions, commands and actions"
+msgstr "Cerca sessioni, comandi e azioni"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "@ sessions only · > actions only · Enter to run · Esc to close"
+msgstr "@ solo sessioni · > solo azioni · Enter per eseguire · Esc per chiudere"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "No Results"
+msgstr "Nessun risultato"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Layouts"
+msgstr "Layout"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Saved Commands"
+msgstr "Comandi salvati"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Saved layout"
+msgstr "Layout salvato"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Font"
+msgstr "Carattere"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Window"
+msgstr "Finestra"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Behavior"
+msgstr "Comportamento"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Scrolling"
+msgstr "Scorrimento"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Shell"
+msgstr "Shell"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Startup"
+msgstr "Avvio"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Backup"
+msgstr "Backup"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Remote Editing"
+msgstr "Modifica remota"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Text Rendering"
+msgstr "Rendering del testo"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Compatibility"
+msgstr "Compatibilità"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Logs & Transcripts"
+msgstr "Log e trascrizioni"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "More Settings"
+msgstr "Altre impostazioni"

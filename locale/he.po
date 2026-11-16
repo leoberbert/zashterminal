@@ -8840,3 +8840,79 @@ msgstr "שולח אל {count}: {names}"
 #: src/zashterminal/terminal/tabs.py
 msgid "Pane Actions"
 msgstr "פעולות חלונית"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Command Palette"
+msgstr "לוח פקודות"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Search sessions, commands and actions"
+msgstr "חיפוש הפעלות, פקודות ופעולות"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "@ sessions only · > actions only · Enter to run · Esc to close"
+msgstr "@ הפעלות בלבד · > פעולות בלבד · Enter להרצה · Esc לסגירה"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "No Results"
+msgstr "אין תוצאות"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Layouts"
+msgstr "פריסות"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Saved Commands"
+msgstr "פקודות שמורות"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Saved layout"
+msgstr "פריסה שמורה"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Font"
+msgstr "גופן"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Window"
+msgstr "חלון"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Behavior"
+msgstr "התנהגות"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Scrolling"
+msgstr "גלילה"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Shell"
+msgstr "מעטפת"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Startup"
+msgstr "הפעלה"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Backup"
+msgstr "גיבוי"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Remote Editing"
+msgstr "עריכה מרוחקת"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Text Rendering"
+msgstr "עיבוד טקסט"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Compatibility"
+msgstr "תאימות"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Logs & Transcripts"
+msgstr "יומנים ותמלילים"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "More Settings"
+msgstr "הגדרות נוספות"

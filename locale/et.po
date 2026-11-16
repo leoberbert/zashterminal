@@ -8903,3 +8903,79 @@ msgstr "Saadab {count} terminali: {names}"
 #: src/zashterminal/terminal/tabs.py
 msgid "Pane Actions"
 msgstr "Paani toimingud"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Command Palette"
+msgstr "Käsupalett"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Search sessions, commands and actions"
+msgstr "Otsi seansse, käske ja toiminguid"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "@ sessions only · > actions only · Enter to run · Esc to close"
+msgstr "@ ainult seansid · > ainult toimingud · Enter käivitamiseks · Esc sulgemiseks"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "No Results"
+msgstr "Tulemusi pole"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Layouts"
+msgstr "Paigutused"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Saved Commands"
+msgstr "Salvestatud käsud"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Saved layout"
+msgstr "Salvestatud paigutus"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Font"
+msgstr "Font"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Window"
+msgstr "Aken"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Behavior"
+msgstr "Käitumine"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Scrolling"
+msgstr "Kerimine"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Shell"
+msgstr "Kest"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Startup"
+msgstr "Käivitamine"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Backup"
+msgstr "Varukoopia"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Remote Editing"
+msgstr "Kaugredigeerimine"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Text Rendering"
+msgstr "Teksti renderdamine"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Compatibility"
+msgstr "Ühilduvus"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Logs & Transcripts"
+msgstr "Logid ja transkriptid"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "More Settings"
+msgstr "Rohkem seadeid"

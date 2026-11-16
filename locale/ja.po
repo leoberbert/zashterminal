@@ -8824,3 +8824,79 @@ msgstr "{count} 件に送信: {names}"
 #: src/zashterminal/terminal/tabs.py
 msgid "Pane Actions"
 msgstr "ペインの操作"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Command Palette"
+msgstr "コマンドパレット"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Search sessions, commands and actions"
+msgstr "セッション、コマンド、アクションを検索"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "@ sessions only · > actions only · Enter to run · Esc to close"
+msgstr "@ セッションのみ · > アクションのみ · Enter で実行 · Esc で閉じる"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "No Results"
+msgstr "結果なし"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Layouts"
+msgstr "レイアウト"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Saved Commands"
+msgstr "保存済みコマンド"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Saved layout"
+msgstr "保存済みレイアウト"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Font"
+msgstr "フォント"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Window"
+msgstr "ウィンドウ"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Behavior"
+msgstr "動作"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Scrolling"
+msgstr "スクロール"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Shell"
+msgstr "シェル"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Startup"
+msgstr "起動"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Backup"
+msgstr "バックアップ"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Remote Editing"
+msgstr "リモート編集"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Text Rendering"
+msgstr "テキストレンダリング"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Compatibility"
+msgstr "互換性"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Logs & Transcripts"
+msgstr "ログとトランスクリプト"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "More Settings"
+msgstr "その他の設定"

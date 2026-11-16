@@ -8893,3 +8893,79 @@ msgstr "Αποστολή σε {count}: {names}"
 #: src/zashterminal/terminal/tabs.py
 msgid "Pane Actions"
 msgstr "Ενέργειες πλαισίου"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Command Palette"
+msgstr "Παλέτα εντολών"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Search sessions, commands and actions"
+msgstr "Αναζήτηση συνεδριών, εντολών και ενεργειών"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "@ sessions only · > actions only · Enter to run · Esc to close"
+msgstr "@ μόνο συνεδρίες · > μόνο ενέργειες · Enter για εκτέλεση · Esc για κλείσιμο"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "No Results"
+msgstr "Κανένα αποτέλεσμα"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Layouts"
+msgstr "Διατάξεις"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Saved Commands"
+msgstr "Αποθηκευμένες εντολές"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Saved layout"
+msgstr "Αποθηκευμένη διάταξη"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Font"
+msgstr "Γραμματοσειρά"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Window"
+msgstr "Παράθυρο"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Behavior"
+msgstr "Συμπεριφορά"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Scrolling"
+msgstr "Κύλιση"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Shell"
+msgstr "Κέλυφος"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Startup"
+msgstr "Εκκίνηση"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Backup"
+msgstr "Αντίγραφο ασφαλείας"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Remote Editing"
+msgstr "Απομακρυσμένη επεξεργασία"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Text Rendering"
+msgstr "Απόδοση κειμένου"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Compatibility"
+msgstr "Συμβατότητα"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Logs & Transcripts"
+msgstr "Αρχεία καταγραφής & απομαγνητοφωνήσεις"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "More Settings"
+msgstr "Περισσότερες ρυθμίσεις"

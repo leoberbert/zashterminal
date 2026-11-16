@@ -8863,3 +8863,79 @@ msgstr "Sendir á {count}: {names}"
 #: src/zashterminal/terminal/tabs.py
 msgid "Pane Actions"
 msgstr "Aðgerðir svæðis"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Command Palette"
+msgstr "Skipanaspjald"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Search sessions, commands and actions"
+msgstr "Leita í lotum, skipunum og aðgerðum"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "@ sessions only · > actions only · Enter to run · Esc to close"
+msgstr "@ aðeins lotur · > aðeins aðgerðir · Enter til að keyra · Esc til að loka"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "No Results"
+msgstr "Engar niðurstöður"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Layouts"
+msgstr "Uppsetningar"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Saved Commands"
+msgstr "Vistaðar skipanir"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Saved layout"
+msgstr "Vistuð uppsetning"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Font"
+msgstr "Letur"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Window"
+msgstr "Gluggi"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Behavior"
+msgstr "Hegðun"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Scrolling"
+msgstr "Skrun"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Shell"
+msgstr "Skel"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Startup"
+msgstr "Ræsing"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Backup"
+msgstr "Öryggisafrit"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Remote Editing"
+msgstr "Fjarvinnsla"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Text Rendering"
+msgstr "Textabirting"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Compatibility"
+msgstr "Samhæfni"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Logs & Transcripts"
+msgstr "Annálar og afrit"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "More Settings"
+msgstr "Fleiri stillingar"

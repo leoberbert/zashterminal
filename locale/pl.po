@@ -8877,3 +8877,79 @@ msgstr "Wysyła do {count}: {names}"
 #: src/zashterminal/terminal/tabs.py
 msgid "Pane Actions"
 msgstr "Akcje panelu"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Command Palette"
+msgstr "Paleta poleceń"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Search sessions, commands and actions"
+msgstr "Szukaj sesji, poleceń i akcji"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "@ sessions only · > actions only · Enter to run · Esc to close"
+msgstr "@ tylko sesje · > tylko akcje · Enter, aby uruchomić · Esc, aby zamknąć"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "No Results"
+msgstr "Brak wyników"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Layouts"
+msgstr "Układy"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Saved Commands"
+msgstr "Zapisane polecenia"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Saved layout"
+msgstr "Zapisany układ"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Font"
+msgstr "Czcionka"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Window"
+msgstr "Okno"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Behavior"
+msgstr "Zachowanie"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Scrolling"
+msgstr "Przewijanie"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Shell"
+msgstr "Powłoka"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Startup"
+msgstr "Uruchamianie"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Backup"
+msgstr "Kopia zapasowa"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Remote Editing"
+msgstr "Edycja zdalna"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Text Rendering"
+msgstr "Renderowanie tekstu"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Compatibility"
+msgstr "Zgodność"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Logs & Transcripts"
+msgstr "Logi i transkrypcje"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "More Settings"
+msgstr "Więcej ustawień"

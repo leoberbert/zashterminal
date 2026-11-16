@@ -8873,3 +8873,79 @@ msgstr "Sender til {count}: {names}"
 #: src/zashterminal/terminal/tabs.py
 msgid "Pane Actions"
 msgstr "Panelhandlinger"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Command Palette"
+msgstr "Kommandopalett"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Search sessions, commands and actions"
+msgstr "Søk i økter, kommandoer og handlinger"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "@ sessions only · > actions only · Enter to run · Esc to close"
+msgstr "@ kun økter · > kun handlinger · Enter for å kjøre · Esc for å lukke"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "No Results"
+msgstr "Ingen resultater"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Layouts"
+msgstr "Oppsett"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Saved Commands"
+msgstr "Lagrede kommandoer"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Saved layout"
+msgstr "Lagret oppsett"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Font"
+msgstr "Skrift"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Window"
+msgstr "Vindu"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Behavior"
+msgstr "Oppførsel"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Scrolling"
+msgstr "Rulling"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Shell"
+msgstr "Skall"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Startup"
+msgstr "Oppstart"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Backup"
+msgstr "Sikkerhetskopi"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Remote Editing"
+msgstr "Fjernredigering"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Text Rendering"
+msgstr "Tekstgjengivelse"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Compatibility"
+msgstr "Kompatibilitet"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Logs & Transcripts"
+msgstr "Logger og transkripsjoner"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "More Settings"
+msgstr "Flere innstillinger"

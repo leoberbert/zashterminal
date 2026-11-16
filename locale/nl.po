@@ -8875,3 +8875,79 @@ msgstr "Verstuurt naar {count}: {names}"
 #: src/zashterminal/terminal/tabs.py
 msgid "Pane Actions"
 msgstr "Paneelacties"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Command Palette"
+msgstr "Opdrachtpalet"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Search sessions, commands and actions"
+msgstr "Sessies, opdrachten en acties zoeken"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "@ sessions only · > actions only · Enter to run · Esc to close"
+msgstr "@ alleen sessies · > alleen acties · Enter om uit te voeren · Esc om te sluiten"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "No Results"
+msgstr "Geen resultaten"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Layouts"
+msgstr "Indelingen"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Saved Commands"
+msgstr "Opgeslagen opdrachten"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Saved layout"
+msgstr "Opgeslagen indeling"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Font"
+msgstr "Lettertype"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Window"
+msgstr "Venster"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Behavior"
+msgstr "Gedrag"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Scrolling"
+msgstr "Scrollen"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Shell"
+msgstr "Shell"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Startup"
+msgstr "Opstarten"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Backup"
+msgstr "Back-up"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Remote Editing"
+msgstr "Bewerken op afstand"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Text Rendering"
+msgstr "Tekstweergave"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Compatibility"
+msgstr "Compatibiliteit"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Logs & Transcripts"
+msgstr "Logboeken & transcripties"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "More Settings"
+msgstr "Meer instellingen"

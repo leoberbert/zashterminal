@@ -8821,3 +8821,79 @@ msgstr "{count}개에 전송: {names}"
 #: src/zashterminal/terminal/tabs.py
 msgid "Pane Actions"
 msgstr "창 작업"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Command Palette"
+msgstr "명령 팔레트"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Search sessions, commands and actions"
+msgstr "세션, 명령 및 작업 검색"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "@ sessions only · > actions only · Enter to run · Esc to close"
+msgstr "@ 세션만 · > 작업만 · Enter로 실행 · Esc로 닫기"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "No Results"
+msgstr "결과 없음"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Layouts"
+msgstr "레이아웃"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Saved Commands"
+msgstr "저장된 명령"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Saved layout"
+msgstr "저장된 레이아웃"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Font"
+msgstr "글꼴"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Window"
+msgstr "창"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Behavior"
+msgstr "동작"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Scrolling"
+msgstr "스크롤"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Shell"
+msgstr "셸"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Startup"
+msgstr "시작"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Backup"
+msgstr "백업"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Remote Editing"
+msgstr "원격 편집"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Text Rendering"
+msgstr "텍스트 렌더링"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Compatibility"
+msgstr "호환성"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Logs & Transcripts"
+msgstr "로그 및 기록"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "More Settings"
+msgstr "추가 설정"
