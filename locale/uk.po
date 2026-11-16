@@ -8836,3 +8836,31 @@ msgstr "Копіювати під час виділення"
 #: src/zashterminal/ui/dialogs/preferences_dialog.py
 msgid "Selecting text copies it to the clipboard"
 msgstr "Виділений текст копіюється в буфер обміну"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "No Matching Sessions"
+msgstr "Немає відповідних сеансів"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "No Saved Sessions"
+msgstr "Немає збережених сеансів"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "Save SSH hosts, keys and jump hosts to connect with one click."
+msgstr "Збережіть SSH-хости, ключі та проміжні хости, щоб підключатися одним клацанням."
+
+#: src/zashterminal/ui/window_search_broadcast.py
+msgid "Choose targets on Enter"
+msgstr "Вибір цілей за Enter"
+
+#: src/zashterminal/ui/window_search_broadcast.py
+msgid "No targets"
+msgstr "Немає цілей"
+
+#: src/zashterminal/ui/window_search_broadcast.py
+msgid "Sends to {count}: {names}"
+msgstr "Надсилання до {count}: {names}"
+
+#: src/zashterminal/terminal/tabs.py
+msgid "Pane Actions"
+msgstr "Дії панелі"

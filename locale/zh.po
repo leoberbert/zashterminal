@@ -8791,3 +8791,31 @@ msgstr "选中即复制"
 #: src/zashterminal/ui/dialogs/preferences_dialog.py
 msgid "Selecting text copies it to the clipboard"
 msgstr "选中文本时自动复制到剪贴板"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "No Matching Sessions"
+msgstr "没有匹配的会话"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "No Saved Sessions"
+msgstr "没有已保存的会话"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "Save SSH hosts, keys and jump hosts to connect with one click."
+msgstr "保存 SSH 主机、密钥和跳板机，一键即可连接。"
+
+#: src/zashterminal/ui/window_search_broadcast.py
+msgid "Choose targets on Enter"
+msgstr "按 Enter 后选择目标"
+
+#: src/zashterminal/ui/window_search_broadcast.py
+msgid "No targets"
+msgstr "无目标"
+
+#: src/zashterminal/ui/window_search_broadcast.py
+msgid "Sends to {count}: {names}"
+msgstr "发送到 {count} 个：{names}"
+
+#: src/zashterminal/terminal/tabs.py
+msgid "Pane Actions"
+msgstr "窗格操作"

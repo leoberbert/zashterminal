@@ -8847,3 +8847,31 @@ msgstr "Kopiëren bij selectie"
 #: src/zashterminal/ui/dialogs/preferences_dialog.py
 msgid "Selecting text copies it to the clipboard"
 msgstr "Geselecteerde tekst wordt naar het klembord gekopieerd"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "No Matching Sessions"
+msgstr "Geen overeenkomende sessies"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "No Saved Sessions"
+msgstr "Geen opgeslagen sessies"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "Save SSH hosts, keys and jump hosts to connect with one click."
+msgstr "Sla SSH-hosts, sleutels en jumphosts op om met één klik verbinding te maken."
+
+#: src/zashterminal/ui/window_search_broadcast.py
+msgid "Choose targets on Enter"
+msgstr "Kies doelen bij Enter"
+
+#: src/zashterminal/ui/window_search_broadcast.py
+msgid "No targets"
+msgstr "Geen doelen"
+
+#: src/zashterminal/ui/window_search_broadcast.py
+msgid "Sends to {count}: {names}"
+msgstr "Verstuurt naar {count}: {names}"
+
+#: src/zashterminal/terminal/tabs.py
+msgid "Pane Actions"
+msgstr "Paneelacties"

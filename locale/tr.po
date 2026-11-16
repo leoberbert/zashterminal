@@ -8836,3 +8836,31 @@ msgstr "Seçince Kopyala"
 #: src/zashterminal/ui/dialogs/preferences_dialog.py
 msgid "Selecting text copies it to the clipboard"
 msgstr "Seçilen metin panoya kopyalanır"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "No Matching Sessions"
+msgstr "Eşleşen oturum yok"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "No Saved Sessions"
+msgstr "Kayıtlı oturum yok"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "Save SSH hosts, keys and jump hosts to connect with one click."
+msgstr "Tek tıkla bağlanmak için SSH sunucularını, anahtarları ve atlama sunucularını kaydedin."
+
+#: src/zashterminal/ui/window_search_broadcast.py
+msgid "Choose targets on Enter"
+msgstr "Hedefleri Enter ile seçin"
+
+#: src/zashterminal/ui/window_search_broadcast.py
+msgid "No targets"
+msgstr "Hedef yok"
+
+#: src/zashterminal/ui/window_search_broadcast.py
+msgid "Sends to {count}: {names}"
+msgstr "{count} hedefe gönderir: {names}"
+
+#: src/zashterminal/terminal/tabs.py
+msgid "Pane Actions"
+msgstr "Bölme Eylemleri"

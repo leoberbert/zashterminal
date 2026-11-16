@@ -8855,3 +8855,31 @@ msgstr "Copia alla selezione"
 #: src/zashterminal/ui/dialogs/preferences_dialog.py
 msgid "Selecting text copies it to the clipboard"
 msgstr "La selezione del testo lo copia negli appunti"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "No Matching Sessions"
+msgstr "Nessuna sessione corrispondente"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "No Saved Sessions"
+msgstr "Nessuna sessione salvata"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "Save SSH hosts, keys and jump hosts to connect with one click."
+msgstr "Salva host SSH, chiavi e jump host per connetterti con un clic."
+
+#: src/zashterminal/ui/window_search_broadcast.py
+msgid "Choose targets on Enter"
+msgstr "Scegli le destinazioni premendo Invio"
+
+#: src/zashterminal/ui/window_search_broadcast.py
+msgid "No targets"
+msgstr "Nessuna destinazione"
+
+#: src/zashterminal/ui/window_search_broadcast.py
+msgid "Sends to {count}: {names}"
+msgstr "Invia a {count}: {names}"
+
+#: src/zashterminal/terminal/tabs.py
+msgid "Pane Actions"
+msgstr "Azioni del riquadro"

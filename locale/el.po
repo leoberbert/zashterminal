@@ -8865,3 +8865,31 @@ msgstr "Αντιγραφή κατά την επιλογή"
 #: src/zashterminal/ui/dialogs/preferences_dialog.py
 msgid "Selecting text copies it to the clipboard"
 msgstr "Η επιλογή κειμένου το αντιγράφει στο πρόχειρο"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "No Matching Sessions"
+msgstr "Δεν βρέθηκαν συνεδρίες"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "No Saved Sessions"
+msgstr "Δεν υπάρχουν αποθηκευμένες συνεδρίες"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "Save SSH hosts, keys and jump hosts to connect with one click."
+msgstr "Αποθηκεύστε κεντρικούς υπολογιστές SSH, κλειδιά και ενδιάμεσους υπολογιστές για σύνδεση με ένα κλικ."
+
+#: src/zashterminal/ui/window_search_broadcast.py
+msgid "Choose targets on Enter"
+msgstr "Επιλογή στόχων με Enter"
+
+#: src/zashterminal/ui/window_search_broadcast.py
+msgid "No targets"
+msgstr "Κανένας στόχος"
+
+#: src/zashterminal/ui/window_search_broadcast.py
+msgid "Sends to {count}: {names}"
+msgstr "Αποστολή σε {count}: {names}"
+
+#: src/zashterminal/terminal/tabs.py
+msgid "Pane Actions"
+msgstr "Ενέργειες πλαισίου"
