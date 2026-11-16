@@ -214,6 +214,8 @@ class DefaultSettings:
             "scroll_on_output": True,  # Enables smart scrolling
             "scroll_on_keystroke": True,
             "scroll_on_insert": True,  # Scroll to bottom on paste
+            # Copy selected terminal text to the clipboard automatically
+            "copy_on_select": True,
             "mouse_autohide": True,
             "cursor_blink": 0,
             "new_instance_behavior": "new_tab",

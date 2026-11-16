@@ -294,6 +294,14 @@ class PreferencesDialog(Adw.PreferencesWindow):
             "notify::selected", self._on_instance_behavior_changed, behavior_map
         )
         behavior_group.add(instance_behavior_row)
+        behavior_group.add(
+            self._create_switch_row(
+                _("Copy on Select"),
+                _("Selecting text copies it to the clipboard"),
+                "copy_on_select",
+                default_value=True,
+            )
+        )
 
         cursor_group = Adw.PreferencesGroup()
         page.add(cursor_group)
