@@ -183,3 +183,13 @@ Cada item tem: problema, mudança, arquivos principais e critério de aceite.
 | 2026-11-16 | UX-22 | (ver git log) | Sessões favoritas (parcial) |
 | 2026-11-16 | UX-22 | (ver git log) | Seções Conectadas/Favoritas no painel |
 | 2026-11-16 | UX-11/20/30 | (ver git log) | Nome mantido; Salvar e Conectar; busca de preferências na paleta |
+
+---
+
+## Fase 4 — redesenho visual
+
+### VIS-01 `[?]` Escolher a direção visual
+- Três direções renderizadas sobre o app real em `docs/ux-proposta/visual/` (PNG + rascunho de CSS):
+  `A-aurora` (gradiente violeta/azul, painéis flutuantes), `B-console` (compacto, sóbrio, verde),
+  `C-sessao` (cor da sessão tinge cabeçalho e foco; no rascunho a cor é fixa em vermelho).
+- **Aguardando:** escolha do mantenedor. Depois: aplicar em `data/styles/*.css`, tema claro, diálogos.

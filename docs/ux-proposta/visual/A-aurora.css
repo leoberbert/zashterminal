@@ -1,0 +1,16 @@
+/* Rascunho de direção visual — ainda não aplicado ao app. */
+window, .terminal-tab-view { background: #0d0f17; }
+headerbar.main-header-bar { background: linear-gradient(90deg, #171a2b, #1b1638 55%, #131c2e); border-bottom: 1px solid alpha(#7c5cff,.35); min-height: 44px; box-shadow: none; }
+headerbar.main-header-bar button { border-radius: 10px; }
+headerbar.main-header-bar button:checked { background: alpha(#7c5cff,.35); color: white; }
+.custom-tab-button { border-radius: 999px; padding: 4px 4px 4px 16px; margin: 0 3px; color: alpha(white,.65); }
+.custom-tab-button.active { background: linear-gradient(90deg, #7c5cff, #3aa8f5); color: white; font-weight: 700; box-shadow: 0 2px 10px alpha(#7c5cff,.55); }
+.custom-tab-button:hover:not(.active) { background: alpha(white,.08); }
+.sidebar-container { background: #12141f; border-right: 1px solid alpha(white,.06); }
+.sidebar-search entry { border-radius: 999px; background: alpha(white,.06); }
+.sidebar-session-tree row { border-radius: 10px; margin: 1px 8px; }
+.sidebar-session-tree row:selected { background: alpha(#7c5cff,.30); }
+.sidebar-toolbar button.sidebar-pin-button:checked { background: alpha(#7c5cff,.35); }
+.terminal-pane { border-radius: 14px; margin: 6px; border: 1px solid alpha(white,.07); box-shadow: 0 6px 22px alpha(black,.5); }
+.terminal-pane.pane-focused { border-color: #7c5cff; box-shadow: 0 0 0 1px alpha(#7c5cff,.6), 0 6px 26px alpha(#7c5cff,.30); }
+.terminal-pane .header-bar { background: alpha(white,.04); border-radius: 13px 13px 0 0; padding: 2px 8px; font-size: 9pt; }
