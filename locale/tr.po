@@ -8972,3 +8972,7 @@ msgstr "Bağlı"
 #: src/zashterminal/sessions/tree.py
 msgid "Favorites"
 msgstr "Favoriler"
+
+#: src/zashterminal/ui/dialogs/session_edit_dialog.py
+msgid "Save and Connect"
+msgstr "Kaydet ve Bağlan"

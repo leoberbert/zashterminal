@@ -8932,3 +8932,7 @@ msgstr "接続中"
 #: src/zashterminal/sessions/tree.py
 msgid "Favorites"
 msgstr "お気に入り"
+
+#: src/zashterminal/ui/dialogs/session_edit_dialog.py
+msgid "Save and Connect"
+msgstr "保存して接続"

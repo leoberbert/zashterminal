@@ -9739,3 +9739,7 @@ msgstr "Connected"
 #: src/zashterminal/sessions/tree.py
 msgid "Favorites"
 msgstr "Favorites"
+
+#: src/zashterminal/ui/dialogs/session_edit_dialog.py
+msgid "Save and Connect"
+msgstr "Save and Connect"

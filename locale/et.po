@@ -9011,3 +9011,7 @@ msgstr "Ühendatud"
 #: src/zashterminal/sessions/tree.py
 msgid "Favorites"
 msgstr "Lemmikud"
+
+#: src/zashterminal/ui/dialogs/session_edit_dialog.py
+msgid "Save and Connect"
+msgstr "Salvesta ja ühenda"

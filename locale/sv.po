@@ -8974,3 +8974,7 @@ msgstr "Anslutna"
 #: src/zashterminal/sessions/tree.py
 msgid "Favorites"
 msgstr "Favoriter"
+
+#: src/zashterminal/ui/dialogs/session_edit_dialog.py
+msgid "Save and Connect"
+msgstr "Spara och anslut"

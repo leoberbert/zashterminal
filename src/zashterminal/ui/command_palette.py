@@ -95,7 +95,7 @@ def _preferences_entries(window: "ZashTerminalWindow") -> List[PaletteEntry]:
     def open_page(name: str) -> None:
         window.action_handler.preferences(page=name)
 
-    return [
+    entries = [
         PaletteEntry(
             kind="setting",
             title=_("Preferences") + ": " + title,
@@ -105,6 +105,51 @@ def _preferences_entries(window: "ZashTerminalWindow") -> List[PaletteEntry]:
         )
         for name, title, icon in pages
     ]
+    entries.extend(_individual_preference_entries(window, open_page))
+    return entries
+
+
+def _individual_preference_entries(window, open_page) -> List[PaletteEntry]:
+    """One entry per preference row, found by walking a throwaway dialog.
+
+    Searching "blur" or "scrollback" then jumps to the page that holds it.
+    """
+    from .dialogs import PreferencesDialog
+
+    found: List[PaletteEntry] = []
+    try:
+        dialog = PreferencesDialog(window, window.settings_manager)
+        page_titles = {}
+
+        def walk(widget, page):
+            if isinstance(widget, Adw.PreferencesPage):
+                page = widget
+                page_titles[page.get_name()] = page.get_title()
+            elif isinstance(widget, Adw.PreferencesRow) and page is not None:
+                title = widget.get_title()
+                if title:
+                    found.append(
+                        PaletteEntry(
+                            kind="setting",
+                            title=title,
+                            subtitle=_("Preferences") + " › " + page.get_title(),
+                            icon_name="preferences-system-symbolic",
+                            activate=lambda n=page.get_name(): open_page(n),
+                        )
+                    )
+            child = widget.get_first_child()
+            while child is not None:
+                walk(child, page)
+                child = child.get_next_sibling()
+
+        walk(dialog, None)
+        # Never presented, so close-request does not run: unregister by hand.
+        window.settings_manager.remove_change_listener(dialog._on_external_setting)
+        dialog.destroy()
+    except Exception:
+        # The page entries above still work without the per-row index.
+        return found
+    return found
 
 
 def build_entries(window: "ZashTerminalWindow") -> List[PaletteEntry]:

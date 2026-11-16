@@ -8991,3 +8991,7 @@ msgstr "Conectate"
 #: src/zashterminal/sessions/tree.py
 msgid "Favorites"
 msgstr "Favorite"
+
+#: src/zashterminal/ui/dialogs/session_edit_dialog.py
+msgid "Save and Connect"
+msgstr "Salvează și conectează"

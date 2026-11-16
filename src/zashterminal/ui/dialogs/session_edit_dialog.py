@@ -138,6 +138,13 @@ class SessionEditDialog(BaseDialog):
             header.pack_end(save_button)
             self.set_default_widget(save_button)
 
+            # Save and open the session right away (one step instead of three)
+            self.save_connect_button = Gtk.Button(label=_("Save and Connect"))
+            self.save_connect_button.connect(
+                "clicked", lambda b: self._on_save_clicked(b, connect=True)
+            )
+            header.pack_end(self.save_connect_button)
+
             # Test connection button (to the left of Save, only for SSH)
             self.test_button = Gtk.Button(label=_("Test Connection"))
             get_tooltip_helper().add_tooltip(self.test_button, _("Test SSH connection"))
@@ -1625,7 +1632,7 @@ class SessionEditDialog(BaseDialog):
             self.logger.error(f"Cancel handling failed: {e}")
             self.close()
 
-    def _on_save_clicked(self, button) -> None:
+    def _on_save_clicked(self, button, connect: bool = False) -> None:
         """Handles the save button click by delegating to the SessionOperations layer."""
         try:
             updated_session = self._build_updated_session()
@@ -1644,6 +1651,8 @@ class SessionEditDialog(BaseDialog):
                 )
                 # Tree refresh is handled automatically via AppSignals
                 self.close()
+                if connect:
+                    self.parent_window._on_session_activated(updated_session)
             elif result:
                 self._show_error_dialog(_("Save Error"), result.message)
         except Exception as e:

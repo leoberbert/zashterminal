@@ -8972,3 +8972,7 @@ msgstr "Підключені"
 #: src/zashterminal/sessions/tree.py
 msgid "Favorites"
 msgstr "Вибрані"
+
+#: src/zashterminal/ui/dialogs/session_edit_dialog.py
+msgid "Save and Connect"
+msgstr "Зберегти та підключитися"

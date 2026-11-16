@@ -8969,3 +8969,7 @@ msgstr "Připojené"
 #: src/zashterminal/sessions/tree.py
 msgid "Favorites"
 msgstr "Oblíbené"
+
+#: src/zashterminal/ui/dialogs/session_edit_dialog.py
+msgid "Save and Connect"
+msgstr "Uložit a připojit"

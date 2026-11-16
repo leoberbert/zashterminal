@@ -8971,3 +8971,7 @@ msgstr "Povezane"
 #: src/zashterminal/sessions/tree.py
 msgid "Favorites"
 msgstr "Favoriti"
+
+#: src/zashterminal/ui/dialogs/session_edit_dialog.py
+msgid "Save and Connect"
+msgstr "Spremi i poveži"

@@ -88,11 +88,9 @@ Cada item tem: problema, mudança, arquivos principais e critério de aceite.
 - **Arquivos:** `settings/config.py`, `terminal/manager.py`, `ui/dialogs/preferences_dialog.py`.
 - **Aceite:** desligado, selecionar não altera a área de transferência; Copiar continua funcionando.
 
-### UX-11 `[?]` Nome consistente da janela
-- **Problema:** título "Terminal Zash" × marca "Zashterminal".
-- **Bloqueio:** "Terminal Zash" é o `Name=` do `.desktop` (menu de aplicativos, 28 idiomas) e `APP_TITLE`.
-  Trocar só o título da janela criaria um terceiro nome. Decidir qual nome é o oficial antes de mudar
-  `.desktop`, `settings/config.py:APP_TITLE`, `window.py` e `ui/window_ui.py` juntos.
+### UX-11 `[x]` Nome consistente da janela
+- **Decisão do mantenedor:** o nome exibido é **"Terminal Zash"** (título da janela, `.desktop`, `APP_TITLE`).
+  Nenhuma alteração de código necessária.
 
 ### UX-12 `[x]` Traduções das strings novas
 - **Mudança:** toda string nova recebe `msgid`/`msgstr` em **todos** os `locale/*.po` (padrão do repositório:
@@ -114,7 +112,7 @@ Cada item tem: problema, mudança, arquivos principais e critério de aceite.
 - **Feito:** ordem Nome/Tipo → Conexão → Organização (pasta + cor da aba) → Opções SSH → Avançado
   (grupo de broadcast, transcrição) → Destaque; aviso "Experimental" só aparece ao personalizar.
 - **Feito também:** opções raras (modo SSH, X11, ProxyJump, SFTP, túneis) numa linha expansível "Jump Host, Túneis e Mais", aberta se algo já estiver configurado.
-- **Pendente:** botão "Salvar e conectar".
+- **Feito também:** botão "Salvar e Conectar" (salva e abre a sessão).
 - **Decisão:** autenticação padrão continua "Senha" — "Chave SSH" exige arquivo de chave válido para salvar.
 - **Arquivos:** `ui/dialogs/session_edit_dialog.py`.
 
@@ -146,7 +144,7 @@ Cada item tem: problema, mudança, arquivos principais e critério de aceite.
 ### UX-30 `[x]` Paleta de comandos (`Ctrl+Shift+P`)
 - **Feito:** busca única em sessões, layouts, comandos salvos e ações (com atalho exibido). `@` filtra
   sessões/layouts, `>` filtra ações; Enter executa, Esc fecha. Também no menu principal e no diálogo de atalhos.
-- **Feito também:** entradas "SFTP: <sessão>" e "Preferências: <página>" (abre a página). Buscar uma preferência individual não foi feito.
+- **Feito também:** entradas "SFTP: <sessão>" e "Preferências: <página>" (abre a página). Cada preferência individual (ex.: "rolagem", "blur") também é encontrada e abre a página que a contém.
 - **Arquivos:** `ui/command_palette.py`, `ui/actions.py`. Teste: `tests/test_command_palette.py`.
 
 ### UX-31 `[~]` Preferências como central única
@@ -184,3 +182,4 @@ Cada item tem: problema, mudança, arquivos principais e critério de aceite.
 | 2026-11-16 | UX-13 | 1da06bb | Placeholders corrigidos; todos os catálogos compilam |
 | 2026-11-16 | UX-22 | (ver git log) | Sessões favoritas (parcial) |
 | 2026-11-16 | UX-22 | (ver git log) | Seções Conectadas/Favoritas no painel |
+| 2026-11-16 | UX-11/20/30 | (ver git log) | Nome mantido; Salvar e Conectar; busca de preferências na paleta |

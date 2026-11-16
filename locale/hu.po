@@ -8990,3 +8990,7 @@ msgstr "Csatlakoztatva"
 #: src/zashterminal/sessions/tree.py
 msgid "Favorites"
 msgstr "Kedvencek"
+
+#: src/zashterminal/ui/dialogs/session_edit_dialog.py
+msgid "Save and Connect"
+msgstr "Mentés és csatlakozás"

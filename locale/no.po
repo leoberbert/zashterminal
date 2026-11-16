@@ -8981,3 +8981,7 @@ msgstr "Tilkoblede"
 #: src/zashterminal/sessions/tree.py
 msgid "Favorites"
 msgstr "Favoritter"
+
+#: src/zashterminal/ui/dialogs/session_edit_dialog.py
+msgid "Save and Connect"
+msgstr "Lagre og koble til"

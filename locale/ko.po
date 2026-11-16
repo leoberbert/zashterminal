@@ -8929,3 +8929,7 @@ msgstr "연결됨"
 #: src/zashterminal/sessions/tree.py
 msgid "Favorites"
 msgstr "즐겨찾기"
+
+#: src/zashterminal/ui/dialogs/session_edit_dialog.py
+msgid "Save and Connect"
+msgstr "저장 후 연결"
