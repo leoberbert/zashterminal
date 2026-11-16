@@ -8951,3 +8951,11 @@ msgstr "Logboeken & transcripties"
 #: src/zashterminal/ui/dialogs/preferences_dialog.py
 msgid "More Settings"
 msgstr "Meer instellingen"
+
+#: src/zashterminal/ui/dialogs/session_edit_dialog.py
+msgid "Favorite"
+msgstr "Favoriet"
+
+#: src/zashterminal/ui/dialogs/session_edit_dialog.py
+msgid "Mark with a star and list it first in the Command Palette"
+msgstr "Markeer met een ster en toon als eerste in het opdrachtenpalet"

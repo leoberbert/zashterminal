@@ -8895,3 +8895,11 @@ msgstr "日志与记录"
 #: src/zashterminal/ui/dialogs/preferences_dialog.py
 msgid "More Settings"
 msgstr "更多设置"
+
+#: src/zashterminal/ui/dialogs/session_edit_dialog.py
+msgid "Favorite"
+msgstr "收藏"
+
+#: src/zashterminal/ui/dialogs/session_edit_dialog.py
+msgid "Mark with a star and list it first in the Command Palette"
+msgstr "用星标标记，并在命令面板中优先列出"

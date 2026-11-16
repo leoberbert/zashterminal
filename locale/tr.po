@@ -8940,3 +8940,11 @@ msgstr "Günlükler ve Dökümler"
 #: src/zashterminal/ui/dialogs/preferences_dialog.py
 msgid "More Settings"
 msgstr "Diğer Ayarlar"
+
+#: src/zashterminal/ui/dialogs/session_edit_dialog.py
+msgid "Favorite"
+msgstr "Favori"
+
+#: src/zashterminal/ui/dialogs/session_edit_dialog.py
+msgid "Mark with a star and list it first in the Command Palette"
+msgstr "Yıldızla işaretle ve Komut Paletinde ilk sırada listele"

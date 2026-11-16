@@ -8940,3 +8940,11 @@ msgstr "Журнали та записи"
 #: src/zashterminal/ui/dialogs/preferences_dialog.py
 msgid "More Settings"
 msgstr "Інші налаштування"
+
+#: src/zashterminal/ui/dialogs/session_edit_dialog.py
+msgid "Favorite"
+msgstr "Обране"
+
+#: src/zashterminal/ui/dialogs/session_edit_dialog.py
+msgid "Mark with a star and list it first in the Command Palette"
+msgstr "Позначити зірочкою та показувати першим у палітрі команд"

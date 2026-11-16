@@ -8959,3 +8959,11 @@ msgstr "Jurnale și transcrieri"
 #: src/zashterminal/ui/dialogs/preferences_dialog.py
 msgid "More Settings"
 msgstr "Mai multe setări"
+
+#: src/zashterminal/ui/dialogs/session_edit_dialog.py
+msgid "Favorite"
+msgstr "Favorită"
+
+#: src/zashterminal/ui/dialogs/session_edit_dialog.py
+msgid "Mark with a star and list it first in the Command Palette"
+msgstr "Marchează cu o stea și apare prima în Paleta de comenzi"

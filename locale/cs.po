@@ -8937,3 +8937,11 @@ msgstr "Protokoly a přepisy"
 #: src/zashterminal/ui/dialogs/preferences_dialog.py
 msgid "More Settings"
 msgstr "Další nastavení"
+
+#: src/zashterminal/ui/dialogs/session_edit_dialog.py
+msgid "Favorite"
+msgstr "Oblíbené"
+
+#: src/zashterminal/ui/dialogs/session_edit_dialog.py
+msgid "Mark with a star and list it first in the Command Palette"
+msgstr "Označit hvězdičkou a zobrazit jako první v paletě příkazů"

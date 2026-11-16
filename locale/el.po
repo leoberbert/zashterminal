@@ -8969,3 +8969,11 @@ msgstr "Αρχεία καταγραφής & απομαγνητοφωνήσεις
 #: src/zashterminal/ui/dialogs/preferences_dialog.py
 msgid "More Settings"
 msgstr "Περισσότερες ρυθμίσεις"
+
+#: src/zashterminal/ui/dialogs/session_edit_dialog.py
+msgid "Favorite"
+msgstr "Αγαπημένο"
+
+#: src/zashterminal/ui/dialogs/session_edit_dialog.py
+msgid "Mark with a star and list it first in the Command Palette"
+msgstr "Επισήμανση με αστέρι και εμφάνιση πρώτο στην Παλέτα εντολών"

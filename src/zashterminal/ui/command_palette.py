@@ -86,8 +86,12 @@ def _action_entries(window: "ZashTerminalWindow") -> List[PaletteEntry]:
 def build_entries(window: "ZashTerminalWindow") -> List[PaletteEntry]:
     entries: List[PaletteEntry] = []
 
-    for i in range(window.session_store.get_n_items()):
-        session = window.session_store.get_item(i)
+    sessions = [
+        window.session_store.get_item(i)
+        for i in range(window.session_store.get_n_items())
+    ]
+    sessions.sort(key=lambda s: not s.favorite)  # stable: favorites first
+    for session in sessions:
         folder = (session.folder_path or "").strip("/")
         details = [session.get_connection_string()]
         if folder:
@@ -95,7 +99,7 @@ def build_entries(window: "ZashTerminalWindow") -> List[PaletteEntry]:
         entries.append(
             PaletteEntry(
                 kind="session",
-                title=session.name,
+                title=("★ " if session.favorite else "") + session.name,
                 subtitle=" · ".join(details),
                 icon_name="computer-symbolic"
                 if session.is_local()

@@ -8897,3 +8897,11 @@ msgstr "로그 및 기록"
 #: src/zashterminal/ui/dialogs/preferences_dialog.py
 msgid "More Settings"
 msgstr "추가 설정"
+
+#: src/zashterminal/ui/dialogs/session_edit_dialog.py
+msgid "Favorite"
+msgstr "즐겨찾기"
+
+#: src/zashterminal/ui/dialogs/session_edit_dialog.py
+msgid "Mark with a star and list it first in the Command Palette"
+msgstr "별표로 표시하고 명령 팔레트에서 가장 먼저 나열합니다"

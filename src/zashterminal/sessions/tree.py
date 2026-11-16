@@ -444,6 +444,8 @@ class SessionTreeView:
     def _row_markup(item) -> str:
         """Row text: the name, plus a dim ``user@host`` for SSH sessions."""
         name = GLib.markup_escape_text(item.name or "")
+        if isinstance(item, SessionItem) and item.favorite:
+            name = f"★ {name}"
         if isinstance(item, SessionItem) and item.is_ssh() and item.host:
             target = GLib.markup_escape_text(item.get_connection_string())
             return f"{name}  <span size='small' alpha='55%'>{target}</span>"

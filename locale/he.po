@@ -8916,3 +8916,11 @@ msgstr "יומנים ותמלילים"
 #: src/zashterminal/ui/dialogs/preferences_dialog.py
 msgid "More Settings"
 msgstr "הגדרות נוספות"
+
+#: src/zashterminal/ui/dialogs/session_edit_dialog.py
+msgid "Favorite"
+msgstr "מועדף"
+
+#: src/zashterminal/ui/dialogs/session_edit_dialog.py
+msgid "Mark with a star and list it first in the Command Palette"
+msgstr "סימון בכוכב והצגה ראשונה בלוח הפקודות"

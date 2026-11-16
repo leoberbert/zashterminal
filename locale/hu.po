@@ -8958,3 +8958,11 @@ msgstr "Naplók és átiratok"
 #: src/zashterminal/ui/dialogs/preferences_dialog.py
 msgid "More Settings"
 msgstr "További beállítások"
+
+#: src/zashterminal/ui/dialogs/session_edit_dialog.py
+msgid "Favorite"
+msgstr "Kedvenc"
+
+#: src/zashterminal/ui/dialogs/session_edit_dialog.py
+msgid "Mark with a star and list it first in the Command Palette"
+msgstr "Csillaggal jelölés, és első helyen szerepel a Parancspalettán"

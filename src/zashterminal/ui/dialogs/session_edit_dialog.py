@@ -243,6 +243,13 @@ class SessionEditDialog(BaseDialog):
         )
         advanced_group.add(self.broadcast_group_row)
 
+        self.favorite_row = Adw.SwitchRow(
+            title=_("Favorite"),
+            subtitle=_("Mark with a star and list it first in the Command Palette"),
+        )
+        self.favorite_row.set_active(bool(self.editing_session.favorite))
+        advanced_group.add(self.favorite_row)
+
         # Transcript logging tri-state
         from ...utils.transcript import default_transcript_directory
 
@@ -1740,6 +1747,9 @@ class SessionEditDialog(BaseDialog):
             self.broadcast_group_entry.get_text().strip()
             if getattr(self, "broadcast_group_entry", None)
             else ""
+        )
+        session_data["favorite"] = bool(
+            getattr(self, "favorite_row", None) and self.favorite_row.get_active()
         )
         transcript_idx = (
             self.transcript_combo.get_selected()

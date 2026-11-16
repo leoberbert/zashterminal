@@ -8959,3 +8959,11 @@ msgstr "Log e trascrizioni"
 #: src/zashterminal/ui/dialogs/preferences_dialog.py
 msgid "More Settings"
 msgstr "Altre impostazioni"
+
+#: src/zashterminal/ui/dialogs/session_edit_dialog.py
+msgid "Favorite"
+msgstr "Preferita"
+
+#: src/zashterminal/ui/dialogs/session_edit_dialog.py
+msgid "Mark with a star and list it first in the Command Palette"
+msgstr "Contrassegna con una stella e mostra per prima nella Tavolozza dei comandi"
