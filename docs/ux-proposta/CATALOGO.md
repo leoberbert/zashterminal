@@ -14,6 +14,7 @@ nesta frente e atualize ao terminar** (status, data, commit).
 | `[ ]` | pendente |
 | `[~]` | em andamento / parcial (ver nota) |
 | `[x]` | concluído (com commit) |
+| `[?]` | aguardando decisão do mantenedor |
 
 Cada item tem: problema, mudança, arquivos principais e critério de aceite.
 
@@ -21,45 +22,46 @@ Cada item tem: problema, mudança, arquivos principais e critério de aceite.
 
 ## Fase 1 — rápido, alto impacto
 
-### UX-01 `[ ]` Ícones do cabeçalho sem ambiguidade
+### UX-01 `[x]` Ícones do cabeçalho sem ambiguidade
 - **Problema:** painel de sessões usa `computer-symbolic`; IA usa `avatar-default-symbolic` (uma pessoa);
   Gerenciador de Comandos e broadcast usam o mesmo `utilities-terminal-symbolic`.
 - **Mudança:** painel → `sidebar-show-symbolic`; IA → ícone próprio; comandos → ícone de lista; broadcast → ícone de transmissão.
 - **Arquivos:** `ui/window_ui.py`, `ui/sidebar_manager.py`, `icons/`.
 - **Aceite:** cada botão do cabeçalho tem ícone distinto e coerente com o tooltip.
 
-### UX-02 `[ ]` Nomes acessíveis e tooltips em botões só-ícone
+### UX-02 `[x]` Nomes acessíveis e tooltips em botões só-ícone
 - **Problema:** busca ↑/↓ sem tooltip; botões só-ícone sem nome acessível (leitor de tela).
-- **Mudança:** `icon_button()`/`icon_image()` passam o tooltip também como `Gtk.AccessibleProperty.LABEL`;
-  busca anterior/próxima ganham tooltip.
-- **Arquivos:** `utils/icons.py`, `ui/window_ui.py`.
+- **Mudança:** `tooltip_helper.add_tooltip*()` e `icon_button(tooltip=…)` definem também
+  `Gtk.AccessibleProperty.LABEL` em botões/switches sem texto; busca anterior/próxima ganham tooltip.
+- **Arquivos:** `utils/tooltip_helper.py`, `utils/icons.py`, `ui/window_ui.py`.
 - **Aceite:** todo botão só-ícone do cabeçalho, sidebar e barra de busca tem rótulo acessível.
 
-### UX-03 `[ ]` Broadcast visível no cabeçalho
+### UX-03 `[x]` Broadcast visível no cabeçalho
 - **Problema:** botão existe mas fica oculto; só `Ctrl+Shift+B` ou Gerenciador de Comandos.
 - **Mudança:** botão de alternância visível, com tooltip + atalho. O fluxo do Gerenciador de Comandos permanece.
 - **Arquivos:** `ui/window_ui.py`.
 - **Aceite:** clicar abre/fecha a barra de broadcast; estado do botão acompanha a barra.
 
-### UX-04 `[ ]` Confirmação após broadcast
+### UX-04 `[x]` Confirmação após broadcast
 - **Problema:** envio sem feedback.
 - **Mudança:** toast "Comando enviado para N terminais" após envio bem-sucedido.
 - **Arquivos:** `ui/window_search_broadcast.py`.
 - **Aceite:** toast aparece em todos os escopos (painel, grupo, todos, seleção).
 
-### UX-05 `[ ]` Seleção manual de alvos segura
+### UX-05 `[x]` Seleção manual de alvos segura
 - **Problema:** em "Selecionar…" todos os terminais começam marcados.
 - **Mudança:** começa marcado apenas o terminal em foco; botões "Todos"/"Nenhum"; "Lembrar escolha" preservado.
 - **Arquivos:** `ui/window_search_broadcast.py`.
-- **Aceite:** abrir a seleção sem escolha lembrada marca só o terminal atual.
+- **Aceite:** abrir a seleção sem escolha lembrada marca só o terminal atual. Escolha lembrada sem terminais
+  abertos volta a perguntar (antes enviava para todos).
 
-### UX-06 `[ ]` Barra de abas sempre visível
+### UX-06 `[x]` Barra de abas sempre visível
 - **Problema:** com 1 aba o título substitui a barra de abas; com 2+ a barra aparece — o layout "pula".
 - **Mudança:** barra de abas visível com qualquer número de abas (≥1); título da janela continua atualizado.
 - **Arquivos:** `window.py` (`_update_tab_layout`).
 - **Aceite:** abrir/fechar a 2ª aba não muda a posição dos elementos do cabeçalho.
 
-### UX-07 `[ ]` Menu principal reorganizado
+### UX-07 `[x]` Menu principal reorganizado
 - **Problema:** lista plana com 4 importações, TFTP entre Preferências e Sobre, "Cores" abre "Highlight Colors",
   "Start TFTP Server" sem tradução.
 - **Mudança (mockup `05-menu-principal.png`):** seções Personalizar / Sessões / Ferramentas; submenu
@@ -67,58 +69,71 @@ Cada item tem: problema, mudança, arquivos principais e critério de aceite.
 - **Arquivos:** `ui/menus.py`.
 - **Aceite:** todas as ações antigas acessíveis pelo menu; imports num submenu.
 
-### UX-08 `[ ]` Atalhos padrão alinhados a outros terminais
+### UX-08 `[x]` Atalhos padrão alinhados a outros terminais
 - **Problema:** copiar só com `Ctrl+Shift+Insert`; abas só com `Alt+PgUp/PgDn`.
 - **Mudança:** acrescentar `Ctrl+Shift+C` (copiar) e `Ctrl+PgUp/PgDn` (abas) como atalhos **adicionais**; os atuais continuam.
-- **Arquivos:** `settings/config.py`, onde os aceleradores são registrados.
+- **Arquivos:** `app.py` (`SHORTCUT_ALIASES`, `apply_window_shortcuts`), `helpers.py` (`normalize_accelerator`).
+  Teste: `tests/test_shortcut_aliases.py`.
 - **Aceite:** ambos os atalhos funcionam; atalho personalizado pelo usuário continua tendo prioridade.
 
-### UX-09 `[ ]` Diálogo de atalhos: busca e conflito
+### UX-09 `[x]` Diálogo de atalhos: busca e conflito
 - **Problema:** sem busca; conflito só é avisado e o atalho duplicado é salvo.
 - **Mudança:** campo de busca; ao conflitar, botão salvar desabilitado com a ação conflitante indicada.
 - **Arquivos:** `ui/dialogs/shortcuts_dialog.py`.
 - **Aceite:** não é possível salvar atalho já usado por outra ação.
 
-### UX-10 `[ ]` Preferência "Copiar ao selecionar"
+### UX-10 `[x]` Preferência "Copiar ao selecionar"
 - **Problema:** selecionar texto sempre sobrescreve a área de transferência, sem opção.
 - **Mudança:** preferência `copy_on_select` (padrão **ligado**, preserva comportamento atual).
 - **Arquivos:** `settings/config.py`, `terminal/manager.py`, `ui/dialogs/preferences_dialog.py`.
 - **Aceite:** desligado, selecionar não altera a área de transferência; Copiar continua funcionando.
 
-### UX-11 `[ ]` Nome consistente da janela
+### UX-11 `[?]` Nome consistente da janela
 - **Problema:** título "Terminal Zash" × marca "Zashterminal".
-- **Mudança:** título da janela usa "Zashterminal".
-- **Arquivos:** `window.py`, `ui/window_ui.py`.
+- **Bloqueio:** "Terminal Zash" é o `Name=` do `.desktop` (menu de aplicativos, 28 idiomas) e `APP_TITLE`.
+  Trocar só o título da janela criaria um terceiro nome. Decidir qual nome é o oficial antes de mudar
+  `.desktop`, `settings/config.py:APP_TITLE`, `window.py` e `ui/window_ui.py` juntos.
 
-### UX-12 `[ ]` Traduções das strings novas
+### UX-12 `[x]` Traduções das strings novas
 - **Mudança:** toda string nova recebe `msgid`/`msgstr` em **todos** os `locale/*.po` (padrão do repositório:
   blocos anexados ao fim do arquivo com `#: caminho`).
-- **Aceite:** `python3 scripts/compile_locales.py` compila sem erro; UI em pt_BR sem textos em inglês novos.
+- **Aceite:** strings novas compilam (`python3 scripts/compile_locales.py pt de fr ru zh en`); UI em pt_BR
+  sem textos em inglês novos. Ver UX-13 para os erros antigos que impedem compilar todos.
+
+### UX-13 `[ ]` Dívida de tradução: placeholders inválidos (anterior a esta branch)
+- **Problema:** `msgfmt --check-format` falha em 12 catálogos (cs, sk, da, es, et, hu, it, ja, nl, no, sv, tr)
+  por placeholders traduzidos (ex.: `{local_host}` → `{host_local}`). `compile_locales.py` para no 1º erro.
+- **Mudança:** corrigir os `msgstr` afetados para usar os mesmos nomes de placeholder do `msgid`.
+- **Aceite:** `python3 scripts/compile_locales.py` (todos) termina com código 0.
 
 ---
 
 ## Fase 2 — fluxos principais
 
-### UX-20 `[ ]` Editor de sessão: essencial primeiro
-- **Mudança (mockup `04-editor-de-sessao.png`):** Conexão (tipo, nome, host, usuário, porta, autenticação) no topo;
-  Organização; Avançado em seções expansíveis; "Destaque (experimental)" por último.
+### UX-20 `[~]` Editor de sessão: essencial primeiro
+- **Feito:** ordem Nome/Tipo → Conexão → Organização (pasta + cor da aba) → Opções SSH → Avançado
+  (grupo de broadcast, transcrição) → Destaque; aviso "Experimental" só aparece ao personalizar.
+- **Pendente:** Opções SSH em seções expansíveis (mockup `04`); botão "Salvar e conectar".
+- **Decisão:** autenticação padrão continua "Senha" — "Chave SSH" exige arquivo de chave válido para salvar.
 - **Arquivos:** `ui/dialogs/session_edit_dialog.py`.
 
-### UX-21 `[ ]` Painel de sessões
-- **Mudança (mockups `01`, `03`):** busca no topo; estado vazio com "Nova sessão" e "Importar…";
-  subtítulo `usuário@host` nas sessões SSH.
-- **Arquivos:** `ui/window_ui.py`, `sessions/tree.py`, `ui/sidebar_manager.py`.
+### UX-21 `[x]` Painel de sessões
+- **Feito:** busca no topo; estado vazio com "Adicionar Sessão" e "Importar Sessões"; estado "nenhum resultado";
+  `usuário@host` esmaecido nas sessões SSH; setas de expansão nas pastas (substitui o ícone de pasta com "+").
+- **Arquivos:** `ui/window_ui.py`, `sessions/tree.py`, `data/styles/window.css`.
 
 ### UX-22 `[ ]` Seções Conectadas / Favoritas
 - **Mudança:** campo `favorite` na sessão; seções no topo do painel. Exige migração compatível do JSON.
 - **Arquivos:** `sessions/models.py`, `sessions/storage.py`, `sessions/tree.py`.
 
-### UX-23 `[ ]` Broadcast evidente nos painéis
-- **Mudança (mockup `01`):** barra com alvos visíveis ("Enviar para N"); moldura/selo nos painéis-alvo.
-- **Arquivos:** `ui/window_search_broadcast.py`, `terminal/tabs.py`, `data/styles/`.
+### UX-23 `[x]` Broadcast evidente nos painéis
+- **Feito:** com a barra aberta, terminais-alvo ganham contorno laranja e a barra mostra "Envia para N: nomes",
+  atualizado ao mudar escopo/digitar.
+- **Arquivos:** `ui/window_search_broadcast.py`, `ui/window_ui.py`, `data/styles/window.css`.
 
-### UX-24 `[ ]` Cabeçalho do painel
-- **Mudança:** `>` vira menu "⋯" (Mover para nova aba, Dividir, Fechar); foco com contraste maior.
+### UX-24 `[x]` Cabeçalho do painel
+- **Feito:** `>` virou menu "⋯" (Mover para nova aba, Dividir esquerda/direita, cima/baixo, Fechar) agindo no
+  painel do menu; botão fechar mantido; borda de foco mais forte.
 - **Arquivos:** `terminal/tabs.py`, `data/styles/window.css`.
 
 ---
@@ -138,4 +153,16 @@ Cada item tem: problema, mudança, arquivos principais e critério de aceite.
 
 | Data | Item | Commit | Nota |
 |---|---|---|---|
-| 2026-11-16 | — | — | Avaliação de UX, mockups e catálogo criados |
+| 2026-11-16 | — | a75a617 | Avaliação de UX, mockups e catálogo criados |
+| 2026-11-16 | UX-01/02/03 | 0946e82 | Ícones, nomes acessíveis, botão de broadcast |
+| 2026-11-16 | UX-04/05 | e110b17 | Toast de broadcast, seleção segura |
+| 2026-11-16 | UX-06 | c054912 | Barra de abas com 1 aba |
+| 2026-11-16 | UX-07 | 197feb5 | Menu principal nativo em seções |
+| 2026-11-16 | UX-08/09 | 9ab52ed | Atalhos alternativos, busca e bloqueio de conflito |
+| 2026-11-16 | UX-10 | b4e8595 | Copiar ao selecionar (padrão ligado) |
+| 2026-11-16 | UX-12 | dd81610 | Traduções da fase 1 (28 idiomas) |
+| 2026-11-16 | UX-20 | facbfde | Editor de sessão reordenado (parcial) |
+| 2026-11-16 | UX-21 | 3315d74 | Painel de sessões |
+| 2026-11-16 | UX-23/24 | 8c9c5b8 | Alvos de broadcast e menu do painel |
+| 2026-11-16 | UX-12 | 7702811 | Traduções da fase 2 (28 idiomas) |
+| 2026-11-16 | UX-08 | ff25695 | Testes dos atalhos alternativos |
