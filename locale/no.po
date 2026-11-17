@@ -8985,3 +8985,43 @@ msgstr "Favoritter"
 #: src/zashterminal/ui/dialogs/session_edit_dialog.py
 msgid "Save and Connect"
 msgstr "Lagre og koble til"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "TFTP Server"
+msgstr "TFTP-server"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "TFTP Port"
+msgstr "TFTP-port"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "Upload Directory"
+msgstr "Opplastingsmappe"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "Download Directory"
+msgstr "Nedlastingsmappe"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "Files requested by TFTP clients are read from this directory"
+msgstr "Filer som TFTP-klienter ber om, leses fra denne mappen"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "Files sent by TFTP clients are written to this directory"
+msgstr "Filer som TFTP-klienter sender, skrives til denne mappen"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "Open Directory"
+msgstr "Åpne mappe"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "Select Directory"
+msgstr "Velg mappe"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "Please select a valid directory!"
+msgstr "Velg en gyldig mappe!"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "The TFTP server uses local directories for uploading and downloading files."
+msgstr "TFTP-serveren bruker lokale mapper for opplasting og nedlasting av filer."

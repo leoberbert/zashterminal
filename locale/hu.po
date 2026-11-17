@@ -8994,3 +8994,43 @@ msgstr "Kedvencek"
 #: src/zashterminal/ui/dialogs/session_edit_dialog.py
 msgid "Save and Connect"
 msgstr "Mentés és csatlakozás"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "TFTP Server"
+msgstr "TFTP-kiszolgáló"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "TFTP Port"
+msgstr "TFTP-port"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "Upload Directory"
+msgstr "Feltöltési könyvtár"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "Download Directory"
+msgstr "Letöltési könyvtár"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "Files requested by TFTP clients are read from this directory"
+msgstr "A TFTP-kliensek által kért fájlok ebből a könyvtárból kerülnek beolvasásra"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "Files sent by TFTP clients are written to this directory"
+msgstr "A TFTP-kliensek által küldött fájlok ebbe a könyvtárba kerülnek"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "Open Directory"
+msgstr "Könyvtár megnyitása"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "Select Directory"
+msgstr "Könyvtár kiválasztása"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "Please select a valid directory!"
+msgstr "Válasszon érvényes könyvtárat!"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "The TFTP server uses local directories for uploading and downloading files."
+msgstr "A TFTP-kiszolgáló helyi könyvtárakat használ a fájlok feltöltéséhez és letöltéséhez."

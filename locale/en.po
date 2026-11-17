@@ -9743,3 +9743,43 @@ msgstr "Favorites"
 #: src/zashterminal/ui/dialogs/session_edit_dialog.py
 msgid "Save and Connect"
 msgstr "Save and Connect"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "TFTP Server"
+msgstr "TFTP Server"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "TFTP Port"
+msgstr "TFTP Port"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "Upload Directory"
+msgstr "Upload Directory"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "Download Directory"
+msgstr "Download Directory"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "Files requested by TFTP clients are read from this directory"
+msgstr "Files requested by TFTP clients are read from this directory"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "Files sent by TFTP clients are written to this directory"
+msgstr "Files sent by TFTP clients are written to this directory"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "Open Directory"
+msgstr "Open Directory"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "Select Directory"
+msgstr "Select Directory"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "Please select a valid directory!"
+msgstr "Please select a valid directory!"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "The TFTP server uses local directories for uploading and downloading files."
+msgstr "The TFTP server uses local directories for uploading and downloading files."

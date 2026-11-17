@@ -8931,3 +8931,43 @@ msgstr "收藏夹"
 #: src/zashterminal/ui/dialogs/session_edit_dialog.py
 msgid "Save and Connect"
 msgstr "保存并连接"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "TFTP Server"
+msgstr "TFTP 服务器"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "TFTP Port"
+msgstr "TFTP 端口"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "Upload Directory"
+msgstr "上传目录"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "Download Directory"
+msgstr "下载目录"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "Files requested by TFTP clients are read from this directory"
+msgstr "TFTP 客户端请求的文件将从此目录读取"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "Files sent by TFTP clients are written to this directory"
+msgstr "TFTP 客户端发送的文件将写入此目录"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "Open Directory"
+msgstr "打开目录"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "Select Directory"
+msgstr "选择目录"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "Please select a valid directory!"
+msgstr "请选择有效的目录!"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "The TFTP server uses local directories for uploading and downloading files."
+msgstr "TFTP 服务器使用本地目录来上传和下载文件。"

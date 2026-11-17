@@ -8987,3 +8987,43 @@ msgstr "Favorieten"
 #: src/zashterminal/ui/dialogs/session_edit_dialog.py
 msgid "Save and Connect"
 msgstr "Opslaan en verbinden"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "TFTP Server"
+msgstr "TFTP-server"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "TFTP Port"
+msgstr "TFTP-poort"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "Upload Directory"
+msgstr "Uploadmap"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "Download Directory"
+msgstr "Downloadmap"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "Files requested by TFTP clients are read from this directory"
+msgstr "Bestanden die door TFTP-clients worden opgevraagd, worden uit deze map gelezen"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "Files sent by TFTP clients are written to this directory"
+msgstr "Bestanden die door TFTP-clients worden verzonden, worden naar deze map geschreven"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "Open Directory"
+msgstr "Map openen"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "Select Directory"
+msgstr "Map selecteren"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "Please select a valid directory!"
+msgstr "Selecteer een geldige map!"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "The TFTP server uses local directories for uploading and downloading files."
+msgstr "De TFTP-server gebruikt lokale mappen voor het uploaden en downloaden van bestanden."

@@ -91,6 +91,7 @@ class ShortcutsDialog(Adw.PreferencesWindow):
 
         # Add reset button to header bar
         reset_button = Gtk.Button(label=_("Reset All"))
+        reset_button.set_valign(Gtk.Align.CENTER)
         get_tooltip_helper().add_tooltip(
             reset_button, _("Reset all shortcuts to default values")
         )

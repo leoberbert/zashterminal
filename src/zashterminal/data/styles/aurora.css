@@ -58,19 +58,36 @@ progressbar > trough > progress {
 /* ---- Focus and selection ---------------------------------------------- */
 entry:focus-within,
 row.entry:focus-within,
+row.spin:focus-within,
 spinbutton:focus-within,
 .command-manager-dialog .command-input-frame:focus-within {
     outline: 2px solid alpha(@zash_brand, 0.75);
     outline-offset: -2px;
 }
 
+/* A row already draws the ring: no second ring on the field inside it */
+row entry:focus-within,
+row spinbutton:focus-within,
+row.spin:focus-within spinbutton,
+row.entry:focus-within text {
+    outline: none;
+}
+
 /* ---- Dialog chrome ---------------------------------------------------- */
-window.zashterminal-dialog headerbar,
-dialog headerbar,
-window.dialog headerbar {
+/* Every header bar except the main window's (About, TFTP, editors, …) */
+headerbar:not(.main-header-bar) {
     background-image: linear-gradient(90deg, alpha(@zash_brand, 0.12), alpha(@zash_brand_2, 0.06));
     border-bottom: 1px solid alpha(@zash_brand, 0.3);
     box-shadow: none;
+}
+
+/* About window */
+window.about .app-version {
+    background-image: linear-gradient(90deg, @zash_brand, @zash_brand_2);
+    color: white;
+    font-weight: 700;
+    border-radius: 999px;
+    box-shadow: 0 2px 8px alpha(@zash_brand, 0.4);
 }
 
 /* Page switcher (Preferences, Colors & Highlighting): pill with gradient */
