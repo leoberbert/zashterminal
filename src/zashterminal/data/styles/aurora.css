@@ -128,15 +128,18 @@ popover > contents {
 
 popover.menu modelbutton:hover,
 popover.menu modelbutton:selected {
-    background: alpha(@zash_brand, 0.22);
+    background-image: linear-gradient(90deg, alpha(@zash_brand, 0.28), alpha(@zash_brand_2, 0.10));
 }
 
+/* Section headings: same look as the group titles in Preferences */
 popover.menu label.title {
     color: @zash_brand_2;
-    font-size: 0.8em;
+    font-size: 0.82em;
     font-weight: 800;
     letter-spacing: 0.08em;
     text-transform: uppercase;
+    padding: 8px 12px 2px 12px;
+    margin: 0;
 }
 
 /* ---- Search and broadcast bars ---------------------------------------- */

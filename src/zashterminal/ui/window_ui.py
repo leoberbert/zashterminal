@@ -184,7 +184,9 @@ class WindowUIBuilder:
             Gtk.StyleContext.add_provider_for_display(
                 Gdk.Display.get_default(),
                 aurora_provider,
-                Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION + 1,
+                # Above the generated theme CSS (USER priority), which would
+                # otherwise repaint headings and menu labels.
+                Gtk.STYLE_PROVIDER_PRIORITY_USER + 10,
             )
 
         # Separate provider for window borders (conditional on maximized state)
