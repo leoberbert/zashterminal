@@ -1786,6 +1786,11 @@ class SettingsManager:
                     background-color: {header_bg_color};
                     color: {fg_color};
                 }}
+                /* Adw.Dialog root spans the whole window: a background here
+                   paints over the terminal behind the dialog */
+                dialog.command-manager-dialog {{
+                    background-color: transparent;
+                }}
                 /* Command Manager: one flat surface (Adw.Dialog does not match
                    the "> toolbarview" selectors above) */
                 .command-manager-dialog toolbarview,
