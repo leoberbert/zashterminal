@@ -155,7 +155,7 @@ popover.menu separator {
 /* Custom tab button styling: pill tabs, brand gradient on the active one.
    A session "Tab Color" replaces the gradient (see TabManager._apply_tab_color). */
 .custom-tab-button {
-    padding: 3px 2px 3px 14px;
+    padding: 4px 2px 4px 14px;
     margin: 0 2px;
     border-radius: 999px;
     transition: background-color 120ms ease, box-shadow 120ms ease;
@@ -372,4 +372,17 @@ window.zashterminal-dialog actionbar>revealer>box {
 
 .toolbar-command-button:active {
     background-color: alpha(currentColor, 0.12);
+}
+
+/* Keep the tab pill as low as the page switcher pills in dialogs */
+.custom-tab-button button {
+    min-height: 20px;
+    min-width: 20px;
+    padding: 2px;
+}
+
+/* ".main-header-bar box" zeroes vertical padding; restore it for the pill */
+.main-header-bar box.custom-tab-button {
+    padding-top: 4px;
+    padding-bottom: 4px;
 }

@@ -790,6 +790,8 @@ class TabManager:
     ) -> Gtk.Box:
         tab_widget = Gtk.Box(spacing=6)
         tab_widget.add_css_class("custom-tab-button")
+        # Pill height comes from its content, not from the header bar height
+        tab_widget.set_valign(Gtk.Align.CENTER)
         tab_widget.add_css_class("raised")
 
         # Drag/click handle excludes the close button so X keeps working.
