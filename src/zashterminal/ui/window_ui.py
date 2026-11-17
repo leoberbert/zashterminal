@@ -324,7 +324,7 @@ class WindowUIBuilder:
 
         # Create buttons (tooltips are added via tooltip_helper below)
         self.toggle_sidebar_button = Gtk.ToggleButton()
-        self.toggle_sidebar_button.set_child(icon_image("sidebar-show-symbolic"))
+        self.toggle_sidebar_button.set_child(icon_image("network-server-symbolic"))
         self.toggle_sidebar_button.add_css_class("sidebar-toggle-button")
 
         self.file_manager_button = Gtk.ToggleButton()

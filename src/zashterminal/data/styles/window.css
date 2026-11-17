@@ -55,14 +55,14 @@
 @define-color zash_brand #7c5cff;
 @define-color zash_brand_2 #3aa8f5;
 
-/* Header bar styles: brand tint layered over the theme background */
+/* Header bar styles: one flat theme color (the tab strip paints its own
+   background, so a gradient here showed as mismatched blocks) */
 headerbar.main-header-bar {
     min-height: 40px;
     padding: 0;
     border: none;
     border-bottom: 1px solid alpha(@zash_brand, 0.35);
     box-shadow: none;
-    background-image: linear-gradient(90deg, alpha(@zash_brand, 0.12), alpha(@zash_brand_2, 0.06));
 }
 
 headerbar.main-header-bar button {
