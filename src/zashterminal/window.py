@@ -1744,7 +1744,7 @@ class ZashTerminalWindow(WindowSearchBroadcastMixin, Adw.ApplicationWindow):
             self.command_manager_dialog.connect(
                 "command-selected", self._on_command_selected_from_manager
             )
-        if self.command_manager_dialog.get_visible():
+        if self.command_manager_dialog.get_mapped():
             self.command_manager_dialog.close()
         else:
             self.command_manager_dialog.present()

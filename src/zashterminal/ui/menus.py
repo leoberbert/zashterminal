@@ -152,7 +152,8 @@ class MainApplicationMenu:
     """
 
     @staticmethod
-    def create_main_popover(parent_window) -> tuple[Gtk.PopoverMenu, FontSizerWidget]:
+    def build_menu_model(parent_window) -> tuple[Gio.Menu, Gio.Menu]:
+        """Return the menu model and its "Tools" section (holds the TFTP item)."""
         menu = Gio.Menu()
 
         quick = Gio.Menu()
@@ -192,7 +193,11 @@ class MainApplicationMenu:
         app_section.append(_("About"), "app.about")
         app_section.append(_("Quit"), "app.quit")
         menu.append_section(None, app_section)
+        return menu, tools
 
+    @staticmethod
+    def create_main_popover(parent_window) -> tuple[Gtk.PopoverMenu, FontSizerWidget]:
+        menu, tools = MainApplicationMenu.build_menu_model(parent_window)
         popover = Gtk.PopoverMenu.new_from_model(menu)
         popover.add_css_class("zashterminal-popover")
         popover.tftp_section = tools

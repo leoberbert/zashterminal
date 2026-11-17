@@ -421,7 +421,7 @@ class WindowActions:
 
     def command_palette(self, *_args):
         self._hide_tooltip()
-        from .command_palette import CommandPalette
+        from .dialogs.command_palette_dialog import CommandPalette
 
         CommandPalette(self.window).present(self.window)
 

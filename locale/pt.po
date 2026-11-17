@@ -4674,7 +4674,7 @@ msgstr "Configuração SSH"
 # File: usr/share/zashterminal/ui/dialogs.py, line: 894
 #: NEEDS WORK
 msgid "Host"
-msgstr "Anfitrião"
+msgstr "Host ou IP"
 # 
 # File: usr/share/zashterminal/ui/dialogs.py, line: 446
 #: NEEDS WORK

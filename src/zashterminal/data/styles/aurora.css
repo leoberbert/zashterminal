@@ -16,7 +16,7 @@ button.suggested-action,
 .command-manager-dialog .execute-button {
     background-image: linear-gradient(90deg, @zash_brand, @zash_brand_2);
     background-color: @zash_brand;
-    color: white;
+    color: @zash_brand_fg;
     font-weight: 700;
     border-radius: 10px;
     box-shadow: 0 2px 8px alpha(@zash_brand, 0.4);
@@ -48,7 +48,7 @@ scale highlight {
 checkbutton check:checked,
 checkbutton radio:checked {
     background-color: @zash_brand;
-    color: white;
+    color: @zash_brand_fg;
 }
 
 progressbar > trough > progress {
@@ -84,7 +84,7 @@ headerbar:not(.main-header-bar) {
 /* About window */
 window.about .app-version {
     background-image: linear-gradient(90deg, @zash_brand, @zash_brand_2);
-    color: white;
+    color: @zash_brand_fg;
     font-weight: 700;
     border-radius: 999px;
     box-shadow: 0 2px 8px alpha(@zash_brand, 0.4);
@@ -98,7 +98,7 @@ viewswitcher button {
 
 viewswitcher button:checked {
     background-image: linear-gradient(90deg, @zash_brand, @zash_brand_2);
-    color: white;
+    color: @zash_brand_fg;
     box-shadow: 0 2px 8px alpha(@zash_brand, 0.4);
 }
 
@@ -169,8 +169,7 @@ searchbar entry {
 }
 
 searchbar.broadcast-bar > revealer > box {
-    background-image: linear-gradient(90deg, alpha(#e66100, 0.20), alpha(#e66100, 0.06));
-    border-bottom: 1px solid alpha(#e66100, 0.55);
+    background-image: none;
 }
 
 /* ---- Sessions panel --------------------------------------------------- */

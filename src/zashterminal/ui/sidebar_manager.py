@@ -282,7 +282,7 @@ class SidebarManager:
         return Gdk.EVENT_PROPAGATE
 
     def _update_sidebar_button_icon(self) -> None:
-        set_button_icon(self.toggle_sidebar_button, "network-server-symbolic")
+        set_button_icon(self.toggle_sidebar_button, "computer-symbolic")
         get_tooltip_helper().add_tooltip_with_shortcut(
             self.toggle_sidebar_button, _("Sessions Panel"), "toggle-sidebar"
         )

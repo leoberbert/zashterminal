@@ -326,7 +326,7 @@ class WindowUIBuilder:
 
         # Create buttons (tooltips are added via tooltip_helper below)
         self.toggle_sidebar_button = Gtk.ToggleButton()
-        self.toggle_sidebar_button.set_child(icon_image("network-server-symbolic"))
+        self.toggle_sidebar_button.set_child(icon_image("computer-symbolic"))
         self.toggle_sidebar_button.add_css_class("sidebar-toggle-button")
 
         self.file_manager_button = Gtk.ToggleButton()
@@ -334,9 +334,7 @@ class WindowUIBuilder:
 
         # Command Manager button
         self.command_manager_button = Gtk.Button()
-        self.command_manager_button.set_child(
-            icon_image("view-list-bullet-symbolic", use_bundled=True)
-        )
+        self.command_manager_button.set_child(icon_image("utilities-terminal-symbolic"))
         self.command_manager_button.set_action_name("win.show-command-manager")
 
         # Add the new search button
@@ -352,8 +350,8 @@ class WindowUIBuilder:
 
         self.ai_assistant_button = Gtk.Button()
         self.ai_assistant_button.set_child(
-            icon_image("ai-assistant-symbolic", use_bundled=True)
-        )
+            icon_image("avatar-default-symbolic", use_bundled=False)
+        )  # System icon
         self.ai_assistant_button.add_css_class("flat")
         self.ai_assistant_button.connect(
             "clicked", lambda _btn: self.window._on_ai_assistant_requested()

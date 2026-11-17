@@ -1132,6 +1132,17 @@ class SettingsManager:
                 }}
                 """)
 
+            # The close button must follow the tab's own foreground (brand
+            # gradient / session color), not the generic header-bar button color.
+            css_parts.append("""
+                headerbar.main-header-bar box.custom-tab-button button,
+                headerbar.main-header-bar box.custom-tab-button button:hover,
+                headerbar.main-header-bar box.custom-tab-button button:active,
+                headerbar.main-header-bar box.custom-tab-button button image {
+                    color: inherit;
+                }
+                """)
+
             # === TABS ===
             if user_transparency > 0:
                 css_parts.append(f"""
@@ -1772,6 +1783,19 @@ class SettingsManager:
                 .zashterminal-dialog actionbar > revealer,
                 .zashterminal-dialog actionbar > revealer > box {{
                     background: {header_bg_color};
+                    background-color: {header_bg_color};
+                    color: {fg_color};
+                }}
+                /* Command Manager: one flat surface (Adw.Dialog does not match
+                   the "> toolbarview" selectors above) */
+                .command-manager-dialog toolbarview,
+                .command-manager-dialog toolbarview > contents,
+                .command-manager-dialog .command-manager-content {{
+                    background-color: {bg_color};
+                    color: {fg_color};
+                }}
+                .command-manager-dialog headerbar {{
+                    background-image: none;
                     background-color: {header_bg_color};
                     color: {fg_color};
                 }}
