@@ -134,9 +134,12 @@ Image=/tmp/other.png
             self.assertEqual(read_kde_wallpapers(path), [("KDE · 1", "file:///tmp/a%20b.png"), ("KDE · 3", "/tmp/other.png")])
 
     def test_unknown_desktop_does_not_guess_or_launch_commands(self):
-        with patch.dict(os.environ, {"XDG_CURRENT_DESKTOP": "unknown"}), patch("subprocess.run") as run:
-            self.assertEqual(discover_wallpapers(), [])
-            run.assert_not_called()
+        # Empty state/config dirs: the developer's own Noctalia files must not leak in.
+        with tempfile.TemporaryDirectory() as empty:
+            env = {"XDG_CURRENT_DESKTOP": "unknown", "XDG_STATE_HOME": empty, "XDG_CONFIG_HOME": empty}
+            with patch.dict(os.environ, env), patch("subprocess.run") as run:
+                self.assertEqual(discover_wallpapers(), [])
+                run.assert_not_called()
 
     def test_xfce_uses_bounded_read_only_command_and_preserves_spaces(self):
         with tempfile.TemporaryDirectory() as directory:
