@@ -195,8 +195,14 @@ Cada item tem: problema, mudança, arquivos principais e critério de aceite.
   `terminal/tabs.py` (cor da aba da sessão preenche a aba ativa e colore o foco do painel).
 - **Imagens:** `visual/aplicado-padrao.png`, `visual/aplicado-cor-da-sessao.png`. As direções B e C ficam só como referência.
 
-### VIS-02 `[ ]` Pendências do redesenho visual
-- Conferir tema claro e tema "Terminal" (não verificados em captura), transparência/desfoque em compositor real.
-- Levar o estilo aos diálogos (preferências, editor de sessão, paleta, gerenciador de comandos) e ao gerenciador de arquivos.
-- Atualizar `docs/gallery` e o README com o novo visual.
+### VIS-02 `[~]` Visual Aurora em todas as telas
+- **Feito:** `data/styles/aurora.css` (carregado em `ui/window_ui.py`) dá a mesma identidade a todas as telas:
+  botões principais e interruptores em gradiente, seletor de páginas em pílula, títulos de grupo em caixa alta na cor
+  da marca, cartões arredondados com sombra, foco em violeta, barra de broadcast em laranja, paleta e gerenciador de
+  comandos. Capturas em `visual/telas/` (tema escuro e tema "Terminal" do mantenedor conferidos).
+- **Ícones do cabeçalho:** relato de ícones sumindo não foi reproduzido (aparecem com a configuração real, janela
+  estreita, maximizada e 5 abas). Por precaução os ícones não são mais esmaecidos quando a janela perde o foco.
+- **Pendente:** tema claro; menus suspensos e transparência/desfoque conferidos só por código; atualizar `docs/gallery` e README.
+
 | 2026-11-16 | VIS-01 | (ver git log) | Visual Aurora + cor da sessão aplicado |
+| 2026-11-16 | VIS-02 | (ver git log) | Aurora em diálogos, paleta, barras e gerenciador de arquivos |

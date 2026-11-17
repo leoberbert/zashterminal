@@ -1,0 +1,201 @@
+/* zashterminal/data/styles/aurora.css
+ * "Aurora" visual identity shared by every screen: brand gradient for primary
+ * actions and "on" states, soft rounded cards, brand focus rings.
+ * Brand colors (@zash_brand, @zash_brand_2) are defined in window.css.
+ * Only decoration lives here; theme backgrounds/foregrounds stay with the
+ * color scheme so light, dark and "Terminal" themes keep working.
+ */
+
+/* ---- Header bar: icons stay readable when the window is not focused ---- */
+headerbar.main-header-bar:backdrop > windowhandle {
+    filter: opacity(0.9);
+}
+
+/* ---- Primary actions -------------------------------------------------- */
+button.suggested-action,
+.command-manager-dialog .execute-button {
+    background-image: linear-gradient(90deg, @zash_brand, @zash_brand_2);
+    background-color: @zash_brand;
+    color: white;
+    font-weight: 700;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px alpha(@zash_brand, 0.4);
+}
+
+button.suggested-action:hover {
+    box-shadow: 0 3px 14px alpha(@zash_brand, 0.6);
+}
+
+button.suggested-action:disabled {
+    background-image: none;
+    box-shadow: none;
+}
+
+button.pill {
+    border-radius: 999px;
+}
+
+/* ---- "On" states ------------------------------------------------------ */
+switch:checked {
+    background-image: linear-gradient(90deg, @zash_brand, @zash_brand_2);
+    background-color: @zash_brand;
+}
+
+scale highlight {
+    background-image: linear-gradient(90deg, @zash_brand, @zash_brand_2);
+}
+
+checkbutton check:checked,
+checkbutton radio:checked {
+    background-color: @zash_brand;
+    color: white;
+}
+
+progressbar > trough > progress {
+    background-image: linear-gradient(90deg, @zash_brand, @zash_brand_2);
+}
+
+/* ---- Focus and selection ---------------------------------------------- */
+entry:focus-within,
+row.entry:focus-within,
+spinbutton:focus-within,
+.command-manager-dialog .command-input-frame:focus-within {
+    outline: 2px solid alpha(@zash_brand, 0.75);
+    outline-offset: -2px;
+}
+
+/* ---- Dialog chrome ---------------------------------------------------- */
+window.zashterminal-dialog headerbar,
+dialog headerbar,
+window.dialog headerbar {
+    background-image: linear-gradient(90deg, alpha(@zash_brand, 0.12), alpha(@zash_brand_2, 0.06));
+    border-bottom: 1px solid alpha(@zash_brand, 0.3);
+    box-shadow: none;
+}
+
+/* Page switcher (Preferences, Colors & Highlighting): pill with gradient */
+viewswitcher button {
+    border-radius: 999px;
+    margin: 4px 2px;
+}
+
+viewswitcher button:checked {
+    background-image: linear-gradient(90deg, @zash_brand, @zash_brand_2);
+    color: white;
+    box-shadow: 0 2px 8px alpha(@zash_brand, 0.4);
+}
+
+/* Group headings: small brand-colored caps */
+preferencesgroup > box > box.header label.title,
+preferencesgroup .heading {
+    color: @zash_brand_2;
+    font-size: 0.82em;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+/* Cards */
+list.boxed-list,
+list.boxed-list-separate > row,
+.card {
+    border-radius: 14px;
+    border: 1px solid alpha(currentColor, 0.08);
+    box-shadow: 0 2px 10px alpha(black, 0.18);
+}
+
+list.boxed-list > row:first-child {
+    border-radius: 14px 14px 0 0;
+}
+
+list.boxed-list > row:last-child {
+    border-radius: 0 0 14px 14px;
+}
+
+list.boxed-list > row:only-child {
+    border-radius: 14px;
+}
+
+list.boxed-list > row.activatable:hover {
+    background-image: linear-gradient(90deg, alpha(@zash_brand, 0.10), transparent);
+}
+
+/* ---- Popovers and menus ----------------------------------------------- */
+popover > contents {
+    border-radius: 14px;
+    border: 1px solid alpha(@zash_brand, 0.25);
+}
+
+popover.menu modelbutton:hover,
+popover.menu modelbutton:selected {
+    background: alpha(@zash_brand, 0.22);
+}
+
+popover.menu label.title {
+    color: @zash_brand_2;
+    font-size: 0.8em;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+/* ---- Search and broadcast bars ---------------------------------------- */
+searchbar > revealer > box {
+    border-bottom: 1px solid alpha(@zash_brand, 0.25);
+}
+
+searchbar entry {
+    border-radius: 999px;
+}
+
+searchbar.broadcast-bar > revealer > box {
+    background-image: linear-gradient(90deg, alpha(#e66100, 0.20), alpha(#e66100, 0.06));
+    border-bottom: 1px solid alpha(#e66100, 0.55);
+}
+
+/* ---- Sessions panel --------------------------------------------------- */
+.sidebar-container statuspage > scrolledwindow > viewport > box > clamp > box > .title {
+    font-size: 1.15em;
+}
+
+/* ---- Command palette -------------------------------------------------- */
+.command-palette row {
+    border-radius: 10px;
+    margin: 1px 6px;
+}
+
+.command-palette row:selected {
+    background-image: linear-gradient(90deg, alpha(@zash_brand, 0.45), alpha(@zash_brand_2, 0.25));
+}
+
+.command-palette-search {
+    border-radius: 999px;
+    min-height: 34px;
+}
+
+/* ---- Command manager -------------------------------------------------- */
+.command-manager-dialog .command-button {
+    border-radius: 12px;
+    transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+
+.command-manager-dialog .command-button:hover {
+    border-color: alpha(@zash_brand, 0.7);
+    box-shadow: 0 2px 10px alpha(@zash_brand, 0.3);
+}
+
+/* ---- File manager ----------------------------------------------------- */
+.file-manager-main-box columnview > header > button {
+    font-size: 0.82em;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: @zash_brand_2;
+}
+
+/* ---- Toasts and tooltips ---------------------------------------------- */
+toast {
+    border-radius: 999px;
+    border: 1px solid alpha(@zash_brand, 0.45);
+    box-shadow: 0 4px 18px alpha(black, 0.4);
+}

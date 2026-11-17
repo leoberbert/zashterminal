@@ -282,6 +282,8 @@ class CommandPalette(Adw.Dialog):
 
         self._list = Gtk.ListBox(selection_mode=Gtk.SelectionMode.BROWSE)
         self._list.add_css_class("navigation-sidebar")
+        self._list.add_css_class("command-palette")
+        self._search.add_css_class("command-palette-search")
         self._list.set_header_func(self._header_func)
         self._list.connect("row-activated", lambda _l, row: self._run(row))
 

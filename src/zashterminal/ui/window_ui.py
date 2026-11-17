@@ -176,6 +176,17 @@ class WindowUIBuilder:
             Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION,
         )
 
+        # Shared visual identity, after the per-area stylesheets so it wins ties
+        aurora_css = _STYLES_DIR / "aurora.css"
+        if aurora_css.exists():
+            aurora_provider = Gtk.CssProvider()
+            aurora_provider.load_from_path(str(aurora_css))
+            Gtk.StyleContext.add_provider_for_display(
+                Gdk.Display.get_default(),
+                aurora_provider,
+                Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION + 1,
+            )
+
         # Separate provider for window borders (conditional on maximized state)
         self.border_provider = Gtk.CssProvider()
         self._update_border_css()
