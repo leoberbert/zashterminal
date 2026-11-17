@@ -431,6 +431,18 @@ fill_mode = "span"
             self.assertEqual(found, [("Noctalia · HDMI-A-1", str(image))])
             self.assertEqual(preferred_wallpaper(found, (1920, 1080), None), 0)
 
+    def test_noctalia_config_file_used_when_state_has_no_wallpaper(self):
+        # niri + Noctalia: the state file exists but the wallpaper lives in ~/.config.
+        with tempfile.TemporaryDirectory() as state, tempfile.TemporaryDirectory() as config:
+            image = Path(config) / "wall.png"
+            image.write_bytes(b"x")
+            self.write(state, "[shell]\nfont_weight = 700\n")
+            self.write(config, f'[wallpaper.monitors.HDMI-A-1]\npath = "{image}"\n')
+            env = {"XDG_CURRENT_DESKTOP": "niri", "XDG_STATE_HOME": state, "XDG_CONFIG_HOME": config}
+            with patch.dict(os.environ, env, clear=False):
+                found = discover_wallpapers()
+            self.assertEqual(found, [("Noctalia · HDMI-A-1", str(image))])
+
 
 class DarkWallpaperInterfaceTests(unittest.TestCase):
     SCHEME = {"background": "#0a0a19", "foreground": "#c1c1c5", "headerbar_background": "#0a0a19",
