@@ -44,6 +44,7 @@ def capture_widget(widget, path: Path) -> None:
     renderer = Gsk.CairoRenderer()
     renderer.realize_for_display(Gdk.Display.get_default())
     texture = renderer.render_texture(node, None)
+    renderer.unrealize()
     path.parent.mkdir(parents=True, exist_ok=True)
     texture.save_to_png(str(path))
     print(f"wrote {path.name} ({path.stat().st_size} bytes, {width}x{height})")
@@ -119,7 +120,7 @@ def main() -> int:
         gi.require_version("Vte", "3.91")
         gi.require_version("Gdk", "4.0")
         gi.require_version("Gsk", "4.0")
-        from gi.repository import Adw, GLib
+        from gi.repository import Adw, Gio, GLib
 
         from zashterminal.app import ZashTerminalApp
         from zashterminal.sessions.models import SessionItem
@@ -133,6 +134,8 @@ def main() -> int:
 
         Adw.init()
         app = ZashTerminalApp()
+        # Do not forward to a running user instance.
+        app.set_flags(app.get_flags() | Gio.ApplicationFlags.NON_UNIQUE)
 
         def on_activate(application):
             settings = SettingsManager(config_home / "zashterminal" / "settings.json")
@@ -294,19 +297,23 @@ def main() -> int:
                     print(f"command manager skipped: {exc}")
 
                 try:
-                    window.split_view.set_show_sidebar(True)
-                    menu_btn = window.ui_builder.menu_button
-                    menu_btn.popup()
-                    pump(0.6)
-                    capture_widget(window, OUT / "13-main-menu.png")
-                    menu_btn.popdown()
+                    from zashterminal.ui.dialogs.command_palette_dialog import (
+                        CommandPalette,
+                    )
+
+                    palette = CommandPalette(window)
+                    palette.present(window)
+                    pump(0.8)
+                    capture_widget(window, OUT / "14-command-palette.png")
+                    palette.close()
+                    pump(0.2)
                 except Exception as exc:
-                    print(f"menu skipped: {exc}")
+                    print(f"palette skipped: {exc}")
 
                 try:
                     window.split_view.set_show_sidebar(True)
                     pump(0.3)
-                    capture_widget(window, OUT / "14-sessions-sidebar.png")
+                    capture_widget(window, OUT / "13-sessions-sidebar.png")
                 except Exception as exc:
                     print(f"sidebar skipped: {exc}")
             except Exception:
