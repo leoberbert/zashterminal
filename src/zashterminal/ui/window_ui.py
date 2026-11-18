@@ -176,6 +176,19 @@ class WindowUIBuilder:
             Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION,
         )
 
+        # Shared visual identity, after the per-area stylesheets so it wins ties
+        aurora_css = _STYLES_DIR / "aurora.css"
+        if aurora_css.exists():
+            aurora_provider = Gtk.CssProvider()
+            aurora_provider.load_from_path(str(aurora_css))
+            Gtk.StyleContext.add_provider_for_display(
+                Gdk.Display.get_default(),
+                aurora_provider,
+                # Above the generated theme CSS (USER priority), which would
+                # otherwise repaint headings and menu labels.
+                Gtk.STYLE_PROVIDER_PRIORITY_USER + 10,
+            )
+
         # Separate provider for window borders (conditional on maximized state)
         self.border_provider = Gtk.CssProvider()
         self._update_border_css()
@@ -197,6 +210,8 @@ class WindowUIBuilder:
         self.search_bar.connect_entry(self.terminal_search_entry)
         self.search_prev_button = icon_button("go-up-symbolic")
         self.search_next_button = icon_button("go-down-symbolic")
+        self.tooltip_helper.add_tooltip(self.search_prev_button, _("Previous match"))
+        self.tooltip_helper.add_tooltip(self.search_next_button, _("Next match"))
 
         # Create the BroadcastBar
         self.broadcast_bar = Gtk.SearchBar()
@@ -227,6 +242,13 @@ class WindowUIBuilder:
         self.broadcast_entry.add_css_class("broadcast-entry")
         self.broadcast_entry.set_icon_from_icon_name(Gtk.EntryIconPosition.PRIMARY, "utilities-terminal-symbolic")
         broadcast_box.append(self.broadcast_entry)
+        # Live summary of who will receive the command (scope-dependent)
+        self.broadcast_targets_label = Gtk.Label(
+            css_classes=["dim-label"],
+            ellipsize=Pango.EllipsizeMode.END,
+            max_width_chars=40,
+        )
+        broadcast_box.append(self.broadcast_targets_label)
         self.broadcast_bar.set_child(broadcast_box)
         main_box.append(self.broadcast_bar)
 
@@ -319,11 +341,12 @@ class WindowUIBuilder:
         self.search_button = Gtk.ToggleButton()
         self.search_button.set_child(icon_image("edit-find-symbolic"))
 
-        # Broadcast button is kept for internal use but not added to header bar
-        # The functionality is integrated into the Command Manager
+        # Broadcast: type once, send to the chosen panes (also reachable from
+        # the Command Manager and Ctrl+Shift+B).
         self.broadcast_button = Gtk.ToggleButton()
-        self.broadcast_button.set_child(icon_image("utilities-terminal-symbolic"))
-        self.broadcast_button.set_visible(False)  # Hidden from header bar
+        self.broadcast_button.set_child(
+            icon_image("broadcast-symbolic", use_bundled=True)
+        )
 
         self.ai_assistant_button = Gtk.Button()
         self.ai_assistant_button.set_child(
@@ -373,6 +396,9 @@ class WindowUIBuilder:
             self.search_button, _("Search in Terminal"), "toggle-search"
         )
         self.tooltip_helper.add_tooltip_with_shortcut(
+            self.broadcast_button, _("Broadcast Command"), "toggle-broadcast"
+        )
+        self.tooltip_helper.add_tooltip_with_shortcut(
             self.ai_assistant_button, _("Ask AI Assistant"), "ai-assistant"
         )
         self.tooltip_helper.add_tooltip(
@@ -383,45 +409,9 @@ class WindowUIBuilder:
             self.new_tab_button, _("New Tab"), "new-local-tab"
         )
 
-        # Check if window controls are on the left
-        button_layout = self.wm_settings.get_string("button-layout")
-        if ":" in button_layout:
-            left_part = button_layout.split(":")[0]
-            window_controls_on_left = any(
-                btn in left_part for btn in ["close", "minimize", "maximize"]
-            )
-        else:
-            window_controls_on_left = False
-
-        if window_controls_on_left:
-            # Add flipped class to icons
-            self.toggle_sidebar_button.add_css_class("flipped-icon")
-            self.file_manager_button.add_css_class("flipped-icon")
-            self.command_manager_button.add_css_class("flipped-icon")
-            self.search_button.add_css_class("flipped-icon")
-            self.ai_assistant_button.add_css_class("flipped-icon")
-            self.cleanup_button.add_css_class("flipped-icon")
-            self.menu_button.add_css_class("flipped-icon")
-            self.new_tab_button.add_css_class("flipped-icon")
-            # Swap sides: left buttons to right, right buttons to left
-            header_bar.pack_end(self.toggle_sidebar_button)
-            header_bar.pack_end(self.file_manager_button)
-            header_bar.pack_end(self.command_manager_button)
-            header_bar.pack_end(self.ai_assistant_button)
-            header_bar.pack_end(self.search_button)
-            header_bar.pack_end(self.cleanup_button)
-            header_bar.pack_start(self.menu_button)
-            header_bar.pack_start(self.new_tab_button)
-        else:
-            # Normal packing
-            header_bar.pack_start(self.toggle_sidebar_button)
-            header_bar.pack_start(self.file_manager_button)
-            header_bar.pack_start(self.command_manager_button)
-            header_bar.pack_start(self.ai_assistant_button)
-            header_bar.pack_start(self.search_button)
-            header_bar.pack_start(self.cleanup_button)
-            header_bar.pack_end(self.menu_button)
-            header_bar.pack_end(self.new_tab_button)
+        self._pack_header_buttons(
+            header_bar, self._window_controls_on_left(self.wm_settings)
+        )
 
         self.scrolled_tab_bar = Gtk.ScrolledWindow(
             name="scrolled_tab_bar",
@@ -456,53 +446,52 @@ class WindowUIBuilder:
             return
 
         # Remove all buttons from header_bar
-        buttons = [
+        for btn in self._header_tool_buttons() + self._header_end_buttons():
+            if btn.get_parent() is not None:
+                btn.get_parent().remove(btn)
+            btn.remove_css_class("flipped-icon")
+
+        self._pack_header_buttons(self.header_bar, self._window_controls_on_left(settings))
+
+    @staticmethod
+    def _window_controls_on_left(settings) -> bool:
+        button_layout = settings.get_string("button-layout")
+        if ":" not in button_layout:
+            return False
+        left_part = button_layout.split(":")[0]
+        return any(btn in left_part for btn in ("close", "minimize", "maximize"))
+
+    def _header_tool_buttons(self) -> list:
+        """Tool buttons, packed away from the window controls (in this order)."""
+        return [
             self.toggle_sidebar_button,
             self.file_manager_button,
             self.command_manager_button,
+            self.broadcast_button,
+            self.ai_assistant_button,
             self.search_button,
             self.cleanup_button,
-            self.menu_button,
-            self.new_tab_button,
         ]
-        for btn in buttons:
-            if btn and btn.get_parent() is not None:
-                btn.get_parent().remove(btn)
-            # Remove flipped class
-            btn.remove_css_class("flipped-icon")
 
-        # Re-determine layout
-        button_layout = settings.get_string("button-layout")
-        if ":" in button_layout:
-            left_part = button_layout.split(":")[0]
-            window_controls_on_left = any(
-                btn in left_part for btn in ["close", "minimize", "maximize"]
-            )
-        else:
-            window_controls_on_left = False
+    def _header_end_buttons(self) -> list:
+        """Buttons packed next to the window controls."""
+        return [self.menu_button, self.new_tab_button]
 
-        # Re-pack buttons
-        if window_controls_on_left:
-            # Add flipped class
-            for btn in buttons:
+    def _pack_header_buttons(self, header_bar, controls_on_left: bool) -> None:
+        """Pack header buttons; mirror sides when window controls are on the left."""
+        tools, ends = self._header_tool_buttons(), self._header_end_buttons()
+        if controls_on_left:
+            for btn in tools + ends:
                 btn.add_css_class("flipped-icon")
-            # Swap sides
-            self.header_bar.pack_end(self.toggle_sidebar_button)
-            self.header_bar.pack_end(self.file_manager_button)
-            self.header_bar.pack_end(self.command_manager_button)
-            self.header_bar.pack_end(self.search_button)
-            self.header_bar.pack_end(self.cleanup_button)
-            self.header_bar.pack_start(self.menu_button)
-            self.header_bar.pack_start(self.new_tab_button)
+            for btn in tools:
+                header_bar.pack_end(btn)
+            for btn in ends:
+                header_bar.pack_start(btn)
         else:
-            # Normal packing
-            self.header_bar.pack_start(self.toggle_sidebar_button)
-            self.header_bar.pack_start(self.file_manager_button)
-            self.header_bar.pack_start(self.command_manager_button)
-            self.header_bar.pack_start(self.search_button)
-            self.header_bar.pack_start(self.cleanup_button)
-            self.header_bar.pack_end(self.menu_button)
-            self.header_bar.pack_end(self.new_tab_button)
+            for btn in tools:
+                header_bar.pack_start(btn)
+            for btn in ends:
+                header_bar.pack_end(btn)
 
     def _create_command_toolbar(self) -> Gtk.WindowHandle:
         """Create the toolbar for pinned command buttons.
@@ -729,14 +718,7 @@ class WindowUIBuilder:
 
         normal_view.append(toolbar)
 
-        # Session tree in scrolled window (main content)
-        scrolled_window = Gtk.ScrolledWindow(vexpand=True)
-        scrolled_window.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
-        scrolled_window.set_child(self.session_tree.get_widget())
-        scrolled_window.add_css_class("sidebar-session-tree")
-        normal_view.append(scrolled_window)
-
-        # Search entry at the bottom
+        # Search sits above the list so filtering is the first thing reached.
         search_container = Gtk.Box(
             orientation=Gtk.Orientation.VERTICAL, css_classes=["sidebar-search"]
         )
@@ -747,6 +729,32 @@ class WindowUIBuilder:
         self.sidebar_search_entry.set_margin_end(6)
         search_container.append(self.sidebar_search_entry)
         normal_view.append(search_container)
+
+        # Session tree in scrolled window (main content)
+        scrolled_window = Gtk.ScrolledWindow(vexpand=True)
+        scrolled_window.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
+        scrolled_window.set_child(self.session_tree.get_widget())
+        scrolled_window.add_css_class("sidebar-session-tree")
+
+        self.sidebar_list_stack = Gtk.Stack(vexpand=True)
+        self.sidebar_list_stack.add_named(scrolled_window, "tree")
+        self.sidebar_list_stack.add_named(self._create_sidebar_empty_state(), "empty")
+        self.sidebar_list_stack.add_named(
+            Adw.StatusPage(
+                icon_name="edit-find-symbolic",
+                title=_("No Matching Sessions"),
+                css_classes=["compact"],
+            ),
+            "no-results",
+        )
+        normal_view.append(self.sidebar_list_stack)
+        self.session_tree.filter_model.connect(
+            "items-changed", lambda *_args: self.update_sidebar_placeholder()
+        )
+        self.sidebar_search_entry.connect(
+            "search-changed", lambda *_args: self.update_sidebar_placeholder()
+        )
+        self.update_sidebar_placeholder()
 
         self.sidebar_main_stack.add_named(normal_view, "normal")
 
@@ -763,6 +771,48 @@ class WindowUIBuilder:
         self.sidebar_content_stack = self.sidebar_main_stack
 
         return sidebar_box
+
+    def _create_sidebar_empty_state(self) -> Gtk.Widget:
+        """First-run guidance shown while there are no sessions, folders or layouts."""
+        actions = Gtk.Box(
+            orientation=Gtk.Orientation.VERTICAL, spacing=8, halign=Gtk.Align.CENTER
+        )
+        add_button = Gtk.Button(
+            label=_("Add Session"),
+            action_name="win.add-session-root",
+            css_classes=["suggested-action", "pill"],
+        )
+        actions.append(add_button)
+
+        imports = Gio.Menu()
+        imports.append("SecureCRT…", "win.import-securecrt-sessions")
+        imports.append("PuTTY…", "win.import-putty-sessions")
+        imports.append("Multi PuTTY…", "win.import-multiputty-sessions")
+        imports.append("mRemoteNG…", "win.import-mremoteng-sessions")
+        import_button = Gtk.MenuButton(
+            label=_("Import Sessions"), menu_model=imports, css_classes=["pill"]
+        )
+        actions.append(import_button)
+
+        return Adw.StatusPage(
+            icon_name="network-server-symbolic",
+            title=_("No Saved Sessions"),
+            description=_(
+                "Save SSH hosts, keys and jump hosts to connect with one click."
+            ),
+            child=actions,
+            css_classes=["compact"],
+        )
+
+    def update_sidebar_placeholder(self) -> None:
+        """Show the list, the first-run guidance, or the no-results message."""
+        if self.session_tree.filter_model.get_n_items() > 0:
+            page = "tree"
+        elif self.sidebar_search_entry.get_text().strip():
+            page = "no-results"
+        else:
+            page = "empty"
+        self.sidebar_list_stack.set_visible_child_name(page)
 
     def _create_content_area(self) -> Gtk.Widget:
         """Create the main content area with tabs, file manager, and AI panel."""

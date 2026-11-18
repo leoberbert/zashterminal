@@ -8799,3 +8799,239 @@ msgstr ""
 "Look for newer Releases or tags on GitHub when the app starts "
 "(unreleased main tip is ignored unless ZASHTERMINAL_UPDATE_ALLOW_MAIN=1). "
 "Disable entirely with ZASHTERMINAL_DISABLE_AUTO_UPDATE=1."
+
+#: src/zashterminal/ui/window_ui.py
+msgid "Previous match"
+msgstr "Potrivirea anterioară"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "Next match"
+msgstr "Potrivirea următoare"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "Broadcast Command"
+msgstr "Difuzează comanda"
+
+#: src/zashterminal/ui/window_search_broadcast.py
+msgid "Select None"
+msgstr "Nu selecta nimic"
+
+#: src/zashterminal/ui/window_search_broadcast.py
+msgid "Command sent to {name}"
+msgstr "Comandă trimisă către {name}"
+
+#: src/zashterminal/ui/window_search_broadcast.py
+msgid "Command sent to {count} terminals: {names}"
+msgstr "Comandă trimisă către {count} terminale: {names}"
+
+#: src/zashterminal/ui/menus.py
+msgid "Colors & Highlighting"
+msgstr "Culori și evidențiere"
+
+#: src/zashterminal/ui/menus.py
+msgid "Customize"
+msgstr "Personalizează"
+
+#: src/zashterminal/ui/menus.py
+msgid "Tools"
+msgstr "Instrumente"
+
+#: src/zashterminal/ui/menus.py
+msgid "Import Sessions"
+msgstr "Importă sesiuni"
+
+#: src/zashterminal/ui/menus.py
+msgid "Start TFTP Server"
+msgstr "Pornește serverul TFTP"
+
+#: src/zashterminal/ui/menus.py
+msgid "Stop TFTP Server"
+msgstr "Oprește serverul TFTP"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Copy on Select"
+msgstr "Copiere la selectare"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Selecting text copies it to the clipboard"
+msgstr "Selectarea textului îl copiază în clipboard"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "No Matching Sessions"
+msgstr "Nicio sesiune potrivită"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "No Saved Sessions"
+msgstr "Nicio sesiune salvată"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "Save SSH hosts, keys and jump hosts to connect with one click."
+msgstr "Salvați gazde SSH, chei și gazde intermediare pentru a vă conecta cu un singur clic."
+
+#: src/zashterminal/ui/window_search_broadcast.py
+msgid "Choose targets on Enter"
+msgstr "Alegeți țintele la Enter"
+
+#: src/zashterminal/ui/window_search_broadcast.py
+msgid "No targets"
+msgstr "Nicio țintă"
+
+#: src/zashterminal/ui/window_search_broadcast.py
+msgid "Sends to {count}: {names}"
+msgstr "Trimite către {count}: {names}"
+
+#: src/zashterminal/terminal/tabs.py
+msgid "Pane Actions"
+msgstr "Acțiuni panou"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Command Palette"
+msgstr "Paleta de comenzi"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Search sessions, commands and actions"
+msgstr "Căutați sesiuni, comenzi și acțiuni"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "@ sessions only · > actions only · Enter to run · Esc to close"
+msgstr "@ doar sesiuni · > doar acțiuni · Enter pentru a rula · Esc pentru a închide"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "No Results"
+msgstr "Niciun rezultat"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Layouts"
+msgstr "Aranjamente"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Saved Commands"
+msgstr "Comenzi salvate"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Saved layout"
+msgstr "Aranjament salvat"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Font"
+msgstr "Font"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Window"
+msgstr "Fereastră"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Behavior"
+msgstr "Comportament"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Scrolling"
+msgstr "Derulare"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Shell"
+msgstr "Shell"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Startup"
+msgstr "Pornire"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Backup"
+msgstr "Copie de rezervă"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Remote Editing"
+msgstr "Editare la distanță"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Text Rendering"
+msgstr "Randare text"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Compatibility"
+msgstr "Compatibilitate"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Logs & Transcripts"
+msgstr "Jurnale și transcrieri"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "More Settings"
+msgstr "Mai multe setări"
+
+#: src/zashterminal/ui/dialogs/session_edit_dialog.py
+msgid "Favorite"
+msgstr "Favorită"
+
+#: src/zashterminal/ui/dialogs/session_edit_dialog.py
+msgid "Mark with a star and list it first in the Command Palette"
+msgstr "Marchează cu o stea și apare prima în Paleta de comenzi"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "SFTP: {name}"
+msgstr "SFTP: {name}"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Settings"
+msgstr "Setări"
+
+#: src/zashterminal/ui/session_edit_dialog.py
+msgid "Jump Host, Tunnels and More"
+msgstr "Jump Host, tunele și altele"
+
+#: src/zashterminal/ui/session_edit_dialog.py
+msgid "ProxyJump, X11, SFTP directories and port forwarding"
+msgstr "ProxyJump, X11, directoare SFTP și redirecționare de porturi"
+
+#: src/zashterminal/sessions/tree.py
+msgid "Connected"
+msgstr "Conectate"
+
+#: src/zashterminal/sessions/tree.py
+msgid "Favorites"
+msgstr "Favorite"
+
+#: src/zashterminal/ui/dialogs/session_edit_dialog.py
+msgid "Save and Connect"
+msgstr "Salvează și conectează"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "TFTP Server"
+msgstr "Server TFTP"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "TFTP Port"
+msgstr "Port TFTP"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "Upload Directory"
+msgstr "Director de încărcare"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "Download Directory"
+msgstr "Director de descărcare"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "Files requested by TFTP clients are read from this directory"
+msgstr "Fișierele solicitate de clienții TFTP sunt citite din acest director"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "Files sent by TFTP clients are written to this directory"
+msgstr "Fișierele trimise de clienții TFTP sunt scrise în acest director"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "Open Directory"
+msgstr "Deschide directorul"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "Select Directory"
+msgstr "Selectează directorul"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "Please select a valid directory!"
+msgstr "Selectați un director valid!"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "The TFTP server uses local directories for uploading and downloading files."
+msgstr "Serverul TFTP folosește directoare locale pentru încărcarea și descărcarea fișierelor."

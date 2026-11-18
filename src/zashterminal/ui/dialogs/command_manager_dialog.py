@@ -2428,7 +2428,7 @@ class CommandEditorDialog(Adw.Window):
         self.close()
 
 
-class CommandManagerDialog(Adw.Window):
+class CommandManagerDialog(Adw.Dialog):
     """
     Main Command Manager dialog with button-based commands and send-to-all functionality.
     Redesigned for modern UI/UX with search, grid layout, and streamlined interactions.
@@ -2439,47 +2439,38 @@ class CommandManagerDialog(Adw.Window):
     }
 
     def __init__(self, parent_window, settings_manager: Optional[SettingsManager] = None):
-        super().__init__(
-            transient_for=parent_window,
-            modal=False,
-        )
+        super().__init__()
         self.add_css_class("zashterminal-dialog")
         self.add_css_class("command-manager-dialog")
         self.parent_window = parent_window
         self.command_manager = get_command_button_manager()
         self._settings_manager = settings_manager
 
-        self._allow_destroy = False
-        self._presenting = False
         self._search_filter = ""
         self._all_command_widgets: List[CommandButtonWidget] = []
 
-        # Calculate size based on parent
+        # In-window dialog: no separate toplevel, so the compositor shows no
+        # window close animation when a command is picked.
         parent_width = parent_window.get_width()
         parent_height = parent_window.get_height()
-        self.set_default_size(int(parent_width * 0.7), int(parent_height * 0.75))
+        self.set_content_width(int(parent_width * 0.7))
+        self.set_content_height(int(parent_height * 0.75))
         self.set_title(_("Command Manager"))
 
         self._build_ui()
         self._apply_color_scheme()
         self._populate_commands()
 
-        # Connect signals
-        self.connect("notify::is-active", self._on_active_changed)
-        self.connect("close-request", self._on_close_request)
-
-        if parent_window:
-            parent_window.connect("destroy", self._on_parent_destroyed)
-
-        # Keyboard handler
+        # Keyboard handler (capture phase: focused entries/text views would
+        # otherwise swallow Escape before it reaches the dialog)
         key_controller = Gtk.EventControllerKey.new()
+        key_controller.set_propagation_phase(Gtk.PropagationPhase.CAPTURE)
         key_controller.connect("key-pressed", self._on_key_pressed)
         self.add_controller(key_controller)
+        self.search_entry.connect("stop-search", lambda *_a: self.close())
 
-    def present(self):
-        self._presenting = True
-        super().present()
-        GLib.idle_add(lambda: setattr(self, '_presenting', False))
+    def present(self, parent=None):
+        super().present(parent or self.parent_window)
 
     def _apply_color_scheme(self):
         """Apply terminal color scheme to BashTextView when gtk_theme is 'terminal'.
@@ -2506,7 +2497,7 @@ class CommandManagerDialog(Adw.Window):
         # Dynamic theme colors are applied via _apply_color_scheme()
 
         toolbar_view = Adw.ToolbarView()
-        self.set_content(toolbar_view)
+        self.set_child(toolbar_view)
 
         # Header bar with search on left side
         header = Adw.HeaderBar()
@@ -2531,6 +2522,7 @@ class CommandManagerDialog(Adw.Window):
 
         # Main content
         main_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
+        main_box.add_css_class("command-manager-content")
 
         # Command input section - modern integrated design
         input_section = Gtk.Box(
@@ -3186,29 +3178,3 @@ class CommandManagerDialog(Adw.Window):
             self.close()
             return Gdk.EVENT_STOP
         return Gdk.EVENT_PROPAGATE
-
-    def _on_active_changed(self, widget, _pspec):
-        if not self._presenting and not self.is_active() and self.get_visible():
-            GLib.timeout_add(200, self._delayed_close)
-
-    def _delayed_close(self):
-        if not self.is_active() and self.get_visible():
-            self.close()
-        return False
-
-    def _on_close_request(self, widget):
-        self.hide()
-        return Gdk.EVENT_STOP
-
-    def close(self):
-        self.hide()
-
-    def destroy(self):
-        if not hasattr(self, '_allow_destroy') or not self._allow_destroy:
-            self.hide()
-            return
-        super().destroy()
-
-    def _on_parent_destroyed(self, parent):
-        self._allow_destroy = True
-        self.destroy()

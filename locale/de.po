@@ -8820,3 +8820,239 @@ msgstr ""
 "Look for newer Releases or tags on GitHub when the app starts "
 "(unreleased main tip is ignored unless ZASHTERMINAL_UPDATE_ALLOW_MAIN=1). "
 "Disable entirely with ZASHTERMINAL_DISABLE_AUTO_UPDATE=1."
+
+#: src/zashterminal/ui/window_ui.py
+msgid "Previous match"
+msgstr "Vorheriger Treffer"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "Next match"
+msgstr "Nächster Treffer"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "Broadcast Command"
+msgstr "Befehl übertragen"
+
+#: src/zashterminal/ui/window_search_broadcast.py
+msgid "Select None"
+msgstr "Nichts auswählen"
+
+#: src/zashterminal/ui/window_search_broadcast.py
+msgid "Command sent to {name}"
+msgstr "Befehl an {name} gesendet"
+
+#: src/zashterminal/ui/window_search_broadcast.py
+msgid "Command sent to {count} terminals: {names}"
+msgstr "Befehl an {count} Terminals gesendet: {names}"
+
+#: src/zashterminal/ui/menus.py
+msgid "Colors & Highlighting"
+msgstr "Farben & Hervorhebung"
+
+#: src/zashterminal/ui/menus.py
+msgid "Customize"
+msgstr "Anpassen"
+
+#: src/zashterminal/ui/menus.py
+msgid "Tools"
+msgstr "Werkzeuge"
+
+#: src/zashterminal/ui/menus.py
+msgid "Import Sessions"
+msgstr "Sitzungen importieren"
+
+#: src/zashterminal/ui/menus.py
+msgid "Start TFTP Server"
+msgstr "TFTP-Server starten"
+
+#: src/zashterminal/ui/menus.py
+msgid "Stop TFTP Server"
+msgstr "TFTP-Server stoppen"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Copy on Select"
+msgstr "Bei Auswahl kopieren"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Selecting text copies it to the clipboard"
+msgstr "Ausgewählter Text wird in die Zwischenablage kopiert"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "No Matching Sessions"
+msgstr "Keine passenden Sitzungen"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "No Saved Sessions"
+msgstr "Keine gespeicherten Sitzungen"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "Save SSH hosts, keys and jump hosts to connect with one click."
+msgstr "Speichern Sie SSH-Hosts, Schlüssel und Jump-Hosts, um sich mit einem Klick zu verbinden."
+
+#: src/zashterminal/ui/window_search_broadcast.py
+msgid "Choose targets on Enter"
+msgstr "Ziele nach Enter auswählen"
+
+#: src/zashterminal/ui/window_search_broadcast.py
+msgid "No targets"
+msgstr "Keine Ziele"
+
+#: src/zashterminal/ui/window_search_broadcast.py
+msgid "Sends to {count}: {names}"
+msgstr "Sendet an {count}: {names}"
+
+#: src/zashterminal/terminal/tabs.py
+msgid "Pane Actions"
+msgstr "Bereichsaktionen"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Command Palette"
+msgstr "Befehlspalette"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Search sessions, commands and actions"
+msgstr "Sitzungen, Befehle und Aktionen durchsuchen"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "@ sessions only · > actions only · Enter to run · Esc to close"
+msgstr "@ nur Sitzungen · > nur Aktionen · Enter zum Ausführen · Esc zum Schließen"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "No Results"
+msgstr "Keine Ergebnisse"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Layouts"
+msgstr "Layouts"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Saved Commands"
+msgstr "Gespeicherte Befehle"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Saved layout"
+msgstr "Gespeichertes Layout"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Font"
+msgstr "Schrift"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Window"
+msgstr "Fenster"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Behavior"
+msgstr "Verhalten"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Scrolling"
+msgstr "Bildlauf"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Shell"
+msgstr "Shell"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Startup"
+msgstr "Start"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Backup"
+msgstr "Sicherung"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Remote Editing"
+msgstr "Fernbearbeitung"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Text Rendering"
+msgstr "Textdarstellung"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Compatibility"
+msgstr "Kompatibilität"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Logs & Transcripts"
+msgstr "Protokolle & Mitschriften"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "More Settings"
+msgstr "Weitere Einstellungen"
+
+#: src/zashterminal/ui/dialogs/session_edit_dialog.py
+msgid "Favorite"
+msgstr "Favorit"
+
+#: src/zashterminal/ui/dialogs/session_edit_dialog.py
+msgid "Mark with a star and list it first in the Command Palette"
+msgstr "Mit Stern markieren und zuerst in der Befehlspalette anzeigen"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "SFTP: {name}"
+msgstr "SFTP: {name}"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Settings"
+msgstr "Einstellungen"
+
+#: src/zashterminal/ui/session_edit_dialog.py
+msgid "Jump Host, Tunnels and More"
+msgstr "Jump Host, Tunnel und mehr"
+
+#: src/zashterminal/ui/session_edit_dialog.py
+msgid "ProxyJump, X11, SFTP directories and port forwarding"
+msgstr "ProxyJump, X11, SFTP-Verzeichnisse und Portweiterleitung"
+
+#: src/zashterminal/sessions/tree.py
+msgid "Connected"
+msgstr "Verbunden"
+
+#: src/zashterminal/sessions/tree.py
+msgid "Favorites"
+msgstr "Favoriten"
+
+#: src/zashterminal/ui/dialogs/session_edit_dialog.py
+msgid "Save and Connect"
+msgstr "Speichern und verbinden"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "TFTP Server"
+msgstr "TFTP-Server"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "TFTP Port"
+msgstr "TFTP-Port"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "Upload Directory"
+msgstr "Upload-Verzeichnis"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "Download Directory"
+msgstr "Download-Verzeichnis"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "Files requested by TFTP clients are read from this directory"
+msgstr "Von TFTP-Clients angeforderte Dateien werden aus diesem Verzeichnis gelesen"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "Files sent by TFTP clients are written to this directory"
+msgstr "Von TFTP-Clients gesendete Dateien werden in dieses Verzeichnis geschrieben"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "Open Directory"
+msgstr "Verzeichnis öffnen"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "Select Directory"
+msgstr "Verzeichnis auswählen"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "Please select a valid directory!"
+msgstr "Bitte wählen Sie ein gültiges Verzeichnis aus!"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "The TFTP server uses local directories for uploading and downloading files."
+msgstr "Der TFTP-Server verwendet lokale Verzeichnisse zum Hoch- und Herunterladen von Dateien."

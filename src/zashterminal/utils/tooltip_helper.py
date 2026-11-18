@@ -43,6 +43,18 @@ def _must_use_native_tooltips() -> bool:
     return _is_x11_backend() or should_use_native_tooltips()
 
 
+def set_accessible_label(widget: Gtk.Widget, text: str) -> None:
+    """Expose the tooltip as the accessible name of controls without visible text.
+
+    Icon-only buttons and switches are otherwise announced without a name by
+    screen readers. Labels and entries keep their own accessible text.
+    """
+    if isinstance(widget, (Gtk.Button, Gtk.MenuButton)) and widget.get_label():
+        return
+    if isinstance(widget, (Gtk.Button, Gtk.MenuButton, Gtk.Switch)):
+        widget.update_property([Gtk.AccessibleProperty.LABEL], [text])
+
+
 # Singleton instance
 _tooltip_helper_instance: "TooltipHelper | None" = None
 _app_instance = None
@@ -388,6 +400,8 @@ class TooltipHelper:
         if not tooltip_text:
             return
 
+        set_accessible_label(widget, tooltip_text)
+
         # Build tooltip text with shortcut
         shortcut = self._get_shortcut_label(action_name)
         if shortcut:
@@ -407,12 +421,7 @@ class TooltipHelper:
 
         # Clear any existing default tooltip
         widget.set_tooltip_text(None)
-
-        # Add motion controller for enter/leave events
-        motion_controller = Gtk.EventControllerMotion.new()
-        motion_controller.connect("enter", self._on_enter_with_shortcut, widget)
-        motion_controller.connect("leave", self._on_leave)
-        widget.add_controller(motion_controller)
+        self._attach_motion_controller(widget, self._on_enter_with_shortcut)
 
     def add_tooltip(self, widget: Gtk.Widget, tooltip_text: str) -> None:
         """
@@ -429,22 +438,31 @@ class TooltipHelper:
         if not tooltip_text:
             return
 
+        set_accessible_label(widget, tooltip_text)
+
         # On X11, use native GTK tooltip to avoid segfaults
         if self._use_native_tooltips:
             widget.set_tooltip_text(tooltip_text)
             return
 
-        # Store tooltip text on the widget
+        # Store tooltip text on the widget; drop any shortcut-based text so the
+        # shared enter handler shows the new text.
         widget._custom_tooltip_text = tooltip_text
+        widget._custom_tooltip_action = None
 
         # Clear any existing default tooltip
         widget.set_tooltip_text(None)
+        self._attach_motion_controller(widget, self._on_enter)
 
-        # Add motion controller for enter/leave events
+    def _attach_motion_controller(self, widget: Gtk.Widget, on_enter) -> None:
+        """Attach the hover controller once per widget (text updates reuse it)."""
+        if getattr(widget, "_custom_tooltip_controller", None) is not None:
+            return
         motion_controller = Gtk.EventControllerMotion.new()
-        motion_controller.connect("enter", self._on_enter, widget)
+        motion_controller.connect("enter", on_enter, widget)
         motion_controller.connect("leave", self._on_leave)
         widget.add_controller(motion_controller)
+        widget._custom_tooltip_controller = motion_controller
 
     def _clear_timer(self):
         """Clear any pending show timer."""

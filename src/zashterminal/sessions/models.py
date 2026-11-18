@@ -111,6 +111,7 @@ class SessionItem(BaseModel):
         ssh_connection_mode: str = "shell",
         proxy_jump: str = "",
         broadcast_group: str = "",
+        favorite: bool = False,
         transcript_logging: Optional[bool] = None,
         source: str = "user",
         local_working_directory: str = "",
@@ -162,6 +163,7 @@ class SessionItem(BaseModel):
         )
         self._proxy_jump = normalize_proxy_jump(proxy_jump)
         self._broadcast_group = (broadcast_group or "").strip()
+        self._favorite = bool(favorite)
         self._transcript_logging = transcript_logging
         self._source = source or "user"
         # Local terminal specific properties
@@ -495,6 +497,16 @@ class SessionItem(BaseModel):
             self._mark_modified()
 
     @property
+    def favorite(self) -> bool:
+        return self._favorite
+
+    @favorite.setter
+    def favorite(self, value: bool):
+        if self._favorite != bool(value):
+            self._favorite = bool(value)
+            self._mark_modified()
+
+    @property
     def transcript_logging(self) -> Optional[bool]:
         return self._transcript_logging
 
@@ -670,6 +682,7 @@ class SessionItem(BaseModel):
             "ssh_connection_mode": self.ssh_connection_mode,
             "proxy_jump": self.proxy_jump,
             "broadcast_group": self.broadcast_group,
+            "favorite": self.favorite,
             "transcript_logging": self.transcript_logging,
             "local_working_directory": self.local_working_directory,
             "local_startup_command": self.local_startup_command,
@@ -706,6 +719,7 @@ class SessionItem(BaseModel):
             ssh_connection_mode=data.get("ssh_connection_mode", "shell"),
             proxy_jump=data.get("proxy_jump", ""),
             broadcast_group=data.get("broadcast_group", ""),
+            favorite=bool(data.get("favorite", False)),
             transcript_logging=data.get("transcript_logging", None),
             source=data.get("source", "user"),
             local_working_directory=data.get("local_working_directory", ""),

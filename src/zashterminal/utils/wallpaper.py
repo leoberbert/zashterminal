@@ -129,14 +129,24 @@ def discover_wallpapers():
             if len(parts) == 2 and parts[0].endswith(("/last-image", "/image-path")):
                 candidates.append((parts[0], parts[1].strip()))
     if not candidates:
-        # Compositors such as Umbriel delegate wallpapers to the shell.
-        state = Path(os.environ.get("XDG_STATE_HOME", str(Path.home() / ".local" / "state")))
-        noctalia = state / "noctalia" / "settings.toml"
-        if noctalia.is_file():
+        # Compositors such as Umbriel or niri delegate wallpapers to the shell.
+        # Noctalia keeps them in its state file or, in other versions, in its
+        # config file; use the first one that actually lists a wallpaper.
+        home = Path.home()
+        state = Path(os.environ.get("XDG_STATE_HOME", str(home / ".local" / "state")))
+        config = Path(os.environ.get("XDG_CONFIG_HOME", str(home / ".config")))
+        for noctalia in (
+            state / "noctalia" / "settings.toml",
+            config / "noctalia" / "settings.toml",
+        ):
+            if not noctalia.is_file():
+                continue
             try:
                 candidates = read_noctalia_wallpapers(noctalia)
             except (OSError, UnicodeDecodeError):
                 candidates = []
+            if candidates:
+                break
     result, seen = [], set()
     for label, value in candidates:
         try:

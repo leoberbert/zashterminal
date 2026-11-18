@@ -1,0 +1,19 @@
+/* Rascunho de direção visual — ainda não aplicado ao app. */
+window, .terminal-tab-view { background: #101214; }
+headerbar.main-header-bar { background: #16191c; min-height: 30px; border-bottom: 1px solid #2a2f35; box-shadow: none; padding: 0 2px; }
+headerbar.main-header-bar button { min-height: 24px; min-width: 26px; padding: 2px 4px; border-radius: 4px; }
+headerbar.main-header-bar button:checked { background: alpha(#3fb950,.22); color: #56d364; }
+.custom-tab-button { border-radius: 0; padding: 4px 2px 4px 12px; margin: 0; font-size: 9.5pt; color: alpha(white,.55); border-right: 1px solid #2a2f35; border-bottom: 2px solid transparent; }
+.custom-tab-button.active { background: #101214; color: white; border-bottom: 2px solid #3fb950; }
+.sidebar-container { background: #131619; border-right: 1px solid #2a2f35; font-size: 9.5pt; }
+.sidebar-toolbar { margin: 2px; }
+.sidebar-toolbar button { min-height: 22px; min-width: 22px; padding: 2px; }
+.sidebar-search { padding: 0 4px 4px 4px; }
+.sidebar-search entry { min-height: 24px; border-radius: 4px; }
+.sidebar-session-tree row { min-height: 0; padding: 0; margin: 0; border-radius: 0; }
+.sidebar-session-tree row > cell { padding: 2px 6px; }
+.sidebar-session-tree row:selected { background: alpha(#3fb950,.18); }
+.terminal-pane { border-radius: 0; border: 1px solid #2a2f35; }
+.terminal-pane.pane-focused { border-color: #3fb950; box-shadow: none; }
+.terminal-pane .header-bar { min-height: 0; padding: 0 6px; font-size: 8.5pt; background: #16191c; }
+.terminal-pane .header-bar button { min-height: 18px; min-width: 18px; padding: 0; }

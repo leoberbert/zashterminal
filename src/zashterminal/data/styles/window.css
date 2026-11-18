@@ -51,12 +51,30 @@
     color: @accent_fg_color;
 }
 
-/* Header bar styles */
+/* Brand colors (violet → blue), used for the active tab, focus and selection */
+@define-color zash_brand #7c5cff;
+@define-color zash_brand_2 #3aa8f5;
+/* Text on brand gradients and the broadcast highlight; the terminal/wallpaper
+   theme overrides all four (ThemeEngine._get_brand_css) */
+@define-color zash_brand_fg #ffffff;
+@define-color zash_alert #e66100;
+
+/* Header bar styles: one flat theme color (the tab strip paints its own
+   background, so a gradient here showed as mismatched blocks) */
 headerbar.main-header-bar {
-    min-height: 0;
+    min-height: 40px;
     padding: 0;
     border: none;
+    border-bottom: 1px solid alpha(@zash_brand, 0.35);
     box-shadow: none;
+}
+
+headerbar.main-header-bar button {
+    border-radius: 10px;
+}
+
+headerbar.main-header-bar togglebutton:checked {
+    background: alpha(@zash_brand, 0.35);
 }
 
 .main-header-bar box {
@@ -91,21 +109,34 @@ paned separator {
     background: @window_bg_color;
 }
 
-/* Split pane hover/focus feedback */
+/* Terminal panes float over the window background */
 .terminal-pane {
-    border: 1px solid transparent;
-    border-radius: 8px;
+    margin: 4px;
+    border: 1px solid alpha(currentColor, 0.08);
+    border-radius: 12px;
+    box-shadow: 0 4px 16px alpha(black, 0.28);
     transition: border-color 120ms ease, box-shadow 120ms ease;
 }
 
+.terminal-pane .header-bar {
+    border-radius: 11px 11px 0 0;
+    padding: 1px 8px;
+    font-size: 0.9em;
+}
+
 .terminal-pane.pane-hover {
-    border-color: alpha(@accent_bg_color, 0.22);
-    box-shadow: inset 0 0 0 1px alpha(@accent_bg_color, 0.06);
+    border-color: alpha(@zash_brand, 0.45);
 }
 
 .terminal-pane.pane-focused {
-    border-color: alpha(@accent_bg_color, 0.45);
-    box-shadow: inset 0 0 0 1px alpha(@accent_bg_color, 0.10);
+    border-color: @zash_brand;
+    box-shadow: 0 0 0 1px alpha(@zash_brand, 0.6), 0 6px 22px alpha(@zash_brand, 0.28);
+}
+
+/* Terminals that will receive the command typed in the broadcast bar */
+scrolledwindow.broadcast-target {
+    outline: 2px solid alpha(@zash_alert, 0.9);
+    outline-offset: -2px;
 }
 
 popover.menu separator {
@@ -125,21 +156,24 @@ popover.menu separator {
     padding-bottom: 0px;
 }
 
-/* Custom tab button styling */
+/* Custom tab button styling: pill tabs, brand gradient on the active one.
+   A session "Tab Color" replaces the gradient (see TabManager._apply_tab_color). */
 .custom-tab-button {
-    padding-left: 12px;
-    padding-right: 0px;
-    border-radius: 10px;
-    padding-top: 2px;
-    padding-bottom: 2px;
+    padding: 4px 2px 4px 14px;
+    margin: 0 2px;
+    border-radius: 999px;
+    transition: background-color 120ms ease, box-shadow 120ms ease;
 }
 
 .custom-tab-button.active {
-    background: alpha(currentColor, 0.10);
+    background-image: linear-gradient(90deg, @zash_brand, @zash_brand_2);
+    color: @zash_brand_fg;
+    font-weight: 700;
+    box-shadow: 0 2px 10px alpha(@zash_brand, 0.5);
 }
 
-.custom-tab-button:hover {
-    background: alpha(currentColor, 0.07);
+.custom-tab-button:hover:not(.active) {
+    background: alpha(currentColor, 0.08);
 }
 
 /* Sidebar toolbar view */
@@ -180,14 +214,9 @@ popover.menu separator {
     background-color: alpha(@destructive_color, 0.18);
 }
 
-/* Sidebar search */
+/* Sidebar search (above the session list) */
 .sidebar-search {
-    padding: 8px 12px 12px 12px;
-    /* background: @window_bg_color; removed */
-}
-
-.sidebar-search entry {
-    border-radius: 6px;
+    padding: 0 6px 6px 6px;
 }
 
 .sidebar-session-tree viewport {
@@ -229,7 +258,20 @@ popover.menu separator {
 }
 
 .sidebar-pin-button:checked {
-    background-color: alpha(@accent_bg_color, 0.35);
+    background-color: alpha(@zash_brand, 0.35);
+}
+
+.sidebar-search entry {
+    border-radius: 999px;
+}
+
+.sidebar-session-tree row {
+    border-radius: 10px;
+    margin: 1px 8px;
+}
+
+.sidebar-session-tree row:selected {
+    background: alpha(@zash_brand, 0.30);
 }
 
 /* Sidebar toolbar */
@@ -334,4 +376,17 @@ window.zashterminal-dialog actionbar>revealer>box {
 
 .toolbar-command-button:active {
     background-color: alpha(currentColor, 0.12);
+}
+
+/* Keep the tab pill as low as the page switcher pills in dialogs */
+.custom-tab-button button {
+    min-height: 20px;
+    min-width: 20px;
+    padding: 2px;
+}
+
+/* ".main-header-bar box" zeroes vertical padding; restore it for the pill */
+.main-header-bar box.custom-tab-button {
+    padding-top: 4px;
+    padding-bottom: 4px;
 }

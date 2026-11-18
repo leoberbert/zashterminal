@@ -4841,7 +4841,7 @@ msgstr "SSH Φιλοξενούμενος"
 #: NEEDS WORK
 #, python-brace-format
 msgid "{local_host}:{local_port} → {remote_host}:{remote_port}"
-msgstr "{τοπικός_υπολογιστής}:{τοπική_θύρα} → {απομακρυσμένος_υπολογιστής}:{απομακρυσμένη_θύρα}"
+msgstr "{local_host}:{local_port} → {remote_host}:{remote_port}"
 # 
 # File: usr/share/zashterminal/ui/dialogs/session_edit_dialog.py, line: 484
 #: NEEDS WORK
@@ -8809,3 +8809,239 @@ msgstr ""
 "Look for newer Releases or tags on GitHub when the app starts "
 "(unreleased main tip is ignored unless ZASHTERMINAL_UPDATE_ALLOW_MAIN=1). "
 "Disable entirely with ZASHTERMINAL_DISABLE_AUTO_UPDATE=1."
+
+#: src/zashterminal/ui/window_ui.py
+msgid "Previous match"
+msgstr "Προηγούμενο αποτέλεσμα"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "Next match"
+msgstr "Επόμενο αποτέλεσμα"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "Broadcast Command"
+msgstr "Εκπομπή εντολής"
+
+#: src/zashterminal/ui/window_search_broadcast.py
+msgid "Select None"
+msgstr "Καμία επιλογή"
+
+#: src/zashterminal/ui/window_search_broadcast.py
+msgid "Command sent to {name}"
+msgstr "Η εντολή στάλθηκε στο {name}"
+
+#: src/zashterminal/ui/window_search_broadcast.py
+msgid "Command sent to {count} terminals: {names}"
+msgstr "Η εντολή στάλθηκε σε {count} τερματικά: {names}"
+
+#: src/zashterminal/ui/menus.py
+msgid "Colors & Highlighting"
+msgstr "Χρώματα και επισήμανση"
+
+#: src/zashterminal/ui/menus.py
+msgid "Customize"
+msgstr "Προσαρμογή"
+
+#: src/zashterminal/ui/menus.py
+msgid "Tools"
+msgstr "Εργαλεία"
+
+#: src/zashterminal/ui/menus.py
+msgid "Import Sessions"
+msgstr "Εισαγωγή συνεδριών"
+
+#: src/zashterminal/ui/menus.py
+msgid "Start TFTP Server"
+msgstr "Εκκίνηση διακομιστή TFTP"
+
+#: src/zashterminal/ui/menus.py
+msgid "Stop TFTP Server"
+msgstr "Διακοπή διακομιστή TFTP"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Copy on Select"
+msgstr "Αντιγραφή κατά την επιλογή"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Selecting text copies it to the clipboard"
+msgstr "Η επιλογή κειμένου το αντιγράφει στο πρόχειρο"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "No Matching Sessions"
+msgstr "Δεν βρέθηκαν συνεδρίες"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "No Saved Sessions"
+msgstr "Δεν υπάρχουν αποθηκευμένες συνεδρίες"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "Save SSH hosts, keys and jump hosts to connect with one click."
+msgstr "Αποθηκεύστε κεντρικούς υπολογιστές SSH, κλειδιά και ενδιάμεσους υπολογιστές για σύνδεση με ένα κλικ."
+
+#: src/zashterminal/ui/window_search_broadcast.py
+msgid "Choose targets on Enter"
+msgstr "Επιλογή στόχων με Enter"
+
+#: src/zashterminal/ui/window_search_broadcast.py
+msgid "No targets"
+msgstr "Κανένας στόχος"
+
+#: src/zashterminal/ui/window_search_broadcast.py
+msgid "Sends to {count}: {names}"
+msgstr "Αποστολή σε {count}: {names}"
+
+#: src/zashterminal/terminal/tabs.py
+msgid "Pane Actions"
+msgstr "Ενέργειες πλαισίου"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Command Palette"
+msgstr "Παλέτα εντολών"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Search sessions, commands and actions"
+msgstr "Αναζήτηση συνεδριών, εντολών και ενεργειών"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "@ sessions only · > actions only · Enter to run · Esc to close"
+msgstr "@ μόνο συνεδρίες · > μόνο ενέργειες · Enter για εκτέλεση · Esc για κλείσιμο"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "No Results"
+msgstr "Κανένα αποτέλεσμα"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Layouts"
+msgstr "Διατάξεις"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Saved Commands"
+msgstr "Αποθηκευμένες εντολές"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Saved layout"
+msgstr "Αποθηκευμένη διάταξη"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Font"
+msgstr "Γραμματοσειρά"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Window"
+msgstr "Παράθυρο"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Behavior"
+msgstr "Συμπεριφορά"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Scrolling"
+msgstr "Κύλιση"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Shell"
+msgstr "Κέλυφος"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Startup"
+msgstr "Εκκίνηση"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Backup"
+msgstr "Αντίγραφο ασφαλείας"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Remote Editing"
+msgstr "Απομακρυσμένη επεξεργασία"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Text Rendering"
+msgstr "Απόδοση κειμένου"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Compatibility"
+msgstr "Συμβατότητα"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Logs & Transcripts"
+msgstr "Αρχεία καταγραφής & απομαγνητοφωνήσεις"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "More Settings"
+msgstr "Περισσότερες ρυθμίσεις"
+
+#: src/zashterminal/ui/dialogs/session_edit_dialog.py
+msgid "Favorite"
+msgstr "Αγαπημένο"
+
+#: src/zashterminal/ui/dialogs/session_edit_dialog.py
+msgid "Mark with a star and list it first in the Command Palette"
+msgstr "Επισήμανση με αστέρι και εμφάνιση πρώτο στην Παλέτα εντολών"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "SFTP: {name}"
+msgstr "SFTP: {name}"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Settings"
+msgstr "Ρυθμίσεις"
+
+#: src/zashterminal/ui/session_edit_dialog.py
+msgid "Jump Host, Tunnels and More"
+msgstr "Jump Host, τούνελ και άλλα"
+
+#: src/zashterminal/ui/session_edit_dialog.py
+msgid "ProxyJump, X11, SFTP directories and port forwarding"
+msgstr "ProxyJump, X11, κατάλογοι SFTP και προώθηση θυρών"
+
+#: src/zashterminal/sessions/tree.py
+msgid "Connected"
+msgstr "Συνδεδεμένες"
+
+#: src/zashterminal/sessions/tree.py
+msgid "Favorites"
+msgstr "Αγαπημένες"
+
+#: src/zashterminal/ui/dialogs/session_edit_dialog.py
+msgid "Save and Connect"
+msgstr "Αποθήκευση και σύνδεση"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "TFTP Server"
+msgstr "Διακομιστής TFTP"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "TFTP Port"
+msgstr "Θύρα TFTP"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "Upload Directory"
+msgstr "Κατάλογος αποστολής"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "Download Directory"
+msgstr "Κατάλογος λήψης"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "Files requested by TFTP clients are read from this directory"
+msgstr "Τα αρχεία που ζητούν οι πελάτες TFTP διαβάζονται από αυτόν τον κατάλογο"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "Files sent by TFTP clients are written to this directory"
+msgstr "Τα αρχεία που στέλνουν οι πελάτες TFTP γράφονται σε αυτόν τον κατάλογο"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "Open Directory"
+msgstr "Άνοιγμα καταλόγου"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "Select Directory"
+msgstr "Επιλογή καταλόγου"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "Please select a valid directory!"
+msgstr "Επιλέξτε έναν έγκυρο κατάλογο!"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "The TFTP server uses local directories for uploading and downloading files."
+msgstr "Ο διακομιστής TFTP χρησιμοποιεί τοπικούς καταλόγους για την αποστολή και τη λήψη αρχείων."

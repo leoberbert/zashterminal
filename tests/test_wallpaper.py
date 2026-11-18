@@ -134,9 +134,12 @@ Image=/tmp/other.png
             self.assertEqual(read_kde_wallpapers(path), [("KDE · 1", "file:///tmp/a%20b.png"), ("KDE · 3", "/tmp/other.png")])
 
     def test_unknown_desktop_does_not_guess_or_launch_commands(self):
-        with patch.dict(os.environ, {"XDG_CURRENT_DESKTOP": "unknown"}), patch("subprocess.run") as run:
-            self.assertEqual(discover_wallpapers(), [])
-            run.assert_not_called()
+        # Empty state/config dirs: the developer's own Noctalia files must not leak in.
+        with tempfile.TemporaryDirectory() as empty:
+            env = {"XDG_CURRENT_DESKTOP": "unknown", "XDG_STATE_HOME": empty, "XDG_CONFIG_HOME": empty}
+            with patch.dict(os.environ, env), patch("subprocess.run") as run:
+                self.assertEqual(discover_wallpapers(), [])
+                run.assert_not_called()
 
     def test_xfce_uses_bounded_read_only_command_and_preserves_spaces(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -430,6 +433,18 @@ fill_mode = "span"
                 found = discover_wallpapers()
             self.assertEqual(found, [("Noctalia · HDMI-A-1", str(image))])
             self.assertEqual(preferred_wallpaper(found, (1920, 1080), None), 0)
+
+    def test_noctalia_config_file_used_when_state_has_no_wallpaper(self):
+        # niri + Noctalia: the state file exists but the wallpaper lives in ~/.config.
+        with tempfile.TemporaryDirectory() as state, tempfile.TemporaryDirectory() as config:
+            image = Path(config) / "wall.png"
+            image.write_bytes(b"x")
+            self.write(state, "[shell]\nfont_weight = 700\n")
+            self.write(config, f'[wallpaper.monitors.HDMI-A-1]\npath = "{image}"\n')
+            env = {"XDG_CURRENT_DESKTOP": "niri", "XDG_STATE_HOME": state, "XDG_CONFIG_HOME": config}
+            with patch.dict(os.environ, env, clear=False):
+                found = discover_wallpapers()
+            self.assertEqual(found, [("Noctalia · HDMI-A-1", str(image))])
 
 
 class DarkWallpaperInterfaceTests(unittest.TestCase):

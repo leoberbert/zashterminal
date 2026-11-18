@@ -3287,7 +3287,7 @@ msgstr "Nepodarilo sa načítať modely: {error}"
 #: NEEDS WORK
 #, python-brace-format
 msgid "{count} models available"
-msgstr "{k} modelov k dispozícii"
+msgstr "{count} modelov k dispozícii"
 # 
 # File: src/zashterminal/ui/dialogs/ai_config_dialog.py, line: 492
 #: NEEDS WORK
@@ -4821,7 +4821,7 @@ msgstr "SSH host"
 #: NEEDS WORK
 #, python-brace-format
 msgid "{local_host}:{local_port} → {remote_host}:{remote_port}"
-msgstr "{lokálny_host}:{lokálny_port} → {diaľkový_host}:{diaľkový_port}"
+msgstr "{local_host}:{local_port} → {remote_host}:{remote_port}"
 # 
 # File: usr/share/zashterminal/ui/dialogs/session_edit_dialog.py, line: 484
 #: NEEDS WORK
@@ -8783,3 +8783,239 @@ msgstr ""
 "Look for newer Releases or tags on GitHub when the app starts "
 "(unreleased main tip is ignored unless ZASHTERMINAL_UPDATE_ALLOW_MAIN=1). "
 "Disable entirely with ZASHTERMINAL_DISABLE_AUTO_UPDATE=1."
+
+#: src/zashterminal/ui/window_ui.py
+msgid "Previous match"
+msgstr "Predchádzajúca zhoda"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "Next match"
+msgstr "Ďalšia zhoda"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "Broadcast Command"
+msgstr "Rozoslať príkaz"
+
+#: src/zashterminal/ui/window_search_broadcast.py
+msgid "Select None"
+msgstr "Nevybrať nič"
+
+#: src/zashterminal/ui/window_search_broadcast.py
+msgid "Command sent to {name}"
+msgstr "Príkaz odoslaný do {name}"
+
+#: src/zashterminal/ui/window_search_broadcast.py
+msgid "Command sent to {count} terminals: {names}"
+msgstr "Príkaz odoslaný do terminálov ({count}): {names}"
+
+#: src/zashterminal/ui/menus.py
+msgid "Colors & Highlighting"
+msgstr "Farby a zvýraznenie"
+
+#: src/zashterminal/ui/menus.py
+msgid "Customize"
+msgstr "Prispôsobiť"
+
+#: src/zashterminal/ui/menus.py
+msgid "Tools"
+msgstr "Nástroje"
+
+#: src/zashterminal/ui/menus.py
+msgid "Import Sessions"
+msgstr "Importovať relácie"
+
+#: src/zashterminal/ui/menus.py
+msgid "Start TFTP Server"
+msgstr "Spustiť server TFTP"
+
+#: src/zashterminal/ui/menus.py
+msgid "Stop TFTP Server"
+msgstr "Zastaviť server TFTP"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Copy on Select"
+msgstr "Kopírovať pri výbere"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Selecting text copies it to the clipboard"
+msgstr "Vybraný text sa skopíruje do schránky"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "No Matching Sessions"
+msgstr "Žiadne zodpovedajúce relácie"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "No Saved Sessions"
+msgstr "Žiadne uložené relácie"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "Save SSH hosts, keys and jump hosts to connect with one click."
+msgstr "Uložte si SSH hostiteľov, kľúče a skokových hostiteľov a pripájajte sa jedným kliknutím."
+
+#: src/zashterminal/ui/window_search_broadcast.py
+msgid "Choose targets on Enter"
+msgstr "Ciele vyberiete po stlačení Enter"
+
+#: src/zashterminal/ui/window_search_broadcast.py
+msgid "No targets"
+msgstr "Žiadne ciele"
+
+#: src/zashterminal/ui/window_search_broadcast.py
+msgid "Sends to {count}: {names}"
+msgstr "Odosiela do {count}: {names}"
+
+#: src/zashterminal/terminal/tabs.py
+msgid "Pane Actions"
+msgstr "Akcie panela"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Command Palette"
+msgstr "Paleta príkazov"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Search sessions, commands and actions"
+msgstr "Hľadať relácie, príkazy a akcie"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "@ sessions only · > actions only · Enter to run · Esc to close"
+msgstr "@ iba relácie · > iba akcie · Enter na spustenie · Esc na zatvorenie"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "No Results"
+msgstr "Žiadne výsledky"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Layouts"
+msgstr "Rozloženia"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Saved Commands"
+msgstr "Uložené príkazy"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Saved layout"
+msgstr "Uložené rozloženie"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Font"
+msgstr "Písmo"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Window"
+msgstr "Okno"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Behavior"
+msgstr "Správanie"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Scrolling"
+msgstr "Posúvanie"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Shell"
+msgstr "Shell"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Startup"
+msgstr "Spustenie"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Backup"
+msgstr "Záloha"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Remote Editing"
+msgstr "Vzdialená úprava"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Text Rendering"
+msgstr "Vykresľovanie textu"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Compatibility"
+msgstr "Kompatibilita"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Logs & Transcripts"
+msgstr "Záznamy a prepisy"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "More Settings"
+msgstr "Ďalšie nastavenia"
+
+#: src/zashterminal/ui/dialogs/session_edit_dialog.py
+msgid "Favorite"
+msgstr "Obľúbené"
+
+#: src/zashterminal/ui/dialogs/session_edit_dialog.py
+msgid "Mark with a star and list it first in the Command Palette"
+msgstr "Označiť hviezdičkou a zobraziť ako prvé v palete príkazov"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "SFTP: {name}"
+msgstr "SFTP: {name}"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Settings"
+msgstr "Nastavenia"
+
+#: src/zashterminal/ui/session_edit_dialog.py
+msgid "Jump Host, Tunnels and More"
+msgstr "Jump Host, tunely a ďalšie"
+
+#: src/zashterminal/ui/session_edit_dialog.py
+msgid "ProxyJump, X11, SFTP directories and port forwarding"
+msgstr "ProxyJump, X11, adresáre SFTP a presmerovanie portov"
+
+#: src/zashterminal/sessions/tree.py
+msgid "Connected"
+msgstr "Pripojené"
+
+#: src/zashterminal/sessions/tree.py
+msgid "Favorites"
+msgstr "Obľúbené"
+
+#: src/zashterminal/ui/dialogs/session_edit_dialog.py
+msgid "Save and Connect"
+msgstr "Uložiť a pripojiť"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "TFTP Server"
+msgstr "Server TFTP"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "TFTP Port"
+msgstr "Port TFTP"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "Upload Directory"
+msgstr "Adresár pre nahrávanie"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "Download Directory"
+msgstr "Adresár pre sťahovanie"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "Files requested by TFTP clients are read from this directory"
+msgstr "Súbory požadované klientmi TFTP sa čítajú z tohto adresára"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "Files sent by TFTP clients are written to this directory"
+msgstr "Súbory odoslané klientmi TFTP sa zapisujú do tohto adresára"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "Open Directory"
+msgstr "Otvoriť adresár"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "Select Directory"
+msgstr "Vybrať adresár"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "Please select a valid directory!"
+msgstr "Vyberte prosím platný adresár!"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "The TFTP server uses local directories for uploading and downloading files."
+msgstr "Server TFTP používa lokálne adresáre na nahrávanie a sťahovanie súborov."

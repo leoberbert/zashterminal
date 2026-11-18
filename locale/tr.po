@@ -4818,7 +4818,7 @@ msgstr "SSH Ana Bilgisi"
 #: NEEDS WORK
 #, python-brace-format
 msgid "{local_host}:{local_port} → {remote_host}:{remote_port}"
-msgstr "{yerel_host}:{yerel_port} → {uzak_host}:{uzak_port}"
+msgstr "{local_host}:{local_port} → {remote_host}:{remote_port}"
 # 
 # File: usr/share/zashterminal/ui/dialogs/session_edit_dialog.py, line: 484
 #: NEEDS WORK
@@ -8780,3 +8780,239 @@ msgstr ""
 "Look for newer Releases or tags on GitHub when the app starts "
 "(unreleased main tip is ignored unless ZASHTERMINAL_UPDATE_ALLOW_MAIN=1). "
 "Disable entirely with ZASHTERMINAL_DISABLE_AUTO_UPDATE=1."
+
+#: src/zashterminal/ui/window_ui.py
+msgid "Previous match"
+msgstr "Önceki eşleşme"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "Next match"
+msgstr "Sonraki eşleşme"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "Broadcast Command"
+msgstr "Komutu Yayınla"
+
+#: src/zashterminal/ui/window_search_broadcast.py
+msgid "Select None"
+msgstr "Hiçbirini Seçme"
+
+#: src/zashterminal/ui/window_search_broadcast.py
+msgid "Command sent to {name}"
+msgstr "Komut {name} hedefine gönderildi"
+
+#: src/zashterminal/ui/window_search_broadcast.py
+msgid "Command sent to {count} terminals: {names}"
+msgstr "Komut {count} terminale gönderildi: {names}"
+
+#: src/zashterminal/ui/menus.py
+msgid "Colors & Highlighting"
+msgstr "Renkler ve Vurgulama"
+
+#: src/zashterminal/ui/menus.py
+msgid "Customize"
+msgstr "Özelleştir"
+
+#: src/zashterminal/ui/menus.py
+msgid "Tools"
+msgstr "Araçlar"
+
+#: src/zashterminal/ui/menus.py
+msgid "Import Sessions"
+msgstr "Oturumları İçe Aktar"
+
+#: src/zashterminal/ui/menus.py
+msgid "Start TFTP Server"
+msgstr "TFTP Sunucusunu Başlat"
+
+#: src/zashterminal/ui/menus.py
+msgid "Stop TFTP Server"
+msgstr "TFTP Sunucusunu Durdur"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Copy on Select"
+msgstr "Seçince Kopyala"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Selecting text copies it to the clipboard"
+msgstr "Seçilen metin panoya kopyalanır"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "No Matching Sessions"
+msgstr "Eşleşen oturum yok"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "No Saved Sessions"
+msgstr "Kayıtlı oturum yok"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "Save SSH hosts, keys and jump hosts to connect with one click."
+msgstr "Tek tıkla bağlanmak için SSH sunucularını, anahtarları ve atlama sunucularını kaydedin."
+
+#: src/zashterminal/ui/window_search_broadcast.py
+msgid "Choose targets on Enter"
+msgstr "Hedefleri Enter ile seçin"
+
+#: src/zashterminal/ui/window_search_broadcast.py
+msgid "No targets"
+msgstr "Hedef yok"
+
+#: src/zashterminal/ui/window_search_broadcast.py
+msgid "Sends to {count}: {names}"
+msgstr "{count} hedefe gönderir: {names}"
+
+#: src/zashterminal/terminal/tabs.py
+msgid "Pane Actions"
+msgstr "Bölme Eylemleri"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Command Palette"
+msgstr "Komut Paleti"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Search sessions, commands and actions"
+msgstr "Oturumları, komutları ve eylemleri ara"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "@ sessions only · > actions only · Enter to run · Esc to close"
+msgstr "@ yalnızca oturumlar · > yalnızca eylemler · Enter ile çalıştır · Esc ile kapat"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "No Results"
+msgstr "Sonuç Yok"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Layouts"
+msgstr "Düzenler"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Saved Commands"
+msgstr "Kayıtlı Komutlar"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Saved layout"
+msgstr "Kayıtlı düzen"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Font"
+msgstr "Yazı Tipi"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Window"
+msgstr "Pencere"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Behavior"
+msgstr "Davranış"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Scrolling"
+msgstr "Kaydırma"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Shell"
+msgstr "Kabuk"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Startup"
+msgstr "Başlangıç"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Backup"
+msgstr "Yedekleme"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Remote Editing"
+msgstr "Uzaktan Düzenleme"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Text Rendering"
+msgstr "Metin İşleme"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Compatibility"
+msgstr "Uyumluluk"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Logs & Transcripts"
+msgstr "Günlükler ve Dökümler"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "More Settings"
+msgstr "Diğer Ayarlar"
+
+#: src/zashterminal/ui/dialogs/session_edit_dialog.py
+msgid "Favorite"
+msgstr "Favori"
+
+#: src/zashterminal/ui/dialogs/session_edit_dialog.py
+msgid "Mark with a star and list it first in the Command Palette"
+msgstr "Yıldızla işaretle ve Komut Paletinde ilk sırada listele"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "SFTP: {name}"
+msgstr "SFTP: {name}"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Settings"
+msgstr "Ayarlar"
+
+#: src/zashterminal/ui/session_edit_dialog.py
+msgid "Jump Host, Tunnels and More"
+msgstr "Jump Host, Tüneller ve Daha Fazlası"
+
+#: src/zashterminal/ui/session_edit_dialog.py
+msgid "ProxyJump, X11, SFTP directories and port forwarding"
+msgstr "ProxyJump, X11, SFTP dizinleri ve bağlantı noktası yönlendirme"
+
+#: src/zashterminal/sessions/tree.py
+msgid "Connected"
+msgstr "Bağlı"
+
+#: src/zashterminal/sessions/tree.py
+msgid "Favorites"
+msgstr "Favoriler"
+
+#: src/zashterminal/ui/dialogs/session_edit_dialog.py
+msgid "Save and Connect"
+msgstr "Kaydet ve Bağlan"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "TFTP Server"
+msgstr "TFTP Sunucusu"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "TFTP Port"
+msgstr "TFTP Bağlantı Noktası"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "Upload Directory"
+msgstr "Yükleme Dizini"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "Download Directory"
+msgstr "İndirme Dizini"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "Files requested by TFTP clients are read from this directory"
+msgstr "TFTP istemcilerinin istediği dosyalar bu dizinden okunur"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "Files sent by TFTP clients are written to this directory"
+msgstr "TFTP istemcilerinin gönderdiği dosyalar bu dizine yazılır"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "Open Directory"
+msgstr "Dizini Aç"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "Select Directory"
+msgstr "Dizin Seç"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "Please select a valid directory!"
+msgstr "Lütfen geçerli bir dizin seçin!"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "The TFTP server uses local directories for uploading and downloading files."
+msgstr "TFTP sunucusu, dosya yükleme ve indirme için yerel dizinleri kullanır."

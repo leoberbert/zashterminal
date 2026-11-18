@@ -1466,6 +1466,8 @@ class TerminalManager(
     ) -> None:
         if terminal_id in self._selection_copy_timers:
             GLib.source_remove(self._selection_copy_timers.pop(terminal_id))
+        if not self.settings_manager.get("copy_on_select", True):
+            return
         self._selection_copy_timers[terminal_id] = GLib.timeout_add(
             80, self._copy_selection_after_change, terminal, terminal_id
         )

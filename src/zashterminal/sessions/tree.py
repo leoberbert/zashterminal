@@ -7,7 +7,7 @@ import gi
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
 gi.require_version("Gdk", "4.0")
-from gi.repository import Gdk, Gio, GLib, GObject, Graphene, Gtk
+from gi.repository import Gdk, Gio, GLib, GObject, Graphene, Gtk, Pango
 
 from ..core.signals import AppSignals
 from ..helpers import create_themed_popover_menu
@@ -55,6 +55,15 @@ def _get_children_model(
 ) -> Optional[Gio.ListStore]:
     """Callback for Gtk.TreeListModel to get children of an item."""
     return getattr(item, "children", None)
+
+
+class SectionHeader(GObject.GObject):
+    """Non-interactive heading row ("Connected", "Favorites", "All")."""
+
+    def __init__(self, name: str):
+        super().__init__()
+        self.name = name
+        self.children = None
 
 
 class SessionTreeView:
@@ -128,6 +137,13 @@ class SessionTreeView:
             actual_item = tree_list_row.get_item()
         else:
             actual_item = item
+
+        # While searching, the top sections would only duplicate the results.
+        if isinstance(actual_item, SectionHeader) or (
+            hasattr(item, "get_position")
+            and item.get_position() < getattr(self, "_top_rows", 0)
+        ):
+            return False
 
         # Check if the item name contains the filter text
         item_name = getattr(actual_item, "name", "").lower()
@@ -346,8 +362,13 @@ class SessionTreeView:
         spacer.set_name("indent-spacer")  # Assign a name to find it later
         box.append(spacer)
 
+        # Disclosure arrow for folders (blank for other rows, keeps alignment)
+        arrow = Gtk.Image(pixel_size=12)
+        arrow.set_size_request(12, -1)
+        arrow.add_css_class("dim-label")
         icon = Gtk.Image()
-        label = Gtk.Label(xalign=0.0, hexpand=True)
+        label = Gtk.Label(xalign=0.0, hexpand=True, ellipsize=Pango.EllipsizeMode.END)
+        box.append(arrow)
         box.append(icon)
         box.append(label)
         list_item.set_child(box)
@@ -377,12 +398,27 @@ class SessionTreeView:
         box = list_item.get_child()
         # MODIFIED: Find widgets by their position/type
         spacer = box.get_first_child()
-        icon = spacer.get_next_sibling()
+        arrow = spacer.get_next_sibling()
+        icon = arrow.get_next_sibling()
         label = icon.get_next_sibling()
 
         tree_list_row = list_item.get_item()
         item = tree_list_row.get_item()
-        label.set_label(item.name)
+        arrow.clear()
+        header = isinstance(item, SectionHeader)
+        list_item.set_selectable(not header)
+        list_item.set_activatable(not header)
+        box.set_sensitive(not header)
+        if header:
+            label.set_markup(
+                f"<small><b>{GLib.markup_escape_text(item.name.upper())}</b></small>"
+            )
+            label.add_css_class("dim-label")
+            icon.clear()
+            spacer.set_size_request(0, -1)
+            return
+        label.remove_css_class("dim-label")
+        label.set_markup(self._row_markup(item))
 
         # MODIFIED: Dynamic indentation using the spacer widget
         depth = tree_list_row.get_depth()
@@ -414,12 +450,15 @@ class SessionTreeView:
                     )
                 )
 
-                icon_name = (
-                    "folder-open-symbolic"
-                    if row.get_expanded()
-                    else ("folder-new-symbolic" if has_children else "folder-symbolic")
+                if has_children:
+                    arrow.set_from_icon_name(
+                        "pan-down-symbolic" if row.get_expanded() else "pan-end-symbolic"
+                    )
+                else:
+                    arrow.clear()
+                icon.set_from_icon_name(
+                    "folder-open-symbolic" if row.get_expanded() else "folder-symbolic"
                 )
-                icon.set_from_icon_name(icon_name)
 
             update_folder_icon(tree_list_row)
             icon_handler_id = tree_list_row.connect(
@@ -429,6 +468,17 @@ class SessionTreeView:
                 "notify::expanded", self._on_folder_expansion_changed
             )
             list_item.handler_ids = [icon_handler_id, expansion_handler_id]
+
+    @staticmethod
+    def _row_markup(item) -> str:
+        """Row text: the name, plus a dim ``user@host`` for SSH sessions."""
+        name = GLib.markup_escape_text(item.name or "")
+        if isinstance(item, SessionItem) and item.favorite:
+            name = f"★ {name}"
+        if isinstance(item, SessionItem) and item.is_ssh() and item.host:
+            target = GLib.markup_escape_text(item.get_connection_string())
+            return f"{name}  <span size='small' alpha='55%'>{target}</span>"
+        return name
 
     def _on_factory_unbind(
         self, factory: Gtk.SignalListItemFactory, list_item: Gtk.ListItem
@@ -599,10 +649,49 @@ class SessionTreeView:
                 item.name,
             ),
         )
+
+        # Top sections: open connections, then favorites (each session once).
+        self._connected_names = self._open_session_names()
+        sessions = sorted(self.session_store, key=lambda s: s.name.lower())
+        connected = [s for s in sessions if s.name in self._connected_names]
+        favorites = [
+            s for s in sessions if s.favorite and s.name not in self._connected_names
+        ]
+        if connected:
+            self.root_store.append(SectionHeader(_("Connected")))
+            for session in connected:
+                self.root_store.append(session)
+        if favorites:
+            self.root_store.append(SectionHeader(_("Favorites")))
+            for session in favorites:
+                self.root_store.append(session)
+        if connected or favorites:
+            self.root_store.append(SectionHeader(_("All")))
+        self._top_rows = self.root_store.get_n_items()
         for item in sorted_root:
             self.root_store.append(item)
 
         GLib.idle_add(self._apply_expansion_state)
+
+    def _open_session_names(self) -> Set[str]:
+        """Names of saved sessions that currently have an open terminal."""
+        tab_manager = getattr(self.parent_window, "tab_manager", None)
+        if tab_manager is None:
+            return set()
+        names = set()
+        try:
+            for terminal in tab_manager.get_all_terminals_across_tabs():
+                session = getattr(terminal, "zashterminal_session_item", None)
+                if isinstance(session, SessionItem):
+                    names.add(session.name)
+        except Exception:
+            return set()
+        return names
+
+    def refresh_if_connections_changed(self) -> None:
+        """Rebuild only when the set of connected sessions changed."""
+        if self._open_session_names() != getattr(self, "_connected_names", set()):
+            self.refresh_tree()
 
     def _on_session_signal(self, signals, data):
         """Handle session-related signals from AppSignals."""

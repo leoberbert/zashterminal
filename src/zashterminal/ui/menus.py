@@ -4,9 +4,9 @@ import gi
 
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
-from gi.repository import Adw, Gio, Gtk
+from gi.repository import Adw, Gio, GLib, Gtk
 
-from ..helpers import accelerator_to_label, is_valid_url, safe_popover_popdown
+from ..helpers import is_valid_url
 from ..settings.config import DefaultSettings
 from ..settings.manager import SettingsManager
 from ..utils.icons import icon_button
@@ -145,114 +145,86 @@ class FontSizerWidget(Gtk.CenterBox):
 
 
 class MainApplicationMenu:
-    """Factory for creating the main application popover menu."""
+    """Factory for creating the main application popover menu.
+
+    Built as a native ``Gtk.PopoverMenu`` so sections, the import submenu,
+    keyboard navigation and accelerator labels come from GTK.
+    """
 
     @staticmethod
-    def create_main_popover(parent_window) -> tuple[Gtk.Popover, FontSizerWidget]:
-        popover = Gtk.Popover()
+    def build_menu_model(parent_window) -> tuple[Gio.Menu, Gio.Menu]:
+        """Return the menu model and its "Tools" section (holds the TFTP item)."""
+        menu = Gio.Menu()
+
+        quick = Gio.Menu()
+        for custom_id in ("theme-selector", "font-sizer"):
+            item = Gio.MenuItem.new(None, None)
+            item.set_attribute_value("custom", GLib.Variant.new_string(custom_id))
+            quick.append_item(item)
+        menu.append_section(None, quick)
+
+        window_section = Gio.Menu()
+        window_section.append(_("New Window"), "win.new-window")
+        window_section.append(_("Command Palette"), "win.command-palette")
+        menu.append_section(None, window_section)
+
+        customize = Gio.Menu()
+        customize.append(_("Preferences"), "win.preferences")
+        customize.append(_("Colors & Highlighting"), "win.highlight-settings")
+        customize.append(_("AI Assistant"), "win.configure-ai")
+        customize.append(_("Keyboard Shortcuts"), "win.shortcuts")
+        menu.append_section(_("Customize"), customize)
+
+        imports = Gio.Menu()
+        # Product names: identical in every language.
+        imports.append("SecureCRT…", "win.import-securecrt-sessions")
+        imports.append("PuTTY…", "win.import-putty-sessions")
+        imports.append("Multi PuTTY…", "win.import-multiputty-sessions")
+        imports.append("mRemoteNG…", "win.import-mremoteng-sessions")
+        sessions = Gio.Menu()
+        sessions.append_submenu(_("Import Sessions"), imports)
+        menu.append_section(_("Sessions"), sessions)
+
+        tools = Gio.Menu()
+        tools.append_item(MainApplicationMenu._tftp_menu_item(parent_window))
+        menu.append_section(_("Tools"), tools)
+
+        app_section = Gio.Menu()
+        app_section.append(_("About"), "app.about")
+        app_section.append(_("Quit"), "app.quit")
+        menu.append_section(None, app_section)
+        return menu, tools
+
+    @staticmethod
+    def create_main_popover(parent_window) -> tuple[Gtk.PopoverMenu, FontSizerWidget]:
+        menu, tools = MainApplicationMenu.build_menu_model(parent_window)
+        popover = Gtk.PopoverMenu.new_from_model(menu)
         popover.add_css_class("zashterminal-popover")
-        main_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
-        main_box.add_css_class("main-menu-popover")
-        popover.set_child(main_box)
+        popover.tftp_section = tools
 
-        theme_selector = ThemeSelectorWidget(
-            parent_window.settings_manager, parent_window
-        )
         font_sizer_widget = FontSizerWidget(parent_window)
-
-        main_box.append(theme_selector)
-        main_box.append(font_sizer_widget)
-        main_box.append(Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL))
-
-        menu_items = [
-            {"label": _("New Window"), "action": "win.new-window"},
-            {"label": _("Preferences"), "action": "win.preferences"},
-            {
-                "label": _("Colors"),
-                "action": "win.highlight-settings",
-                "icon": "format-text-highlight-symbolic",
-            },
-            {"label": _("AI Assistant"), "action": "win.configure-ai"},
-            {"label": _("Keyboard Shortcuts"), "action": "win.shortcuts"},
-            {
-                "label": _("Import SecureCRT Sessions"),
-                "action": "win.import-securecrt-sessions",
-            },
-            {
-                "label": _("Import PuTTY Sessions"),
-                "action": "win.import-putty-sessions",
-            },
-            {
-                "label": _("Import Multi PuTTY Sessions"),
-                "action": "win.import-multiputty-sessions",
-            },
-            {
-                "label": _("Import mRemoteNG Sessions"),
-                "action": "win.import-mremoteng-sessions",
-            },
-            {
-                "label": _("Start TFTP Server"),
-                "action": "win.toggle-tftp-server",
-                "dynamic_label": "tftp_server",
-            },
-            {"label": _("About"), "action": "app.about"},
-            "---",
-            {"label": _("Quit"), "action": "app.quit"},
-        ]
-        actions_that_close_menu = {
-            "win.new-window",
-            "win.import-securecrt-sessions",
-            "win.import-putty-sessions",
-            "win.import-multiputty-sessions",
-            "win.import-mremoteng-sessions",
-            "win.toggle-tftp-server",
-            "win.preferences",
-            "win.highlight-settings",
-            "win.configure-ai",
-            "win.shortcuts",
-            "app.about",
-        }
-        app = parent_window.get_application()
-
-        for item in menu_items:
-            if item == "---":
-                main_box.append(Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL))
-            else:
-                button = Gtk.Button(
-                    action_name=item["action"],
-                    css_classes=["flat", "body"],
-                    halign=Gtk.Align.FILL,
-                )
-                box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=24)
-                button.set_child(box)
-                action_label = Gtk.Label(label=item["label"], xalign=0.0, hexpand=True)
-                if item.get("dynamic_label") == "tftp_server":
-                    popover.tftp_server_action_label = action_label
-                    MainApplicationMenu.update_tftp_server_label(parent_window, popover)
-                box.append(action_label)
-                accels = app.get_accels_for_action(item["action"])
-                if accels:
-                    shortcut_label = Gtk.Label(xalign=1.0, css_classes=["dim-label"])
-                    shortcut_label.set_text(accelerator_to_label(accels[0]))
-                    box.append(shortcut_label)
-                if item["action"] in actions_that_close_menu:
-                    button.connect("clicked", lambda b, p=popover: safe_popover_popdown(p))
-                main_box.append(button)
-
+        popover.add_child(
+            ThemeSelectorWidget(parent_window.settings_manager, parent_window),
+            "theme-selector",
+        )
+        popover.add_child(font_sizer_widget, "font-sizer")
         return popover, font_sizer_widget
 
     @staticmethod
-    def update_tftp_server_label(parent_window, popover: Gtk.Popover) -> None:
-        label = getattr(popover, "tftp_server_action_label", None)
-        if not label:
-            return
-
+    def _tftp_menu_item(parent_window) -> Gio.MenuItem:
         is_running = bool(
             getattr(getattr(parent_window, "tftp_server", None), "is_running", False)
         )
-        label.set_text(
-            _("Stop TFTP Server") if is_running else _("Start TFTP Server")
-        )
+        label = _("Stop TFTP Server") if is_running else _("Start TFTP Server")
+        return Gio.MenuItem.new(label, "win.toggle-tftp-server")
+
+    @staticmethod
+    def update_tftp_server_label(parent_window, popover: Gtk.Popover) -> None:
+        section = getattr(popover, "tftp_section", None)
+        if section is None:
+            return
+        section.remove(0)
+        section.insert_item(0, MainApplicationMenu._tftp_menu_item(parent_window))
 
 
 def create_session_menu(

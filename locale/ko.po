@@ -4791,7 +4791,7 @@ msgstr "SSH 호스트"
 #: NEEDS WORK
 #, python-brace-format
 msgid "{local_host}:{local_port} → {remote_host}:{remote_port}"
-msgstr "{로컬_호스트}:{로컬_포트} → {원격_호스트}:{원격_포트}"
+msgstr "{local_host}:{local_port} → {remote_host}:{remote_port}"
 # 
 # File: usr/share/zashterminal/ui/dialogs/session_edit_dialog.py, line: 484
 #: NEEDS WORK
@@ -8737,3 +8737,239 @@ msgstr ""
 "Look for newer Releases or tags on GitHub when the app starts "
 "(unreleased main tip is ignored unless ZASHTERMINAL_UPDATE_ALLOW_MAIN=1). "
 "Disable entirely with ZASHTERMINAL_DISABLE_AUTO_UPDATE=1."
+
+#: src/zashterminal/ui/window_ui.py
+msgid "Previous match"
+msgstr "이전 일치 항목"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "Next match"
+msgstr "다음 일치 항목"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "Broadcast Command"
+msgstr "명령 브로드캐스트"
+
+#: src/zashterminal/ui/window_search_broadcast.py
+msgid "Select None"
+msgstr "선택 안 함"
+
+#: src/zashterminal/ui/window_search_broadcast.py
+msgid "Command sent to {name}"
+msgstr "{name}에 명령을 보냈습니다"
+
+#: src/zashterminal/ui/window_search_broadcast.py
+msgid "Command sent to {count} terminals: {names}"
+msgstr "{count}개 터미널에 명령을 보냈습니다: {names}"
+
+#: src/zashterminal/ui/menus.py
+msgid "Colors & Highlighting"
+msgstr "색상 및 강조"
+
+#: src/zashterminal/ui/menus.py
+msgid "Customize"
+msgstr "사용자 지정"
+
+#: src/zashterminal/ui/menus.py
+msgid "Tools"
+msgstr "도구"
+
+#: src/zashterminal/ui/menus.py
+msgid "Import Sessions"
+msgstr "세션 가져오기"
+
+#: src/zashterminal/ui/menus.py
+msgid "Start TFTP Server"
+msgstr "TFTP 서버 시작"
+
+#: src/zashterminal/ui/menus.py
+msgid "Stop TFTP Server"
+msgstr "TFTP 서버 중지"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Copy on Select"
+msgstr "선택 시 복사"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Selecting text copies it to the clipboard"
+msgstr "텍스트를 선택하면 클립보드에 복사됩니다"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "No Matching Sessions"
+msgstr "일치하는 세션 없음"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "No Saved Sessions"
+msgstr "저장된 세션 없음"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "Save SSH hosts, keys and jump hosts to connect with one click."
+msgstr "SSH 호스트, 키, 점프 호스트를 저장하여 클릭 한 번으로 연결하세요."
+
+#: src/zashterminal/ui/window_search_broadcast.py
+msgid "Choose targets on Enter"
+msgstr "Enter를 누르면 대상 선택"
+
+#: src/zashterminal/ui/window_search_broadcast.py
+msgid "No targets"
+msgstr "대상 없음"
+
+#: src/zashterminal/ui/window_search_broadcast.py
+msgid "Sends to {count}: {names}"
+msgstr "{count}개에 전송: {names}"
+
+#: src/zashterminal/terminal/tabs.py
+msgid "Pane Actions"
+msgstr "창 작업"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Command Palette"
+msgstr "명령 팔레트"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Search sessions, commands and actions"
+msgstr "세션, 명령 및 작업 검색"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "@ sessions only · > actions only · Enter to run · Esc to close"
+msgstr "@ 세션만 · > 작업만 · Enter로 실행 · Esc로 닫기"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "No Results"
+msgstr "결과 없음"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Layouts"
+msgstr "레이아웃"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Saved Commands"
+msgstr "저장된 명령"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Saved layout"
+msgstr "저장된 레이아웃"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Font"
+msgstr "글꼴"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Window"
+msgstr "창"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Behavior"
+msgstr "동작"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Scrolling"
+msgstr "스크롤"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Shell"
+msgstr "셸"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Startup"
+msgstr "시작"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Backup"
+msgstr "백업"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Remote Editing"
+msgstr "원격 편집"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Text Rendering"
+msgstr "텍스트 렌더링"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Compatibility"
+msgstr "호환성"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Logs & Transcripts"
+msgstr "로그 및 기록"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "More Settings"
+msgstr "추가 설정"
+
+#: src/zashterminal/ui/dialogs/session_edit_dialog.py
+msgid "Favorite"
+msgstr "즐겨찾기"
+
+#: src/zashterminal/ui/dialogs/session_edit_dialog.py
+msgid "Mark with a star and list it first in the Command Palette"
+msgstr "별표로 표시하고 명령 팔레트에서 가장 먼저 나열합니다"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "SFTP: {name}"
+msgstr "SFTP: {name}"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Settings"
+msgstr "설정"
+
+#: src/zashterminal/ui/session_edit_dialog.py
+msgid "Jump Host, Tunnels and More"
+msgstr "Jump Host, 터널 및 기타"
+
+#: src/zashterminal/ui/session_edit_dialog.py
+msgid "ProxyJump, X11, SFTP directories and port forwarding"
+msgstr "ProxyJump, X11, SFTP 디렉터리 및 포트 포워딩"
+
+#: src/zashterminal/sessions/tree.py
+msgid "Connected"
+msgstr "연결됨"
+
+#: src/zashterminal/sessions/tree.py
+msgid "Favorites"
+msgstr "즐겨찾기"
+
+#: src/zashterminal/ui/dialogs/session_edit_dialog.py
+msgid "Save and Connect"
+msgstr "저장 후 연결"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "TFTP Server"
+msgstr "TFTP 서버"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "TFTP Port"
+msgstr "TFTP 포트"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "Upload Directory"
+msgstr "업로드 디렉터리"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "Download Directory"
+msgstr "다운로드 디렉터리"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "Files requested by TFTP clients are read from this directory"
+msgstr "TFTP 클라이언트가 요청한 파일은 이 디렉터리에서 읽습니다"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "Files sent by TFTP clients are written to this directory"
+msgstr "TFTP 클라이언트가 보낸 파일은 이 디렉터리에 기록됩니다"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "Open Directory"
+msgstr "디렉터리 열기"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "Select Directory"
+msgstr "디렉터리 선택"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "Please select a valid directory!"
+msgstr "올바른 디렉터리를 선택하세요!"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "The TFTP server uses local directories for uploading and downloading files."
+msgstr "TFTP 서버는 파일 업로드와 다운로드에 로컬 디렉터리를 사용합니다."

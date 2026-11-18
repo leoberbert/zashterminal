@@ -70,6 +70,10 @@ class WindowSearchBroadcastMixin:
             GObject.BindingFlags.BIDIRECTIONAL,
         )
         self.broadcast_entry.connect("activate", self._on_broadcast_activate)
+        # Re-resolve targets while typing: focus may have moved to another pane.
+        self.broadcast_entry.connect(
+            "changed", lambda *_args: self._refresh_broadcast_targets()
+        )
         self.broadcast_bar.connect(
             "notify::search-mode-enabled", self._on_broadcast_mode_changed
         )
@@ -90,6 +94,40 @@ class WindowSearchBroadcastMixin:
         self.settings_manager.set(
             "broadcast_default_scope", reverse.get(idx, "select")
         )
+        self._refresh_broadcast_targets()
+
+    def _refresh_broadcast_targets(self) -> None:
+        """Outline the terminals that will receive the command and summarize them."""
+        active = self.broadcast_bar.get_search_mode()
+        all_terminals = self.tab_manager.get_all_terminals_across_tabs()
+        targets = (
+            self._resolve_broadcast_terminals(all_terminals, notify=False)
+            if active
+            else []
+        )
+        target_ids = {id(t) for t in targets or []}
+        for terminal in all_terminals:
+            holder = terminal.get_parent()
+            if holder is None:
+                continue
+            if id(terminal) in target_ids:
+                holder.add_css_class("broadcast-target")
+            else:
+                holder.remove_css_class("broadcast-target")
+
+        label = getattr(self, "broadcast_targets_label", None)
+        if label is None:
+            return
+        if targets is None:
+            label.set_text(_("Choose targets on Enter"))
+        elif not targets:
+            label.set_text(_("No targets"))
+        else:
+            label.set_text(
+                _("Sends to {count}: {names}").format(
+                    count=len(targets), names=self._format_terminal_names(targets)
+                )
+            )
 
     def _broadcast_scope_index(self) -> int:
         if hasattr(self, "broadcast_scope_combo") and self.broadcast_scope_combo:
@@ -112,7 +150,7 @@ class WindowSearchBroadcastMixin:
         return ""
 
     def _resolve_broadcast_terminals(
-        self, all_terminals: List[Vte.Terminal]
+        self, all_terminals: List[Vte.Terminal], notify: bool = True
     ) -> Optional[List[Vte.Terminal]]:
         """Return terminals for the current scope, or None to open the picker."""
         scope = self._broadcast_scope_index()
@@ -124,14 +162,15 @@ class WindowSearchBroadcastMixin:
                 return []
             group = self._terminal_broadcast_group(selected)
             if not group:
-                self.toast_overlay.add_toast(
-                    Adw.Toast(
-                        title=_(
-                            "Focused pane has no broadcast group; "
-                            "set one in the session editor."
+                if notify:
+                    self.toast_overlay.add_toast(
+                        Adw.Toast(
+                            title=_(
+                                "Focused pane has no broadcast group; "
+                                "set one in the session editor."
+                            )
                         )
                     )
-                )
                 return []
             matched = [
                 t
@@ -155,6 +194,7 @@ class WindowSearchBroadcastMixin:
             self._on_search_stop(self.terminal_search_entry)
 
     def _on_broadcast_mode_changed(self, broadcast_bar, param):
+        self._refresh_broadcast_targets()
         if broadcast_bar.get_search_mode():
             self.broadcast_entry.grab_focus()
         else:
@@ -227,13 +267,13 @@ class WindowSearchBroadcastMixin:
                 if key in last_selection_keys:
                     selected_terminals.append(terminal)
 
-            if not selected_terminals:
-                selected_terminals = all_terminals
-
-            self._execute_broadcast(command, selected_terminals)
-            entry.set_text("")
-            self.broadcast_bar.set_search_mode(False)
-            return
+            # None of the remembered terminals is open anymore: ask again
+            # instead of silently sending to every terminal.
+            if selected_terminals:
+                self._execute_broadcast(command, selected_terminals)
+                entry.set_text("")
+                self.broadcast_bar.set_search_mode(False)
+                return
 
         count = len(all_terminals)
         dialog = Adw.MessageDialog(
@@ -275,14 +315,31 @@ class WindowSearchBroadcastMixin:
         flow_box.set_min_children_per_line(columns)
         flow_box.set_max_children_per_line(max_columns)
 
+        # Start from the focused pane only: picking a subset must not require
+        # unchecking every other terminal first.
+        focused = self.tab_manager.get_selected_terminal()
         selection_controls = []
         for terminal in all_terminals:
             display_title = self._get_terminal_display_name(terminal)
             check_button = Gtk.CheckButton(label=display_title)
-            check_button.set_active(True)
+            check_button.set_active(terminal is focused)
             check_button.set_halign(Gtk.Align.START)
             flow_box.insert(check_button, -1)
             selection_controls.append((terminal, check_button))
+
+        def set_all(_button, active: bool) -> None:
+            for _terminal, control in selection_controls:
+                control.set_active(active)
+
+        select_all_button = Gtk.Button(label=_("Select All"))
+        select_all_button.add_css_class("flat")
+        select_all_button.connect("clicked", set_all, True)
+        select_none_button = Gtk.Button(label=_("Select None"))
+        select_none_button.add_css_class("flat")
+        select_none_button.connect("clicked", set_all, False)
+        quick_select_box = Gtk.Box(spacing=6, halign=Gtk.Align.START)
+        quick_select_box.append(select_all_button)
+        quick_select_box.append(select_none_button)
 
         if len(selection_controls) > 6:
             scrolled = Gtk.ScrolledWindow(vexpand=True, hexpand=True)
@@ -306,6 +363,7 @@ class WindowSearchBroadcastMixin:
         )
         content_box.append(command_label)
         content_box.append(instructions_label)
+        content_box.append(quick_select_box)
         content_box.append(selection_container)
         content_box.append(remember_check)
         dialog.set_extra_child(content_box)
@@ -333,7 +391,9 @@ class WindowSearchBroadcastMixin:
             heading=_("Broadcast to all panes?"),
             body=_(
                 "Send this command to <b>{count}</b> open terminals?"
-            ).format(count=len(terminals)),
+            ).format(count=len(terminals))
+            + "\n"
+            + GLib.markup_escape_text(self._format_terminal_names(terminals)),
             body_use_markup=True,
             close_response="cancel",
         )
@@ -414,6 +474,26 @@ class WindowSearchBroadcastMixin:
         self.logger.info(
             f"Broadcasted command to {len(terminals)} terminals."
         )
+        if len(terminals) == 1:
+            title = _("Command sent to {name}").format(
+                name=self._get_terminal_display_name(terminals[0])
+            )
+        else:
+            title = _("Command sent to {count} terminals: {names}").format(
+                count=len(terminals), names=self._format_terminal_names(terminals)
+            )
+        self.toast_overlay.add_toast(
+            Adw.Toast(title=GLib.markup_escape_text(title), timeout=3)
+        )
+
+    def _format_terminal_names(
+        self, terminals: List[Vte.Terminal], limit: int = 3
+    ) -> str:
+        """Short list of distinct target names (panes of one tab share a name)."""
+        names = list(dict.fromkeys(self._get_terminal_display_name(t) for t in terminals))
+        if len(names) > limit:
+            names = names[:limit] + ["…"]
+        return ", ".join(names)
 
     def _make_broadcast_terminal_key(self, terminal: Vte.Terminal) -> str:
         page = self.tab_manager.get_page_for_terminal(terminal)

@@ -1,0 +1,11 @@
+/* Rascunho de direção visual — ainda não aplicado ao app. */
+window, .terminal-tab-view { background: #14161a; }
+headerbar.main-header-bar { background: linear-gradient(180deg, alpha(#e5484d,.55), alpha(#e5484d,.22)); border-bottom: 2px solid #e5484d; min-height: 40px; box-shadow: none; }
+.custom-tab-button { border-radius: 8px 8px 0 0; padding: 4px 4px 4px 14px; margin: 0 2px; color: alpha(white,.7); background: alpha(black,.18); border-top: 3px solid alpha(white,.15); }
+.custom-tab-button.active { background: #14161a; color: white; font-weight: 700; border-top: 3px solid #e5484d; }
+.sidebar-container { background: #181b20; border-right: 1px solid alpha(white,.06); }
+.sidebar-session-tree row { border-radius: 8px; margin: 1px 6px; }
+.sidebar-session-tree row:selected { background: alpha(#e5484d,.28); }
+.terminal-pane { border-radius: 10px; margin: 3px; border: 1px solid alpha(white,.08); }
+.terminal-pane.pane-focused { border-color: #e5484d; box-shadow: 0 0 0 1px alpha(#e5484d,.5); }
+.terminal-pane .header-bar { background: alpha(#e5484d,.16); border-radius: 9px 9px 0 0; padding: 1px 8px; font-size: 9pt; }

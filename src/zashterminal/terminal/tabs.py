@@ -37,6 +37,7 @@ def _create_terminal_pane(
     title: str,
     on_close_callback: Callable[[Vte.Terminal], None],
     on_move_to_tab_callback: Callable[[Vte.Terminal], None],
+    on_split_callback: Callable[[Vte.Terminal, Gtk.Orientation], None],
     settings_manager: SettingsManagerType,
 ) -> Adw.ToolbarView:
     """
@@ -60,13 +61,44 @@ def _create_terminal_pane(
     title_label.set_halign(Gtk.Align.START)
     header_box.append(title_label)
 
-    # Action buttons (using bundled icons)
-    move_to_tab_button = icon_button(
-        "go-next-symbolic", size=14, tooltip=_("Move to New Tab")
+    # Per-pane actions, scoped to this pane's terminal (not the focused one)
+    pane_actions = Gio.SimpleActionGroup()
+    for name, handler in (
+        ("move-to-tab", lambda *_: on_move_to_tab_callback(terminal)),
+        (
+            "split-horizontal",
+            lambda *_: on_split_callback(terminal, Gtk.Orientation.HORIZONTAL),
+        ),
+        (
+            "split-vertical",
+            lambda *_: on_split_callback(terminal, Gtk.Orientation.VERTICAL),
+        ),
+        ("close", lambda *_: on_close_callback(terminal)),
+    ):
+        action = Gio.SimpleAction.new(name, None)
+        action.connect("activate", handler)
+        pane_actions.add_action(action)
+    header_box.insert_action_group("pane", pane_actions)
+
+    pane_menu = Gio.Menu()
+    pane_menu.append(_("Move to New Tab"), "pane.move-to-tab")
+    split_section = Gio.Menu()
+    split_section.append(_("Split Left/Right"), "pane.split-horizontal")
+    split_section.append(_("Split Top/Bottom"), "pane.split-vertical")
+    pane_menu.append_section(None, split_section)
+    close_section = Gio.Menu()
+    close_section.append(_("Close Pane"), "pane.close")
+    pane_menu.append_section(None, close_section)
+
+    menu_button = Gtk.MenuButton(
+        icon_name="view-more-symbolic",
+        menu_model=pane_menu,
+        css_classes=["flat"],
+        valign=Gtk.Align.CENTER,
     )
-    move_to_tab_button.add_css_class("flat")
-    move_to_tab_button.set_size_request(26, 26)
-    move_to_tab_button.connect("clicked", lambda _: on_move_to_tab_callback(terminal))
+    menu_button.set_size_request(26, 26)
+    menu_button.set_tooltip_text(_("Pane Actions"))
+    menu_button.update_property([Gtk.AccessibleProperty.LABEL], [_("Pane Actions")])
 
     close_button = icon_button(
         "window-close-symbolic", size=16, tooltip=_("Close Pane")
@@ -75,7 +107,7 @@ def _create_terminal_pane(
     close_button.set_size_request(26, 26)
     close_button.connect("clicked", lambda _: on_close_callback(terminal))
 
-    header_box.append(move_to_tab_button)
+    header_box.append(menu_button)
     header_box.append(close_button)
 
     toolbar_view.add_top_bar(header_box)
@@ -90,7 +122,7 @@ def _create_terminal_pane(
     # Attach important widgets for later access
     toolbar_view.terminal = terminal
     toolbar_view.title_label = title_label
-    toolbar_view.move_button = move_to_tab_button
+    toolbar_view.menu_button = menu_button
     toolbar_view.close_button = close_button
     # MODIFIED: Store a reference to the header box for live updates
     toolbar_view.header_box = header_box
@@ -709,30 +741,57 @@ class TabManager:
             self.logger.warning(f"Could not parse color '{bg_color_str}': {e}")
             return "#000000"
 
-    def _apply_tab_color(self, widget: Gtk.Widget, color_string: Optional[str]):
+    @staticmethod
+    def _contrast_text_color(color_string: str) -> str:
+        """Black or white, whichever reads better on `color_string`."""
+        rgba = Gdk.RGBA()
+        if not rgba.parse(color_string):
+            return "white"
+        luminance = 0.299 * rgba.red + 0.587 * rgba.green + 0.114 * rgba.blue
+        return "black" if luminance > 0.6 else "white"
+
+    @staticmethod
+    def _set_widget_css(widget: Gtk.Widget, css: Optional[str]) -> None:
+        """Replace the per-widget session-color CSS (None removes it)."""
         style_context = widget.get_style_context()
         if hasattr(widget, "_color_provider"):
             style_context.remove_provider(widget._color_provider)
             del widget._color_provider
-
-        if color_string:
+        if css:
             provider = Gtk.CssProvider()
-
-            # Apply color only to the top part of the tab (top border)
-            css = f"""
-                .custom-tab-button {{
-                    border: 1px solid {color_string};
-                }}
-            """
             provider.load_from_data(css.encode("utf-8"))
             style_context.add_provider(provider, Gtk.STYLE_PROVIDER_PRIORITY_USER)
             widget._color_provider = provider
+
+    def _apply_tab_color(self, widget: Gtk.Widget, color_string: Optional[str]):
+        """Session color: thin outline on the tab, solid fill while it is active."""
+        widget._session_color = color_string or None
+        if not color_string:
+            self._set_widget_css(widget, None)
+            return
+        text = self._contrast_text_color(color_string)
+        self._set_widget_css(
+            widget,
+            f"""
+            .custom-tab-button {{
+                border: 1px solid {color_string};
+            }}
+            .custom-tab-button.active {{
+                background-image: none;
+                background-color: {color_string};
+                color: {text};
+                box-shadow: 0 2px 10px alpha({color_string}, 0.55);
+            }}
+            """,
+        )
 
     def _create_tab_widget(
         self, page: Adw.ViewStackPage, session: SessionItem
     ) -> Gtk.Box:
         tab_widget = Gtk.Box(spacing=6)
         tab_widget.add_css_class("custom-tab-button")
+        # Pill height comes from its content, not from the header bar height
+        tab_widget.set_valign(Gtk.Align.CENTER)
         tab_widget.add_css_class("raised")
 
         # Drag/click handle excludes the close button so X keeps working.
@@ -1647,10 +1706,25 @@ class TabManager:
         self._find_panes_recursive(page.get_child(), panes)
         for pane in panes:
             pane.remove_css_class("pane-focused")
+            self._set_widget_css(pane, None)
 
         focused_pane = self._find_pane_for_terminal(page, terminal)
         if focused_pane:
             focused_pane.add_css_class("pane-focused")
+            # The focus ring follows the session color of the tab, if any.
+            tab = next((t for t, pg in self.pages.items() if pg is page), None)
+            color = getattr(tab, "_session_color", None)
+            if color:
+                self._set_widget_css(
+                    focused_pane,
+                    f"""
+                    .terminal-pane.pane-focused {{
+                        border-color: {color};
+                        box-shadow: 0 0 0 1px alpha({color}, 0.6),
+                                    0 6px 22px alpha({color}, 0.28);
+                    }}
+                    """,
+                )
 
     def _schedule_terminal_focus(self, terminal: Vte.Terminal) -> None:
         """Schedules a deferred focus call for the terminal, ensuring the UI is ready."""
@@ -2291,6 +2365,7 @@ class TabManager:
                 new_pane_title,
                 self.close_pane,
                 self._on_move_to_tab_callback,
+                self._split_terminal,
                 self.terminal_manager.settings_manager,
             )
             self._setup_pane_hover_focus(new_pane, new_terminal)
@@ -2323,6 +2398,7 @@ class TabManager:
                     title,
                     self.close_pane,
                     self._on_move_to_tab_callback,
+                    self._split_terminal,
                     self.terminal_manager.settings_manager,
                 )
                 self._setup_pane_hover_focus(pane_being_split, focused_terminal)
@@ -2562,6 +2638,7 @@ class TabManager:
                 title,
                 self.close_pane,
                 self._on_move_to_tab_callback,
+                self._split_terminal,
                 self.terminal_manager.settings_manager,
             )
             self._setup_pane_hover_focus(pane_widget, terminal)

@@ -8756,3 +8756,239 @@ msgstr ""
 "Look for newer Releases or tags on GitHub when the app starts "
 "(unreleased main tip is ignored unless ZASHTERMINAL_UPDATE_ALLOW_MAIN=1). "
 "Disable entirely with ZASHTERMINAL_DISABLE_AUTO_UPDATE=1."
+
+#: src/zashterminal/ui/window_ui.py
+msgid "Previous match"
+msgstr "התאמה קודמת"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "Next match"
+msgstr "התאמה הבאה"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "Broadcast Command"
+msgstr "שידור פקודה"
+
+#: src/zashterminal/ui/window_search_broadcast.py
+msgid "Select None"
+msgstr "בטל בחירה"
+
+#: src/zashterminal/ui/window_search_broadcast.py
+msgid "Command sent to {name}"
+msgstr "הפקודה נשלחה אל {name}"
+
+#: src/zashterminal/ui/window_search_broadcast.py
+msgid "Command sent to {count} terminals: {names}"
+msgstr "הפקודה נשלחה אל {count} מסופים: {names}"
+
+#: src/zashterminal/ui/menus.py
+msgid "Colors & Highlighting"
+msgstr "צבעים והדגשה"
+
+#: src/zashterminal/ui/menus.py
+msgid "Customize"
+msgstr "התאמה אישית"
+
+#: src/zashterminal/ui/menus.py
+msgid "Tools"
+msgstr "כלים"
+
+#: src/zashterminal/ui/menus.py
+msgid "Import Sessions"
+msgstr "ייבוא הפעלות"
+
+#: src/zashterminal/ui/menus.py
+msgid "Start TFTP Server"
+msgstr "הפעל שרת TFTP"
+
+#: src/zashterminal/ui/menus.py
+msgid "Stop TFTP Server"
+msgstr "עצור שרת TFTP"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Copy on Select"
+msgstr "העתק בעת בחירה"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Selecting text copies it to the clipboard"
+msgstr "בחירת טקסט מעתיקה אותו ללוח"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "No Matching Sessions"
+msgstr "אין הפעלות תואמות"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "No Saved Sessions"
+msgstr "אין הפעלות שמורות"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "Save SSH hosts, keys and jump hosts to connect with one click."
+msgstr "שמרו מארחי SSH, מפתחות ומארחי ביניים כדי להתחבר בלחיצה אחת."
+
+#: src/zashterminal/ui/window_search_broadcast.py
+msgid "Choose targets on Enter"
+msgstr "בחירת יעדים בלחיצה על Enter"
+
+#: src/zashterminal/ui/window_search_broadcast.py
+msgid "No targets"
+msgstr "אין יעדים"
+
+#: src/zashterminal/ui/window_search_broadcast.py
+msgid "Sends to {count}: {names}"
+msgstr "שולח אל {count}: {names}"
+
+#: src/zashterminal/terminal/tabs.py
+msgid "Pane Actions"
+msgstr "פעולות חלונית"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Command Palette"
+msgstr "לוח פקודות"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Search sessions, commands and actions"
+msgstr "חיפוש הפעלות, פקודות ופעולות"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "@ sessions only · > actions only · Enter to run · Esc to close"
+msgstr "@ הפעלות בלבד · > פעולות בלבד · Enter להרצה · Esc לסגירה"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "No Results"
+msgstr "אין תוצאות"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Layouts"
+msgstr "פריסות"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Saved Commands"
+msgstr "פקודות שמורות"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Saved layout"
+msgstr "פריסה שמורה"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Font"
+msgstr "גופן"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Window"
+msgstr "חלון"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Behavior"
+msgstr "התנהגות"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Scrolling"
+msgstr "גלילה"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Shell"
+msgstr "מעטפת"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Startup"
+msgstr "הפעלה"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Backup"
+msgstr "גיבוי"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Remote Editing"
+msgstr "עריכה מרוחקת"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Text Rendering"
+msgstr "עיבוד טקסט"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Compatibility"
+msgstr "תאימות"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Logs & Transcripts"
+msgstr "יומנים ותמלילים"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "More Settings"
+msgstr "הגדרות נוספות"
+
+#: src/zashterminal/ui/dialogs/session_edit_dialog.py
+msgid "Favorite"
+msgstr "מועדף"
+
+#: src/zashterminal/ui/dialogs/session_edit_dialog.py
+msgid "Mark with a star and list it first in the Command Palette"
+msgstr "סימון בכוכב והצגה ראשונה בלוח הפקודות"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "SFTP: {name}"
+msgstr "SFTP: {name}"
+
+#: src/zashterminal/ui/command_palette.py
+msgid "Settings"
+msgstr "הגדרות"
+
+#: src/zashterminal/ui/session_edit_dialog.py
+msgid "Jump Host, Tunnels and More"
+msgstr "Jump Host, מנהרות ועוד"
+
+#: src/zashterminal/ui/session_edit_dialog.py
+msgid "ProxyJump, X11, SFTP directories and port forwarding"
+msgstr "ProxyJump, X11, ספריות SFTP והעברת פורטים"
+
+#: src/zashterminal/sessions/tree.py
+msgid "Connected"
+msgstr "מחוברות"
+
+#: src/zashterminal/sessions/tree.py
+msgid "Favorites"
+msgstr "מועדפות"
+
+#: src/zashterminal/ui/dialogs/session_edit_dialog.py
+msgid "Save and Connect"
+msgstr "שמור והתחבר"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "TFTP Server"
+msgstr "שרת TFTP"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "TFTP Port"
+msgstr "יציאת TFTP"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "Upload Directory"
+msgstr "תיקיית העלאה"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "Download Directory"
+msgstr "תיקיית הורדה"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "Files requested by TFTP clients are read from this directory"
+msgstr "קבצים שלקוחות TFTP מבקשים נקראים מתיקייה זו"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "Files sent by TFTP clients are written to this directory"
+msgstr "קבצים שלקוחות TFTP שולחים נכתבים לתיקייה זו"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "Open Directory"
+msgstr "פתיחת תיקייה"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "Select Directory"
+msgstr "בחירת תיקייה"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "Please select a valid directory!"
+msgstr "נא לבחור תיקייה תקינה!"
+
+#: src/zashterminal/ui/dialogs/tftp_server_dialog.py
+msgid "The TFTP server uses local directories for uploading and downloading files."
+msgstr "שרת ה-TFTP משתמש בתיקיות מקומיות להעלאה ולהורדה של קבצים."

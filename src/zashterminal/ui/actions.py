@@ -81,6 +81,7 @@ class WindowActions:
             "shortcuts": self.shortcuts,
             "new-window": self.new_window,
             "save-layout": self.save_layout,
+            "command-palette": self.command_palette,
         }
         for name, callback in actions_map.items():
             action = Gio.SimpleAction.new(name, None)
@@ -418,6 +419,12 @@ class WindowActions:
             not self.window.broadcast_button.get_active()
         )
 
+    def command_palette(self, *_args):
+        self._hide_tooltip()
+        from .dialogs.command_palette_dialog import CommandPalette
+
+        CommandPalette(self.window).present(self.window)
+
     def show_command_manager(self, *_args):
         self._hide_tooltip()
         self.window._show_command_manager_dialog()
@@ -444,7 +451,7 @@ class WindowActions:
         )
         dialog.present()
 
-    def preferences(self, *_args):
+    def preferences(self, *_args, page: str = ""):
         self._hide_tooltip()
         from .dialogs import PreferencesDialog
         dialog = PreferencesDialog(self.window, self.window.settings_manager)
@@ -460,6 +467,8 @@ class WindowActions:
             "font-changed",
             lambda d, f: self.window.terminal_manager.apply_settings_to_all_terminals(),
         )
+        if page:
+            dialog.set_visible_page_name(page)
         dialog.present()
 
     def import_securecrt_sessions(self, *_args):

@@ -5,6 +5,8 @@ import threading
 from pathlib import Path
 from typing import Optional
 
+from types import SimpleNamespace
+
 import gi
 
 gi.require_version("Gtk", "4.0")
@@ -136,6 +138,13 @@ class SessionEditDialog(BaseDialog):
             header.pack_end(save_button)
             self.set_default_widget(save_button)
 
+            # Save and open the session right away (one step instead of three)
+            self.save_connect_button = Gtk.Button(label=_("Save and Connect"))
+            self.save_connect_button.connect(
+                "clicked", lambda b: self._on_save_clicked(b, connect=True)
+            )
+            header.pack_end(self.save_connect_button)
+
             # Test connection button (to the left of Save, only for SSH)
             self.test_button = Gtk.Button(label=_("Test Connection"))
             get_tooltip_helper().add_tooltip(self.test_button, _("Test SSH connection"))
@@ -153,13 +162,15 @@ class SessionEditDialog(BaseDialog):
             prefs_page = Adw.PreferencesPage()
             scrolled.set_child(prefs_page)
 
-            # Create all sections
+            # Essentials first (name, type, connection), then organization,
+            # then optional/advanced settings, experimental highlighting last.
             self._create_name_section(prefs_page)
-            if self.folder_store:
-                self._create_folder_section(prefs_page)
-            self._create_highlighting_section(prefs_page)
             self._create_local_terminal_section(prefs_page)
             self._create_ssh_section(prefs_page)
+            self._create_organization_section(prefs_page)
+            self._create_ssh_options_group(prefs_page)
+            self._create_advanced_section(prefs_page)
+            self._create_highlighting_section(prefs_page)
 
             self._update_ssh_visibility()
             self._update_local_visibility()
@@ -221,6 +232,11 @@ class SessionEditDialog(BaseDialog):
         self.type_combo.set_selected(0 if self.editing_session.is_local() else 1)
         self.type_combo.connect("notify::selected", self._on_type_changed)
         name_group.add(self.type_combo)
+        parent.add(name_group)
+
+    def _create_advanced_section(self, parent: Adw.PreferencesPage) -> None:
+        """Optional per-session behavior shared by local and SSH sessions."""
+        advanced_group = Adw.PreferencesGroup(title=_("Advanced"))
 
         # Broadcast group (Terminator-style) — applies to local and SSH
         self.broadcast_group_row, self.broadcast_group_entry = (
@@ -234,7 +250,14 @@ class SessionEditDialog(BaseDialog):
                 placeholder=_("e.g. web"),
             )
         )
-        name_group.add(self.broadcast_group_row)
+        advanced_group.add(self.broadcast_group_row)
+
+        self.favorite_row = Adw.SwitchRow(
+            title=_("Favorite"),
+            subtitle=_("Mark with a star and list it first in the Command Palette"),
+        )
+        self.favorite_row.set_active(bool(self.editing_session.favorite))
+        advanced_group.add(self.favorite_row)
 
         # Transcript logging tri-state
         from ...utils.transcript import default_transcript_directory
@@ -263,9 +286,11 @@ class SessionEditDialog(BaseDialog):
             self.transcript_combo.set_selected(2)
         else:
             self.transcript_combo.set_selected(0)
-        name_group.add(self.transcript_combo)
+        advanced_group.add(self.transcript_combo)
 
-        # Tab Color - using Adw.ActionRow with color button
+        parent.add(advanced_group)
+
+    def _create_tab_color_row(self) -> Adw.ActionRow:
         color_row = Adw.ActionRow(
             title=_("Tab Color"),
             subtitle=_("Choose a color to identify this session's tab"),
@@ -297,17 +322,18 @@ class SessionEditDialog(BaseDialog):
         color_box.append(self.color_button)
         color_box.append(clear_button)
         color_row.add_suffix(color_box)
-        name_group.add(color_row)
+        return color_row
 
-        parent.add(name_group)
+    def _create_organization_section(self, parent: Adw.PreferencesPage) -> None:
+        """Folder (when folders exist) and tab color."""
+        organization_group = Adw.PreferencesGroup(title=_("Organization"))
+        if self.folder_store:
+            organization_group.add(self._create_folder_row())
+        organization_group.add(self._create_tab_color_row())
+        parent.add(organization_group)
 
-    def _create_folder_section(self, parent: Adw.PreferencesPage) -> None:
-        """Create the folder organization section."""
-        folder_group = Adw.PreferencesGroup(
-            title=_("Organization"),
-            description=_("Choose where to store this session"),
-        )
-
+    def _create_folder_row(self) -> Adw.ComboRow:
+        """Create the folder selector row."""
         folder_row = Adw.ComboRow(
             title=_("Folder"),
             subtitle=_("Select a folder to organize this session"),
@@ -339,9 +365,7 @@ class SessionEditDialog(BaseDialog):
         folder_row.set_selected(selected_index)
         folder_row.connect("notify::selected", self._on_folder_changed)
         self.folder_combo = folder_row
-
-        folder_group.add(folder_row)
-        parent.add(folder_group)
+        return folder_row
 
     # ---------------------------------------------------------------------
     # Highlighting overrides
@@ -414,6 +438,7 @@ class SessionEditDialog(BaseDialog):
 
     def _set_highlighting_overrides_visible(self, visible: bool) -> None:
         for row in (
+            self.highlighting_warning_row,
             self.output_highlighting_row,
             self.command_specific_highlighting_row,
             self.cat_colorization_row,
@@ -453,14 +478,16 @@ class SessionEditDialog(BaseDialog):
             ),
         )
 
-        warning_row = Adw.ActionRow(
+        # Shown only while per-session overrides are being customized.
+        self.highlighting_warning_row = Adw.ActionRow(
             title=_("Experimental Feature"),
             subtitle=_(
                 "Per-session highlighting overrides are experimental and may change."
             ),
         )
-        warning_row.add_prefix(Gtk.Image.new_from_icon_name("dialog-warning-symbolic"))
-        group.add(warning_row)
+        self.highlighting_warning_row.add_prefix(
+            Gtk.Image.new_from_icon_name("dialog-warning-symbolic")
+        )
 
         has_custom_overrides = any(
             getattr(self.editing_session, key, None) is not None
@@ -481,6 +508,7 @@ class SessionEditDialog(BaseDialog):
             "notify::active", self._on_highlighting_customize_switch_changed
         )
         group.add(self.highlighting_customize_switch)
+        group.add(self.highlighting_warning_row)
 
         self.output_highlighting_row = self._create_tristate_combo_row(
             title=_("Output Highlighting"),
@@ -724,9 +752,6 @@ class SessionEditDialog(BaseDialog):
         self.ssh_box = ssh_group
         parent.add(ssh_group)
 
-        # Create additional SSH options in a separate group
-        self._create_ssh_options_group(parent)
-
     def _create_ssh_options_group(self, parent: Adw.PreferencesPage) -> None:
         """Create additional SSH options like post-login command, X11, SFTP."""
         # Post-login command section - dedicated group with switch and command input
@@ -795,6 +820,21 @@ class SessionEditDialog(BaseDialog):
 
         # Other SSH options in a separate group
         options_group = Adw.PreferencesGroup()
+        # Rarely needed options live in one collapsible row; it starts open
+        # when any of them is already configured.
+        session = self.editing_session
+        options_expander = Adw.ExpanderRow(
+            title=_("Jump Host, Tunnels and More"),
+            subtitle=_("ProxyJump, X11, SFTP directories and port forwarding"),
+            expanded=bool(
+                session.proxy_jump
+                or session.x11_forwarding
+                or session.sftp_session_enabled
+                or session.ssh_connection_mode == "network_device"
+                or getattr(session, "port_forwardings", None)
+            ),
+        )
+        options_group.add(options_expander)
 
         self.ssh_mode_combo = Adw.ComboRow(
             title=_("SSH Session Type"),
@@ -809,7 +849,7 @@ class SessionEditDialog(BaseDialog):
             else 0
         )
         self.ssh_mode_combo.connect("notify::selected", self._on_ssh_mode_changed)
-        options_group.add(self.ssh_mode_combo)
+        options_expander.add_row(self.ssh_mode_combo)
 
         # X11 Forwarding toggle
         self.x11_switch = Adw.SwitchRow(
@@ -818,7 +858,7 @@ class SessionEditDialog(BaseDialog):
         )
         self.x11_switch.set_active(self.editing_session.x11_forwarding)
         self.x11_switch.connect("notify::active", self._on_x11_toggled)
-        options_group.add(self.x11_switch)
+        options_expander.add_row(self.x11_switch)
 
         # ProxyJump / bastion
         self.proxy_jump_row, self.proxy_jump_entry = self._create_described_entry_row(
@@ -830,7 +870,7 @@ class SessionEditDialog(BaseDialog):
             text=self.editing_session.proxy_jump or "",
             placeholder=_("user@bastion"),
         )
-        options_group.add(self.proxy_jump_row)
+        options_expander.add_row(self.proxy_jump_row)
 
         # SFTP toggle
         self.sftp_switch = Adw.SwitchRow(
@@ -839,7 +879,7 @@ class SessionEditDialog(BaseDialog):
         )
         self.sftp_switch.set_active(self.editing_session.sftp_session_enabled)
         self.sftp_switch.connect("notify::active", self._on_sftp_toggle)
-        options_group.add(self.sftp_switch)
+        options_expander.add_row(self.sftp_switch)
 
         # SFTP Local Directory - using helper
         self.sftp_local_entry = self._create_entry_row(
@@ -847,7 +887,7 @@ class SessionEditDialog(BaseDialog):
             text=self.editing_session.sftp_local_directory or "",
             on_changed=self._on_sftp_local_changed,
         )
-        options_group.add(self.sftp_local_entry)
+        options_expander.add_row(self.sftp_local_entry)
         self.sftp_local_row = self.sftp_local_entry
 
         # SFTP Remote Directory - using helper
@@ -856,11 +896,13 @@ class SessionEditDialog(BaseDialog):
             text=self.editing_session.sftp_remote_directory or "",
             on_changed=self._on_sftp_remote_changed,
         )
-        options_group.add(self.sftp_remote_entry)
+        options_expander.add_row(self.sftp_remote_entry)
         self.sftp_remote_row = self.sftp_remote_entry
 
         # Port Forwarding section (inside SSH Options)
-        self._create_port_forward_widgets(options_group)
+        self._create_port_forward_widgets(
+            SimpleNamespace(add=options_expander.add_row)
+        )
 
         self.ssh_options_group = options_group
         parent.add(options_group)
@@ -1590,7 +1632,7 @@ class SessionEditDialog(BaseDialog):
             self.logger.error(f"Cancel handling failed: {e}")
             self.close()
 
-    def _on_save_clicked(self, button) -> None:
+    def _on_save_clicked(self, button, connect: bool = False) -> None:
         """Handles the save button click by delegating to the SessionOperations layer."""
         try:
             updated_session = self._build_updated_session()
@@ -1609,6 +1651,8 @@ class SessionEditDialog(BaseDialog):
                 )
                 # Tree refresh is handled automatically via AppSignals
                 self.close()
+                if connect:
+                    self.parent_window._on_session_activated(updated_session)
             elif result:
                 self._show_error_dialog(_("Save Error"), result.message)
         except Exception as e:
@@ -1731,6 +1775,9 @@ class SessionEditDialog(BaseDialog):
             self.broadcast_group_entry.get_text().strip()
             if getattr(self, "broadcast_group_entry", None)
             else ""
+        )
+        session_data["favorite"] = bool(
+            getattr(self, "favorite_row", None) and self.favorite_row.get_active()
         )
         transcript_idx = (
             self.transcript_combo.get_selected()

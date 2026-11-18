@@ -325,6 +325,7 @@ class ZashTerminalWindow(WindowSearchBroadcastMixin, Adw.ApplicationWindow):
         self.broadcast_button = self.ui_builder.broadcast_button
         self.broadcast_entry = self.ui_builder.broadcast_entry
         self.broadcast_scope_combo = self.ui_builder.broadcast_scope_combo
+        self.broadcast_targets_label = self.ui_builder.broadcast_targets_label
         self._broadcast_remember_choice = False
         self._broadcast_last_selection: List[str] = []
         # Assign the correctly named widgets
@@ -1346,24 +1347,20 @@ class ZashTerminalWindow(WindowSearchBroadcastMixin, Adw.ApplicationWindow):
         self.sidebar_manager.update_sidebar_sizes()
 
     def _update_tab_layout(self):
-        """Update tab layout and window title based on tab count."""
+        """Show the tab bar whenever a tab exists so the header never re-flows.
+
+        The plain title is only shown while the window has no tabs.
+        """
         tab_count = self.tab_manager.get_tab_count()
         self.set_title(_("Terminal Zash"))
+        if getattr(self, "session_tree", None) is not None:
+            GLib.idle_add(self.session_tree.refresh_if_connections_changed)
 
-        if tab_count > 1:
+        if tab_count >= 1:
             self.title_stack.set_visible_child_name("tabs-view")
         else:
             self.title_stack.set_visible_child_name("title-view")
-            if tab_count == 1:
-                page = self.tab_manager.view_stack.get_page(
-                    self.tab_manager.view_stack.get_visible_child()
-                )
-                if page:
-                    self.single_tab_title_widget.set_title(
-                        f"{_('Terminal Zash')} - {page.get_title()}"
-                    )
-            else:
-                self.single_tab_title_widget.set_title(_("Terminal Zash"))
+            self.single_tab_title_widget.set_title(_("Terminal Zash"))
 
     def _update_font_sizer_widget(self):
         if self.font_sizer_widget:
@@ -1747,7 +1744,7 @@ class ZashTerminalWindow(WindowSearchBroadcastMixin, Adw.ApplicationWindow):
             self.command_manager_dialog.connect(
                 "command-selected", self._on_command_selected_from_manager
             )
-        if self.command_manager_dialog.get_visible():
+        if self.command_manager_dialog.get_mapped():
             self.command_manager_dialog.close()
         else:
             self.command_manager_dialog.present()

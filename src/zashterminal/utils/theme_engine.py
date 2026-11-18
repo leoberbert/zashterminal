@@ -77,6 +77,7 @@ class ThemeEngine:
             "min_luminance": min_luminance,
             "is_dark_theme": is_dark_theme,
             "accent": scheme.get("accent"),
+            "palette": list(scheme.get("palette", [])),
             "accent_foreground": scheme.get("selection_foreground", "#ffffff"),
         }
 
@@ -84,11 +85,46 @@ class ThemeEngine:
     def generate_app_css(cls, params: Dict[str, Any], gtk_theme_name: str) -> str:
         """Generates the full application CSS string."""
         css_parts = [
+            cls._get_brand_css(params, gtk_theme_name),
             cls._get_root_vars_css(params, gtk_theme_name),
             cls._get_headerbar_css(params, gtk_theme_name),
             cls._get_tabs_css(params, gtk_theme_name),
         ]
         return "".join(css_parts)
+
+    @classmethod
+    def _get_brand_css(cls, params: Dict[str, Any], gtk_theme_name: str) -> str:
+        """Re-point the Aurora brand colors at the active terminal/wallpaper palette.
+
+        Static defaults live in window.css; other themes keep the brand identity.
+        """
+        if gtk_theme_name != "terminal":
+            return ""
+        palette = params.get("palette") or []
+        accent = params.get("accent") or (palette[4] if len(palette) > 4 else None)
+        if not accent:
+            return ""
+        second = palette[6] if len(palette) > 6 else cls._mix_hex(accent, params["fg_color"], 0.7)
+        if second.lower() == accent.lower():
+            second = cls._mix_hex(accent, params["fg_color"], 0.7)
+        alert = palette[3] if len(palette) > 3 else "#e66100"
+
+        def lum(color: str) -> float:
+            chans = [
+                v / 255 / 12.92 if v / 255 <= 0.04045 else ((v / 255 + 0.055) / 1.055) ** 2.4
+                for v in cls._hex_to_rgb(color)
+            ]
+            return 0.2126 * chans[0] + 0.7152 * chans[1] + 0.0722 * chans[2]
+
+        # Text on the brand gradient: pick the color that reads best on both stops
+        avg = (lum(accent) + lum(second)) / 2
+        on_brand = "#000000" if (avg + 0.05) / 0.05 > 1.05 / (avg + 0.05) else "#ffffff"
+        return (
+            f"@define-color zash_brand {accent};"
+            f"@define-color zash_brand_2 {second};"
+            f"@define-color zash_brand_fg {on_brand};"
+            f"@define-color zash_alert {alert};"
+        )
 
     @staticmethod
     def _get_root_vars_css(params: Dict[str, Any], gtk_theme_name: str) -> str:
