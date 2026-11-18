@@ -14,6 +14,7 @@ from gi.repository import Adw, GLib
 
 from ..helpers import accelerator_to_label
 from ..utils.translation_utils import _
+from ..utils.logger import get_logger
 
 if TYPE_CHECKING:
     from ..window import ZashTerminalWindow
@@ -146,9 +147,11 @@ def _individual_preference_entries(window, open_page) -> List[PaletteEntry]:
         # Never presented, so close-request does not run: unregister by hand.
         window.settings_manager.remove_change_listener(dialog._on_external_setting)
         dialog.destroy()
-    except Exception:
+    except Exception as exc:
         # The page entries above still work without the per-row index.
-        return found
+        get_logger("zashterminal.ui.command_palette").debug(
+            f"Preference row index unavailable: {exc}"
+        )
     return found
 
 
