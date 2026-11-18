@@ -2,11 +2,20 @@
 """Capture README gallery screenshots via GTK render (no Spectacle focus races).
 
   PYTHONPATH=src python3 scripts/capture_gallery.py
+
+Tiling compositors resize the window. For consistent 1280x720 shots run it in
+a headless nested compositor:
+
+  WLR_BACKENDS=headless WLR_RENDERER=pixman GDK_BACKEND=wayland \\
+    env -u WAYLAND_DISPLAY cage -- env PYTHONPATH=src python3 scripts/capture_gallery.py
+
+Uses an isolated HOME (/tmp/demo) so no personal hosts or files are captured.
 """
 
 from __future__ import annotations
 
 import json
+import shutil
 import os
 import sys
 import tempfile
@@ -44,6 +53,7 @@ def capture_widget(widget, path: Path) -> None:
     renderer = Gsk.CairoRenderer()
     renderer.realize_for_display(Gdk.Display.get_default())
     texture = renderer.render_texture(node, None)
+    renderer.unrealize()
     path.parent.mkdir(parents=True, exist_ok=True)
     texture.save_to_png(str(path))
     print(f"wrote {path.name} ({path.stat().st_size} bytes, {width}x{height})")
@@ -96,6 +106,15 @@ def seed_sessions(config_dir: Path) -> None:
     (app_dir / "sessions.json").write_text(json.dumps(payload, indent=2), encoding="utf-8")
 
 
+def seed_home(home: Path) -> None:
+    for d in ("projects/api", "projects/infra", "Documents", "Downloads", ".ssh"):
+        (home / d).mkdir(parents=True, exist_ok=True)
+    (home / "README.md").write_text("# demo\n", encoding="utf-8")
+    (home / "deploy.sh").write_text("#!/bin/sh\necho deploy\n", encoding="utf-8")
+    (home / "notes.txt").write_text("todo: rotate keys\n", encoding="utf-8")
+    (home / "projects/api/main.py").write_text("print('ok')\n", encoding="utf-8")
+
+
 def main() -> int:
     os.environ.setdefault("LANG", "en_US.UTF-8")
     os.environ.setdefault("LC_MESSAGES", "en_US.UTF-8")
@@ -110,6 +129,12 @@ def main() -> int:
         seed_sessions(config_home)
         os.environ["XDG_CONFIG_HOME"] = str(config_home)
         os.environ["XDG_CACHE_HOME"] = str(config_home / "cache")
+        # Isolated HOME: no real ~/.ssh/config hosts or personal files in shots.
+        demo_home = Path("/tmp/demo")
+        shutil.rmtree(demo_home, ignore_errors=True)
+        seed_home(demo_home)
+        os.environ["HOME"] = str(demo_home)
+        os.chdir(demo_home)
         sys.path.insert(0, str(ROOT / "src"))
 
         import gi
@@ -119,7 +144,7 @@ def main() -> int:
         gi.require_version("Vte", "3.91")
         gi.require_version("Gdk", "4.0")
         gi.require_version("Gsk", "4.0")
-        from gi.repository import Adw, GLib
+        from gi.repository import Adw, Gio, GLib
 
         from zashterminal.app import ZashTerminalApp
         from zashterminal.sessions.models import SessionItem
@@ -133,6 +158,8 @@ def main() -> int:
 
         Adw.init()
         app = ZashTerminalApp()
+        # Do not forward to a running user instance.
+        app.set_flags(app.get_flags() | Gio.ApplicationFlags.NON_UNIQUE)
 
         def on_activate(application):
             settings = SettingsManager(config_home / "zashterminal" / "settings.json")
@@ -140,6 +167,7 @@ def main() -> int:
             settings.set("ai_assistant_enabled", True)
             settings.set("search_all_tabs", True)
             settings.set("gtk_theme", "dark")
+            settings.set("auto_hide_sidebar", False)
             application.settings_manager = settings
 
             window = ZashTerminalWindow(
@@ -156,7 +184,7 @@ def main() -> int:
 
             terminal = window.tab_manager.get_selected_terminal()
             if terminal is None:
-                window.create_local_tab(working_directory=str(ROOT))
+                window.create_local_tab(working_directory=str(Path.home()))
                 pump(1.2)
                 terminal = window.tab_manager.get_selected_terminal()
             else:
@@ -165,11 +193,9 @@ def main() -> int:
             if terminal:
                 terminal.feed_child(
                     (
-                        "printf '\\n\\033[1;36mZashterminal\\033[0m gallery demo\\n'; "
-                        "printf '\\033[1;32mOK\\033[0m sessions  "
-                        "\\033[1;32mOK\\033[0m file manager  "
-                        "\\033[1;32mOK\\033[0m AI\\n\\n'; "
-                        "ls --color=always -lah | head -n 14\n"
+                        "clear; printf '\\033[1;36mZashterminal\\033[0m "
+                        "- sessions, files, search and AI\\n\\n'; "
+                        "ls --color=always -lah\n"
                     ).encode()
                 )
                 pump(1.0)
@@ -181,13 +207,35 @@ def main() -> int:
 
             capture_widget(window, OUT / "01-main-terminal.png")
 
+            try:
+                if terminal:
+                    terminal.feed_child(b"clear\n")
+                    pump(0.5)
+                from zashterminal.ui.dialogs.command_palette_dialog import (
+                    CommandPalette,
+                )
+
+                palette = CommandPalette(window)
+                palette.present(window)
+                pump(1.8)
+                capture_widget(window, OUT / "14-command-palette.png")
+                palette.close()
+                pump(0.2)
+            except Exception as exc:
+                print(f"palette skipped: {exc}")
+
+
+            if terminal:
+                terminal.feed_child(b"ls --color=always -lah\n")
+                pump(0.6)
+
             if terminal:
                 window.tab_manager.split_vertical(terminal)
                 pump(0.7)
                 right = window.tab_manager.get_selected_terminal()
                 if right:
                     right.feed_child(
-                        b"printf '\\033[1;35m[monitor]\\033[0m CPU \\033[32m12%%\\033[0m "
+                        b"clear; printf '\\033[1;35m[monitor]\\033[0m CPU \\033[32m12%%\\033[0m "
                         b"MEM \\033[33m41%%\\033[0m\\n'\n"
                     )
                 window.tab_manager.split_horizontal(right or terminal)
@@ -195,7 +243,7 @@ def main() -> int:
                 bottom = window.tab_manager.get_selected_terminal()
                 if bottom:
                     bottom.feed_child(
-                        b"printf '\\033[1;34mjournal\\033[0m nginx\\n"
+                        b"clear; printf '\\033[1;34mjournal\\033[0m nginx\\n"
                         b"15:20:11 \\033[32m200\\033[0m GET /\\n'\n"
                     )
                 pump(0.6)
@@ -208,7 +256,7 @@ def main() -> int:
             window.search_button.set_active(True)
             pump(0.35)
             window.search_all_tabs_switch.set_active(True)
-            window.terminal_search_entry.set_text("gallery")
+            window.terminal_search_entry.set_text("deploy")
             pump(0.5)
             capture_widget(window, OUT / "04-search-all-tabs.png")
             window.search_button.set_active(False)
@@ -295,18 +343,8 @@ def main() -> int:
 
                 try:
                     window.split_view.set_show_sidebar(True)
-                    menu_btn = window.ui_builder.menu_button
-                    menu_btn.popup()
-                    pump(0.6)
-                    capture_widget(window, OUT / "13-main-menu.png")
-                    menu_btn.popdown()
-                except Exception as exc:
-                    print(f"menu skipped: {exc}")
-
-                try:
-                    window.split_view.set_show_sidebar(True)
                     pump(0.3)
-                    capture_widget(window, OUT / "14-sessions-sidebar.png")
+                    capture_widget(window, OUT / "13-sessions-sidebar.png")
                 except Exception as exc:
                     print(f"sidebar skipped: {exc}")
             except Exception:

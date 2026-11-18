@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  <b>A modern GTK4 terminal for developers, infrastructure, and system administration</b>
+  <b>The GTK4 terminal for people who live in SSH: sessions, files, search and AI in one window.</b>
 </p>
 
 <p align="center">
@@ -15,15 +15,38 @@
   <a href="https://ko-fi.com/leoberbert"><img src="https://img.shields.io/badge/Support-Ko--fi-ff5f5f.svg" alt="Ko-fi"></a>
 </p>
 
-Zashterminal combines a VTE terminal with session management, an integrated file manager, optional AI assistance, and workflow tools — built on GTK4 and libadwaita for a native Linux desktop experience.
+<p align="center">
+  <img src="docs/gallery/01-main-terminal.png" alt="Zashterminal main window" width="920">
+</p>
 
-**Supported installs:** Arch/Manjaro (AUR), Debian/Ubuntu, Fedora, openSUSE, Gentoo, NixOS. WSL (Ubuntu) is experimental.
+Zashterminal pairs a VTE terminal with session management, an integrated file manager, optional AI assistance and workflow tools. It is built on GTK4 and libadwaita for a native Linux desktop.
 
----
+## Why Zashterminal?
+
+| | |
+|---|---|
+| 🔌 **Sessions that stay organized** | Local, SSH and SFTP sessions in folders, with favorites and a live "Connected" list. |
+| ⌨️ **Command palette** | `Ctrl+Shift+P` finds sessions, layouts, snippets, actions and preferences. |
+| 🪟 **Real multitasking** | Split panes, saved layouts, search across all tabs, broadcast to many panes. |
+| 📁 **Files next to your shell** | Local and remote browser with drag-and-drop and edit-and-upload. |
+| 🎨 **Readable output** | Highlight rules for 50+ commands and 30 color schemes. |
+| 🤖 **AI, only when you ask** | Multi-provider assistant; only text you send leaves your machine. |
+| 📥 **Easy migration** | Import SecureCRT, PuTTY, mRemoteNG and OpenSSH configs. |
+
+**Installs:** Arch/Manjaro (AUR), Debian/Ubuntu, Fedora, openSUSE, Gentoo, NixOS. WSL (Ubuntu) is experimental.
+
+## Quick start
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/leoberbert/zashterminal/refs/heads/main/install.sh | bash
+zashterminal
+```
+
+Arch users: `yay -S zashterminal`. Other platforms: see [Installation](#installation).
 
 ## Table of contents
 
-- [Gallery](#gallery)
+- [Tour](#tour)
 - [Features](#features)
 - [Imports & PAM](#imports--pam)
 - [Requirements](#requirements)
@@ -35,61 +58,138 @@ Zashterminal combines a VTE terminal with session management, an integrated file
 
 ---
 
-## Gallery
+## Tour
 
-Screenshots live in [`docs/gallery/`](docs/gallery/) (regenerate with `PYTHONPATH=src python3 scripts/capture_gallery.py`).
+Screenshots live in [`docs/gallery/`](docs/gallery/). Regenerate them with `PYTHONPATH=src python3 scripts/capture_gallery.py`.
 
-### Home base
+### Sessions panel
 
-Main window with a live shell — sessions sidebar, tabs, and header actions for search, file manager, and AI.
+Search at the top, folders, favorites and a "Connected" section. It auto-hides after you open a session (configurable in Preferences).
 
 <p align="center">
-  <img src="docs/gallery/01-main-terminal.png" alt="Zashterminal main window" width="920">
+  <img src="docs/gallery/13-sessions-sidebar.png" alt="Sessions panel" width="880">
 </p>
 
-### Multi-pane ops layout
+### Command palette
 
-Split horizontally and vertically to watch logs, metrics, and an interactive shell in one tab.
+`Ctrl+Shift+P`: one search box for sessions, SFTP, layouts, commands, actions and preferences. Type `@` for sessions and layouts only, `>` for actions only.
 
 <p align="center">
-  <img src="docs/gallery/02-multipane.png" alt="Multi-pane terminal layout" width="920">
+  <img src="docs/gallery/14-command-palette.png" alt="Command palette" width="880">
+</p>
+
+### Multi-pane layouts
+
+Split horizontally and vertically to watch logs, metrics and a shell in one tab. Each pane has a "⋯" menu to move, split or close it.
+
+<p align="center">
+  <img src="docs/gallery/02-multipane.png" alt="Multi-pane terminal layout" width="880">
 </p>
 
 ### Integrated file manager
 
-Browse local (and remote/SFTP) directories under the terminal — size, permissions, owner, recursive filter.
+Browse local and remote (SFTP) directories under the terminal: size, permissions, owner, recursive filter.
 
 <p align="center">
-  <img src="docs/gallery/03-file-manager.png" alt="Terminal with integrated file manager" width="920">
+  <img src="docs/gallery/03-file-manager.png" alt="Terminal with integrated file manager" width="880">
 </p>
 
 ### Search across all tabs
 
-Find bar with **Case sensitive**, **Regex**, and **All tabs** — Next/Previous jumps between matching panes.
+Find bar with **Case sensitive**, **Regex** and **All tabs**. Next/Previous jumps between matching panes.
 
 <p align="center">
-  <img src="docs/gallery/04-search-all-tabs.png" alt="Global search across all tabs" width="920">
+  <img src="docs/gallery/04-search-all-tabs.png" alt="Global search across all tabs" width="880">
 </p>
 
 ### Broadcast a command
 
-Type once and send the same command to selected tabs/panes (with optional remembered selection).
+Type once and send to selected tabs or panes. Target panes get an orange outline and the bar lists who will receive the command.
 
 <p align="center">
-  <img src="docs/gallery/05-broadcast.png" alt="Broadcast command bar" width="920">
-</p>
-
-### Color schemes & wallpaper palettes
-
-Thirty built-in schemes plus Pywal wallpaper detection — preview before you apply.
-
-<p align="center">
-  <img src="docs/gallery/06-color-schemes.png" alt="Color scheme picker" width="920">
+  <img src="docs/gallery/05-broadcast.png" alt="Broadcast command bar" width="880">
 </p>
 
 ### Preferences
 
-Appearance, terminal behavior, profiles/backups, and advanced VTE options in a searchable Preferences window.
+Appearance, terminal behavior, profiles/backups and advanced VTE options, with search. See [Background blur](#background-blur).
+
+<p align="center">
+  <img src="docs/gallery/07-preferences.png" alt="Preferences appearance page" width="760">
+</p>
+
+### Color schemes
+
+Thirty built-in schemes plus Pywal wallpaper detection, with preview before applying.
+
+<p align="center">
+  <img src="docs/gallery/06-color-schemes.png" alt="Color scheme picker" width="620">
+</p>
+
+### Output highlighting
+
+Terminal colors, output rules and command-specific highlighting.
+
+<p align="center">
+  <img src="docs/gallery/09-highlight.png" alt="Highlight and terminal colors dialog" width="760">
+</p>
+
+### Session editor
+
+SSH/local sessions with folders, auth, post-login commands, forwards, favorite flag and per-session highlight overrides.
+
+<p align="center">
+  <img src="docs/gallery/10-session-edit.png" alt="Add or edit SSH session" width="620">
+</p>
+
+### AI assistant
+
+Optional multi-provider AI (Groq, Gemini, OpenRouter, Ollama / LM Studio). Only text you explicitly send is shared.
+
+<p align="center">
+  <img src="docs/gallery/08-ai-config.png" alt="AI assistant configuration" width="620">
+</p>
+
+### Command manager
+
+Reusable command snippets with icons and forms: insert, run, or open as a dialog.
+
+<p align="center">
+  <img src="docs/gallery/12-command-manager.png" alt="Command manager" width="880">
+</p>
+
+### Keyboard shortcuts
+
+Browse, search and customize accelerators; conflicts are flagged.
+
+<p align="center">
+  <img src="docs/gallery/11-shortcuts.png" alt="Keyboard shortcuts dialog" width="620">
+</p>
+
+---
+
+## Features
+
+| Area | What you get |
+|------|----------------|
+| **Sessions** | Local, SSH and SFTP sessions with folders, favorites, restore and layouts |
+| **Command palette** | `Ctrl+Shift+P` over sessions, layouts, commands, actions and preferences |
+| **Imports** | SecureCRT directory trees, PuTTY `.reg`/`.ini`, mRemoteNG `confCons.xml`, OpenSSH `~/.ssh/config` |
+| **Layouts** | Horizontal/vertical splits; save and restore multi-pane setups |
+| **File manager** | Local and remote browsing, drag-and-drop transfer, remote edit + upload on save |
+| **Search** | In-terminal find with case/regex; **All tabs** scope jumps across panes |
+| **Highlighting** | Output rules for 50+ commands; optional Pygments for `cat` / input |
+| **AI (optional)** | Multi-provider chat, quick prompts, click-to-run snippets (selection only) |
+| **Broadcast** | Type once; run across selected tabs/panes |
+| **Appearance** | 30 built-in schemes (default: GitHub Dark), transparency, blur, shortcuts |
+
+### Color schemes
+
+Default: **GitHub Dark**. Also included: Ayu Mirage, Catppuccin (Mocha / Latte), Dracula, Everforest, Gruvbox, Horizon, Kanagawa, Material Ocean, Monokai, Moonfly, Night Owl, Nord, One Dark Pro, Oxocarbon, Palenight, Rosé Pine, Solarized, Tokyo Night, VS Code Dark+, System Default, and light variants.
+
+Switch or customize from **Main menu → Colors & highlighting**.
+
+### Background blur
 
 Background blur is rendered live by the compositor: it follows window movement, resizing and changes behind the terminal without screenshots, hidden windows or capture permissions. Enable **Background Blur** and raise **Terminal Transparency** to see the effect. Transparency and blur strength are separate controls.
 
@@ -115,72 +215,6 @@ bash native/kwin-blur/build.sh --install-system
 Installation copies only the plugin; it does not restart KWin or change its global settings. Restart the terminal application to discover and load the effect. KWin's native API is private: rebuild and revalidate the effect after KWin/Qt upgrades; the helper rejects mismatched versions.
 
 Without the extension, standard Wayland background effects, older KDE Wayland blur, and the X11 KDE blur hint remain available when advertised by the compositor. Their strength belongs to the desktop, so the independent-strength slider is disabled with installation guidance. On unsupported compositors the blur switch is disabled too. Existing nonzero screenshot-blur amounts migrate to enabled; transparency is preserved.
-
-<p align="center">
-  <img src="docs/gallery/07-preferences.png" alt="Preferences appearance page" width="920">
-</p>
-
-### AI assistant
-
-Optional multi-provider AI (Groq, Gemini, OpenRouter, Ollama / LM Studio). Only text you explicitly send is shared.
-
-<p align="center">
-  <img src="docs/gallery/08-ai-config.png" alt="AI assistant configuration" width="920">
-</p>
-
-### Output highlighting
-
-Terminal colors, output rules, and command-specific highlighting for ops-friendly readability.
-
-<p align="center">
-  <img src="docs/gallery/09-highlight.png" alt="Highlight and terminal colors dialog" width="920">
-</p>
-
-### Session editor
-
-SSH/local sessions with folders, auth, post-login commands, forwards, and optional per-session highlight overrides.
-
-<p align="center">
-  <img src="docs/gallery/10-session-edit.png" alt="Add or edit SSH session" width="920">
-</p>
-
-### Keyboard shortcuts
-
-Browse and customize accelerators from the shortcuts dialog.
-
-<p align="center">
-  <img src="docs/gallery/11-shortcuts.png" alt="Keyboard shortcuts dialog" width="920">
-</p>
-
-### Command manager
-
-Reusable command snippets with icons and forms — insert, run, or open as a dialog.
-
-<p align="center">
-  <img src="docs/gallery/12-command-manager.png" alt="Command manager" width="920">
-</p>
-
----
-
-## Features
-
-| Area | What you get |
-|------|----------------|
-| **Sessions** | Local, SSH, and SFTP sessions with folders, restore, and layouts |
-| **Imports** | SecureCRT directory trees, PuTTY `.reg`/`.ini`, mRemoteNG `confCons.xml`, OpenSSH `~/.ssh/config` |
-| **Layouts** | Horizontal/vertical splits; save and restore multi-pane setups |
-| **File manager** | Local and remote browsing, drag-and-drop transfer, remote edit + upload on save |
-| **Search** | In-terminal find with case/regex; **All tabs** scope jumps across panes |
-| **Highlighting** | Output rules for 50+ commands; optional Pygments for `cat` / input |
-| **AI (optional)** | Multi-provider chat, quick prompts, click-to-run snippets — selection only |
-| **Broadcast** | Type once; run across selected tabs/panes |
-| **Appearance** | 30 built-in schemes (default: GitHub Dark), transparency, shortcuts |
-
-### Color schemes
-
-Default: **GitHub Dark**. Also included: Ayu Mirage, Catppuccin (Mocha / Latte), Dracula, Everforest, Gruvbox, Horizon, Kanagawa, Material Ocean, Monokai, Moonfly, Night Owl, Nord, One Dark Pro, Oxocarbon, Palenight, Rosé Pine, Solarized, Tokyo Night, VS Code Dark+, System Default, and light variants.
-
-Switch or customize from **Preferences → Terminal colors**.
 
 ---
 
