@@ -8971,3 +8971,31 @@ msgstr "请选择有效的目录!"
 #: src/zashterminal/ui/dialogs/tftp_server_dialog.py
 msgid "The TFTP server uses local directories for uploading and downloading files."
 msgstr "TFTP 服务器使用本地目录来上传和下载文件。"
+
+#: src/zashterminal/terminal/tabs.py
+msgid "Log Session"
+msgstr "记录会话"
+
+#: src/zashterminal/terminal/tabs.py
+msgid "Stop Session Log"
+msgstr "停止会话记录"
+
+#: src/zashterminal/terminal/tabs.py
+msgid "Open Session Log Folder"
+msgstr "打开会话记录文件夹"
+
+#: src/zashterminal/terminal/tabs.py
+msgid "Save Session Log As..."
+msgstr "会话记录另存为..."
+
+#: src/zashterminal/terminal/manager.py
+msgid "Session log saved to {path}"
+msgstr "会话记录已保存到 {path}"
+
+#: src/zashterminal/terminal/manager.py
+msgid "Could not open the log folder."
+msgstr "无法打开记录文件夹。"
+
+#: src/zashterminal/terminal/tabs.py
+msgid "This tab has an active SSH connection. Closing will disconnect it. Are you sure?"
+msgstr "此标签页有活动的 SSH 连接。关闭将断开连接。确定吗？"

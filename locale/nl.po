@@ -9027,3 +9027,31 @@ msgstr "Selecteer een geldige map!"
 #: src/zashterminal/ui/dialogs/tftp_server_dialog.py
 msgid "The TFTP server uses local directories for uploading and downloading files."
 msgstr "De TFTP-server gebruikt lokale mappen voor het uploaden en downloaden van bestanden."
+
+#: src/zashterminal/terminal/tabs.py
+msgid "Log Session"
+msgstr "Sessie loggen"
+
+#: src/zashterminal/terminal/tabs.py
+msgid "Stop Session Log"
+msgstr "Sessielog stoppen"
+
+#: src/zashterminal/terminal/tabs.py
+msgid "Open Session Log Folder"
+msgstr "Sessielogmap openen"
+
+#: src/zashterminal/terminal/tabs.py
+msgid "Save Session Log As..."
+msgstr "Sessielog opslaan als..."
+
+#: src/zashterminal/terminal/manager.py
+msgid "Session log saved to {path}"
+msgstr "Sessielog opgeslagen in {path}"
+
+#: src/zashterminal/terminal/manager.py
+msgid "Could not open the log folder."
+msgstr "Kon de logmap niet openen."
+
+#: src/zashterminal/terminal/tabs.py
+msgid "This tab has an active SSH connection. Closing will disconnect it. Are you sure?"
+msgstr "Dit tabblad heeft een actieve SSH-verbinding. Sluiten verbreekt de verbinding. Weet u het zeker?"

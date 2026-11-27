@@ -3,6 +3,7 @@
 import re
 import threading
 import weakref
+from pathlib import Path
 from typing import TYPE_CHECKING, Callable, List, Optional, Tuple
 
 import gi
@@ -20,6 +21,7 @@ from ..utils.icons import icon_button, icon_image
 from ..utils.logger import get_logger
 from ..utils.translation_utils import _
 from .manager import TerminalManager
+from .registry import LIVE_TERMINAL_STATUSES
 
 if TYPE_CHECKING:
     from ..filemanager.manager import FileManager
@@ -879,6 +881,18 @@ class TabManager:
         menu.append(_("Move Tab"), "win.move-tab")
         menu.append(_("Duplicate Tab"), "win.duplicate-tab")
         menu.append(_("Detach Tab"), "win.detach-tab")
+        sftp_session = self._get_sftp_capable_session(tab_widget)
+        if sftp_session is not None:
+            menu.append(_("Connect with SFTP"), "win.connect-sftp-tab")
+        log_active = any(
+            self.terminal_manager.is_transcript_active(t)
+            for t in self._get_page_terminals(tab_widget)
+        )
+        if log_active:
+            menu.append(_("Stop Session Log"), "win.stop-session-log")
+            menu.append(_("Open Session Log Folder"), "win.open-session-log")
+        else:
+            menu.append(_("Log Session"), "win.start-session-log")
         popover = create_themed_popover_menu(menu, tab_widget)
 
         page = self.pages.get(tab_widget)
@@ -905,6 +919,26 @@ class TabManager:
                 "activate", lambda a, _, pg=page: self._request_detach_tab(pg)
             )
             action_group.add_action(action)
+
+            if sftp_session is not None:
+                sftp_action = Gio.SimpleAction.new("connect-sftp-tab", None)
+                sftp_action.connect(
+                    "activate",
+                    lambda _a, _p, s=sftp_session: self.create_sftp_tab(s),
+                )
+                action_group.add_action(sftp_action)
+
+            for name, handler in (
+                ("start-session-log", self._start_session_log),
+                ("stop-session-log", self._stop_session_log),
+                ("open-session-log", self._open_session_log_folder),
+            ):
+                log_action = Gio.SimpleAction.new(name, None)
+                log_action.connect(
+                    "activate",
+                    lambda _a, _p, h=handler, tab=tab_widget: h(tab),
+                )
+                action_group.add_action(log_action)
             popover.insert_action_group("win", action_group)
 
         rect = Gdk.Rectangle()
@@ -912,6 +946,93 @@ class TabManager:
         rect.y = int(y)
         popover.set_pointing_to(rect)
         popover.popup()
+
+    def _get_sftp_capable_session(self, tab_widget: Gtk.Box) -> Optional[SessionItem]:
+        """Returns the tab's SSH session if an SFTP tab can be opened from it."""
+        session = getattr(tab_widget, "session_item", None)
+        if not isinstance(session, SessionItem) or not session.is_ssh():
+            return None
+
+        page = self.pages.get(tab_widget)
+        if not page:
+            return None
+        terminals = self.get_all_terminals_in_page(page)
+        if not terminals:
+            return None
+        terminal_id = getattr(terminals[0], "terminal_id", None)
+        info = self.terminal_manager.registry.get_terminal_info(terminal_id)
+        if not info or info.get("type") != "ssh":
+            return None
+        return session
+
+    def _get_page_terminals(self, tab_widget: Gtk.Box) -> List[Vte.Terminal]:
+        page = self.pages.get(tab_widget)
+        return self.get_all_terminals_in_page(page) if page else []
+
+    def _start_session_log(self, tab_widget: Gtk.Box) -> None:
+        """Ask where to save, then record every terminal in the tab to that file."""
+        terminals = self._get_page_terminals(tab_widget)
+        if not terminals:
+            return
+
+        dialog = Gtk.FileDialog(title=_("Save Session Log As..."), modal=True)
+        dialog.set_initial_name(
+            self.terminal_manager.suggest_transcript_filename(terminals[0])
+        )
+        parent = tab_widget.get_root()
+        dialog.save(
+            parent if isinstance(parent, Gtk.Window) else None,
+            None,
+            self._on_session_log_file_selected,
+            terminals,
+        )
+
+    def _on_session_log_file_selected(self, dialog, result, terminals) -> None:
+        try:
+            self._start_session_log_from_dialog(dialog, result, terminals)
+        finally:
+            # The dialog hands focus back to the window; return it to the terminal.
+            GLib.idle_add(self._focus_terminal, terminals[0])
+
+    def _focus_terminal(self, terminal: Vte.Terminal) -> bool:
+        if terminal.get_root() is not None:
+            terminal.grab_focus()
+        return GLib.SOURCE_REMOVE
+
+    def _start_session_log_from_dialog(self, dialog, result, terminals) -> None:
+        try:
+            gio_file = dialog.save_finish(result)
+        except GLib.Error as e:
+            dismissed = e.matches(
+                Gtk.dialog_error_quark(), Gtk.DialogError.DISMISSED
+            ) or e.matches(Gio.io_error_quark(), Gio.IOErrorEnum.CANCELLED)
+            if not dismissed:
+                self.logger.warning(f"Session log dialog failed: {e.message}")
+            return
+        chosen = gio_file.get_path() if gio_file else None
+        if not chosen:
+            return
+
+        base = Path(chosen)
+        for index, terminal in enumerate(terminals):
+            # Split panes each need their own file: name, name_2, name_3...
+            path = (
+                base
+                if index == 0
+                else base.with_name(f"{base.stem}_{index + 1}{base.suffix}")
+            )
+            self.terminal_manager.start_manual_transcript(terminal, path)
+
+    def _stop_session_log(self, tab_widget: Gtk.Box) -> None:
+        for terminal in self._get_page_terminals(tab_widget):
+            self.terminal_manager.stop_transcript(terminal)
+
+    def _open_session_log_folder(self, tab_widget: Gtk.Box) -> None:
+        for terminal in self._get_page_terminals(tab_widget):
+            path = self.terminal_manager.get_transcript_path(terminal)
+            if path is not None:
+                self.terminal_manager.open_transcript_folder(path.parent)
+                return
 
     def _request_detach_tab(self, page: Adw.ViewStackPage):
         if self.on_detach_tab_requested:
@@ -1209,7 +1330,9 @@ class TabManager:
             )
 
             paned.set_position(target_pos)
-            fm.set_visibility(True, source="filemanager")
+            # source="terminal" keeps the file manager from stealing focus.
+            fm.set_visibility(True, source="terminal")
+            self._schedule_terminal_focus(active_terminal)
 
             # Connect handler to save file manager height on resize (if not already connected)
             if not hasattr(paned, "_fm_position_handler_id"):
@@ -1279,6 +1402,59 @@ class TabManager:
         if self._tab_being_moved is not None:
             return
 
+        page = self.pages.get(tab_widget)
+        if not page:
+            return
+
+        if self._page_has_active_ssh(page):
+            self._confirm_close_ssh_tab(tab_widget)
+            return
+        self._close_tab_now(tab_widget)
+
+    def _page_has_active_ssh(self, page: Adw.ViewStackPage) -> bool:
+        """True if any terminal in the tab has a live SSH connection."""
+        for terminal in self.get_all_terminals_in_page(page):
+            terminal_id = getattr(terminal, "terminal_id", None)
+            info = (
+                self.terminal_manager.registry.get_terminal_info(terminal_id)
+                if terminal_id
+                else None
+            )
+            if (
+                info
+                and info.get("type") == "ssh"
+                and info.get("status") in LIVE_TERMINAL_STATUSES
+            ):
+                return True
+        return False
+
+    def _confirm_close_ssh_tab(self, tab_widget: Gtk.Box) -> None:
+        dialog = Adw.MessageDialog(
+            transient_for=self.terminal_manager.parent_window,
+            heading=_("Close Tab"),
+            body=_(
+                "This tab has an active SSH connection. Closing will disconnect it. Are you sure?"
+            ),
+            close_response="cancel",
+        )
+        dialog.add_response("cancel", _("Cancel"))
+        dialog.add_response("close", _("Close Tab"))
+        dialog.set_response_appearance("close", Adw.ResponseAppearance.DESTRUCTIVE)
+        dialog.set_default_response("cancel")
+
+        def on_response(dlg, response_id):
+            dlg.close()
+            if response_id == "close" and tab_widget in self.pages:
+                self._close_tab_now(tab_widget)
+            else:
+                terminal = self.get_selected_terminal()
+                if terminal:
+                    self._schedule_terminal_focus(terminal)
+
+        dialog.connect("response", on_response)
+        dialog.present()
+
+    def _close_tab_now(self, tab_widget: Gtk.Box):
         self.logger.debug(
             f"Close button clicked for tab: {tab_widget.label_widget.get_text()}"
         )
@@ -2686,6 +2862,6 @@ class TabManager:
             self.terminal_manager.remove_terminal(term)
 
     def close_all_tabs(self):
-        """Closes all currently open tabs by simulating a click on each close button."""
+        """Closes all currently open tabs without prompting (programmatic use)."""
         for tab_widget in self.tabs[:]:
-            self._on_tab_close_button_clicked(None, tab_widget)
+            self._close_tab_now(tab_widget)

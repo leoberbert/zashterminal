@@ -9783,3 +9783,31 @@ msgstr "Please select a valid directory!"
 #: src/zashterminal/ui/dialogs/tftp_server_dialog.py
 msgid "The TFTP server uses local directories for uploading and downloading files."
 msgstr "The TFTP server uses local directories for uploading and downloading files."
+
+#: src/zashterminal/terminal/tabs.py
+msgid "Log Session"
+msgstr "Log Session"
+
+#: src/zashterminal/terminal/tabs.py
+msgid "Stop Session Log"
+msgstr "Stop Session Log"
+
+#: src/zashterminal/terminal/tabs.py
+msgid "Open Session Log Folder"
+msgstr "Open Session Log Folder"
+
+#: src/zashterminal/terminal/tabs.py
+msgid "Save Session Log As..."
+msgstr "Save Session Log As..."
+
+#: src/zashterminal/terminal/manager.py
+msgid "Session log saved to {path}"
+msgstr "Session log saved to {path}"
+
+#: src/zashterminal/terminal/manager.py
+msgid "Could not open the log folder."
+msgstr "Could not open the log folder."
+
+#: src/zashterminal/terminal/tabs.py
+msgid "This tab has an active SSH connection. Closing will disconnect it. Are you sure?"
+msgstr "This tab has an active SSH connection. Closing will disconnect it. Are you sure?"

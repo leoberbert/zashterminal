@@ -15,7 +15,7 @@ import gi
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
 gi.require_version("Vte", "3.91")
-from gi.repository import Adw, Gdk, GLib, GObject, Gtk, Vte
+from gi.repository import Adw, Gdk, Gio, GLib, GObject, Gtk, Vte
 
 from ..helpers import is_valid_url
 from ..sessions.models import SessionItem
@@ -30,6 +30,7 @@ from ..utils.platform import get_environment_manager, get_platform_info
 from ..utils.security import validate_session_data
 from ..utils.transcript import (
     TranscriptWriter,
+    build_transcript_filename,
     build_transcript_path,
     resolve_transcript_enabled,
 )
@@ -940,6 +941,23 @@ class TerminalManager(
         ):
             return
 
+        self._start_transcript(terminal, identifier, terminal_id)
+
+    def _start_transcript(
+        self,
+        terminal: Vte.Terminal,
+        identifier: Union[str, SessionItem],
+        terminal_id: int,
+        *,
+        manual: bool = False,
+        path: Optional[pathlib.Path] = None,
+    ) -> Optional[pathlib.Path]:
+        """Start recording *terminal* to a new transcript file; returns its path."""
+        existing = getattr(terminal, "_zashterminal_transcript", None)
+        if isinstance(existing, TranscriptWriter):
+            return existing.path
+
+        session = identifier if isinstance(identifier, SessionItem) else None
         session_name = (
             session.name
             if session
@@ -948,24 +966,84 @@ class TerminalManager(
         host = session.host if session else ""
         strip_ansi = bool(self.settings_manager.get("transcript_strip_ansi", True))
         try:
-            path = build_transcript_path(
-                self._default_transcript_directory(),
-                session_name=session_name,
-                host=host,
-            )
-            writer = TranscriptWriter(path, strip_escapes=strip_ansi)
+            if path is None:
+                path = build_transcript_path(
+                    self._default_transcript_directory(),
+                    session_name=session_name,
+                    host=host,
+                )
+            writer = TranscriptWriter(path, strip_escapes=strip_ansi, manual=manual)
+            if manual:
+                # Record from now on, not the scrollback that already exists.
+                _col, row = terminal.get_cursor_position()
+                writer.note_row(max(0, row))
             terminal._zashterminal_transcript = writer
             handler_id = terminal.connect(
                 "contents-changed",
                 self._on_terminal_contents_changed_for_transcript,
             )
+            terminal._zashterminal_transcript_handler = handler_id
             terminal.zashterminal_handler_ids.append(handler_id)
             self.logger.info(
                 f"Transcript logging enabled for '{session_name}' → {path}"
             )
             self._notify_transcript_started(path)
+            return path
         except Exception as exc:
             self.logger.warning(f"Failed to start transcript logging: {exc}")
+            return None
+
+    def is_transcript_active(self, terminal: Vte.Terminal) -> bool:
+        return getattr(terminal, "_zashterminal_transcript", None) is not None
+
+    def get_transcript_path(self, terminal: Vte.Terminal) -> Optional[pathlib.Path]:
+        writer = getattr(terminal, "_zashterminal_transcript", None)
+        return writer.path if writer is not None else None
+
+    def _terminal_identifier(self, terminal: Vte.Terminal) -> Union[str, SessionItem]:
+        terminal_id = getattr(terminal, "terminal_id", None)
+        info = self.registry.get_terminal_info(terminal_id) or {}
+        return info.get("identifier", f"terminal-{terminal_id}")
+
+    def suggest_transcript_filename(self, terminal: Vte.Terminal) -> str:
+        """Default file name offered in the Save dialog (no directory is created)."""
+        identifier = self._terminal_identifier(terminal)
+        session = identifier if isinstance(identifier, SessionItem) else None
+        name = session.name if session else str(identifier)
+        return build_transcript_filename(
+            session_name=name, host=session.host if session else ""
+        )
+
+    def start_manual_transcript(
+        self, terminal: Vte.Terminal, path: pathlib.Path
+    ) -> Optional[pathlib.Path]:
+        """Start a user-requested transcript writing to the user-chosen *path*."""
+        terminal_id = getattr(terminal, "terminal_id", None)
+        if terminal_id is None:
+            return None
+        return self._start_transcript(
+            terminal,
+            self._terminal_identifier(terminal),
+            terminal_id,
+            manual=True,
+            path=path,
+        )
+
+    def stop_transcript(self, terminal: Vte.Terminal) -> None:
+        path = self.get_transcript_path(terminal)
+        self._detach_transcript_logger(terminal)
+        if path is not None:
+            self._toast(_("Session log saved to {path}").format(path=str(path)))
+
+    def open_transcript_folder(self, directory: pathlib.Path) -> None:
+        """Open *directory* in the user's file manager."""
+        try:
+            directory.mkdir(parents=True, exist_ok=True)
+            uri = Gio.File.new_for_path(str(directory)).get_uri()
+            Gio.AppInfo.launch_default_for_uri(uri, None)
+        except Exception as exc:
+            self.logger.warning(f"Could not open log folder '{directory}': {exc}")
+            self._toast(_("Could not open the log folder."))
 
     def _notify_transcript_started(self, path: pathlib.Path) -> None:
         """Surface a short toast so enabling transcripts is visible to the user."""
@@ -1014,9 +1092,8 @@ class TerminalManager(
             should_record = resolve_transcript_enabled(
                 global_enabled=bool(enabled), session_override=override
             )
-            has_writer = (
-                getattr(terminal, "_zashterminal_transcript", None) is not None
-            )
+            writer = getattr(terminal, "_zashterminal_transcript", None)
+            has_writer = writer is not None and not getattr(writer, "manual", False)
             if has_writer and not should_record:
                 self._detach_transcript_logger(terminal)
                 stopped += 1
@@ -1026,6 +1103,14 @@ class TerminalManager(
         writer = getattr(terminal, "_zashterminal_transcript", None)
         if writer is None:
             return
+        handler_id = getattr(terminal, "_zashterminal_transcript_handler", None)
+        if handler_id is not None:
+            try:
+                if GObject.signal_handler_is_connected(terminal, handler_id):
+                    terminal.disconnect(handler_id)
+            except Exception as exc:
+                self.logger.debug(f"Transcript handler disconnect failed: {exc}")
+            terminal._zashterminal_transcript_handler = None
         try:
             # Flush any remaining text on the current line before close.
             self._flush_transcript_line(terminal, writer, force=True)

@@ -9035,3 +9035,31 @@ msgstr "Seleziona una directory valida!"
 #: src/zashterminal/ui/dialogs/tftp_server_dialog.py
 msgid "The TFTP server uses local directories for uploading and downloading files."
 msgstr "Il server TFTP utilizza directory locali per caricare e scaricare i file."
+
+#: src/zashterminal/terminal/tabs.py
+msgid "Log Session"
+msgstr "Registra sessione"
+
+#: src/zashterminal/terminal/tabs.py
+msgid "Stop Session Log"
+msgstr "Interrompi registro sessione"
+
+#: src/zashterminal/terminal/tabs.py
+msgid "Open Session Log Folder"
+msgstr "Apri cartella del registro sessione"
+
+#: src/zashterminal/terminal/tabs.py
+msgid "Save Session Log As..."
+msgstr "Salva registro sessione come..."
+
+#: src/zashterminal/terminal/manager.py
+msgid "Session log saved to {path}"
+msgstr "Registro sessione salvato in {path}"
+
+#: src/zashterminal/terminal/manager.py
+msgid "Could not open the log folder."
+msgstr "Impossibile aprire la cartella dei registri."
+
+#: src/zashterminal/terminal/tabs.py
+msgid "This tab has an active SSH connection. Closing will disconnect it. Are you sure?"
+msgstr "Questa scheda ha una connessione SSH attiva. La chiusura la disconnetterà. Sei sicuro?"

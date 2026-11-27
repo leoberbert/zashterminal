@@ -9023,3 +9023,31 @@ msgstr "Vælg venligst en gyldig mappe!"
 #: src/zashterminal/ui/dialogs/tftp_server_dialog.py
 msgid "The TFTP server uses local directories for uploading and downloading files."
 msgstr "TFTP-serveren bruger lokale mapper til upload og download af filer."
+
+#: src/zashterminal/terminal/tabs.py
+msgid "Log Session"
+msgstr "Log session"
+
+#: src/zashterminal/terminal/tabs.py
+msgid "Stop Session Log"
+msgstr "Stop sessionslog"
+
+#: src/zashterminal/terminal/tabs.py
+msgid "Open Session Log Folder"
+msgstr "Åbn mappen med sessionslog"
+
+#: src/zashterminal/terminal/tabs.py
+msgid "Save Session Log As..."
+msgstr "Gem sessionslog som..."
+
+#: src/zashterminal/terminal/manager.py
+msgid "Session log saved to {path}"
+msgstr "Sessionslog gemt i {path}"
+
+#: src/zashterminal/terminal/manager.py
+msgid "Could not open the log folder."
+msgstr "Kunne ikke åbne logmappen."
+
+#: src/zashterminal/terminal/tabs.py
+msgid "This tab has an active SSH connection. Closing will disconnect it. Are you sure?"
+msgstr "Dette faneblad har en aktiv SSH-forbindelse. Lukning afbryder den. Er du sikker?"

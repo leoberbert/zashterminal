@@ -9015,3 +9015,31 @@ msgstr "Odaberite valjani direktorij!"
 #: src/zashterminal/ui/dialogs/tftp_server_dialog.py
 msgid "The TFTP server uses local directories for uploading and downloading files."
 msgstr "TFTP poslužitelj koristi lokalne direktorije za prijenos i preuzimanje datoteka."
+
+#: src/zashterminal/terminal/tabs.py
+msgid "Log Session"
+msgstr "Zapisuj sesiju"
+
+#: src/zashterminal/terminal/tabs.py
+msgid "Stop Session Log"
+msgstr "Zaustavi zapisnik sesije"
+
+#: src/zashterminal/terminal/tabs.py
+msgid "Open Session Log Folder"
+msgstr "Otvori mapu zapisnika sesije"
+
+#: src/zashterminal/terminal/tabs.py
+msgid "Save Session Log As..."
+msgstr "Spremi zapisnik sesije kao..."
+
+#: src/zashterminal/terminal/manager.py
+msgid "Session log saved to {path}"
+msgstr "Zapisnik sesije spremljen u {path}"
+
+#: src/zashterminal/terminal/manager.py
+msgid "Could not open the log folder."
+msgstr "Nije moguće otvoriti mapu zapisnika."
+
+#: src/zashterminal/terminal/tabs.py
+msgid "This tab has an active SSH connection. Closing will disconnect it. Are you sure?"
+msgstr "Ova kartica ima aktivnu SSH vezu. Zatvaranjem će se prekinuti. Jeste li sigurni?"

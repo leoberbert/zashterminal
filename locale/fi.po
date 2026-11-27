@@ -9023,3 +9023,31 @@ msgstr "Valitse kelvollinen hakemisto!"
 #: src/zashterminal/ui/dialogs/tftp_server_dialog.py
 msgid "The TFTP server uses local directories for uploading and downloading files."
 msgstr "TFTP-palvelin käyttää paikallisia hakemistoja tiedostojen lähettämiseen ja lataamiseen."
+
+#: src/zashterminal/terminal/tabs.py
+msgid "Log Session"
+msgstr "Tallenna istunto lokiin"
+
+#: src/zashterminal/terminal/tabs.py
+msgid "Stop Session Log"
+msgstr "Lopeta istuntoloki"
+
+#: src/zashterminal/terminal/tabs.py
+msgid "Open Session Log Folder"
+msgstr "Avaa istuntolokin kansio"
+
+#: src/zashterminal/terminal/tabs.py
+msgid "Save Session Log As..."
+msgstr "Tallenna istuntoloki nimellä..."
+
+#: src/zashterminal/terminal/manager.py
+msgid "Session log saved to {path}"
+msgstr "Istuntoloki tallennettu: {path}"
+
+#: src/zashterminal/terminal/manager.py
+msgid "Could not open the log folder."
+msgstr "Lokikansiota ei voitu avata."
+
+#: src/zashterminal/terminal/tabs.py
+msgid "This tab has an active SSH connection. Closing will disconnect it. Are you sure?"
+msgstr "Tällä välilehdellä on aktiivinen SSH-yhteys. Sulkeminen katkaisee yhteyden. Oletko varma?"

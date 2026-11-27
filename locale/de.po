@@ -9056,3 +9056,31 @@ msgstr "Bitte wählen Sie ein gültiges Verzeichnis aus!"
 #: src/zashterminal/ui/dialogs/tftp_server_dialog.py
 msgid "The TFTP server uses local directories for uploading and downloading files."
 msgstr "Der TFTP-Server verwendet lokale Verzeichnisse zum Hoch- und Herunterladen von Dateien."
+
+#: src/zashterminal/terminal/tabs.py
+msgid "Log Session"
+msgstr "Sitzung protokollieren"
+
+#: src/zashterminal/terminal/tabs.py
+msgid "Stop Session Log"
+msgstr "Sitzungsprotokoll beenden"
+
+#: src/zashterminal/terminal/tabs.py
+msgid "Open Session Log Folder"
+msgstr "Sitzungsprotokoll-Ordner öffnen"
+
+#: src/zashterminal/terminal/tabs.py
+msgid "Save Session Log As..."
+msgstr "Sitzungsprotokoll speichern unter..."
+
+#: src/zashterminal/terminal/manager.py
+msgid "Session log saved to {path}"
+msgstr "Sitzungsprotokoll gespeichert unter {path}"
+
+#: src/zashterminal/terminal/manager.py
+msgid "Could not open the log folder."
+msgstr "Der Protokollordner konnte nicht geöffnet werden."
+
+#: src/zashterminal/terminal/tabs.py
+msgid "This tab has an active SSH connection. Closing will disconnect it. Are you sure?"
+msgstr "Dieser Tab hat eine aktive SSH-Verbindung. Beim Schließen wird sie getrennt. Sind Sie sicher?"

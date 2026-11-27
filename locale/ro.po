@@ -9035,3 +9035,31 @@ msgstr "Selectați un director valid!"
 #: src/zashterminal/ui/dialogs/tftp_server_dialog.py
 msgid "The TFTP server uses local directories for uploading and downloading files."
 msgstr "Serverul TFTP folosește directoare locale pentru încărcarea și descărcarea fișierelor."
+
+#: src/zashterminal/terminal/tabs.py
+msgid "Log Session"
+msgstr "Înregistrează sesiunea"
+
+#: src/zashterminal/terminal/tabs.py
+msgid "Stop Session Log"
+msgstr "Oprește jurnalul sesiunii"
+
+#: src/zashterminal/terminal/tabs.py
+msgid "Open Session Log Folder"
+msgstr "Deschide folderul jurnalului sesiunii"
+
+#: src/zashterminal/terminal/tabs.py
+msgid "Save Session Log As..."
+msgstr "Salvează jurnalul sesiunii ca..."
+
+#: src/zashterminal/terminal/manager.py
+msgid "Session log saved to {path}"
+msgstr "Jurnalul sesiunii a fost salvat în {path}"
+
+#: src/zashterminal/terminal/manager.py
+msgid "Could not open the log folder."
+msgstr "Folderul de jurnale nu a putut fi deschis."
+
+#: src/zashterminal/terminal/tabs.py
+msgid "This tab has an active SSH connection. Closing will disconnect it. Are you sure?"
+msgstr "Această filă are o conexiune SSH activă. Închiderea o va deconecta. Sigur doriți?"

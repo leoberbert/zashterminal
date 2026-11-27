@@ -39,6 +39,20 @@ def resolve_transcript_enabled(
     return bool(session_override)
 
 
+def build_transcript_filename(
+    *,
+    session_name: str,
+    host: str = "",
+    when: Optional[datetime] = None,
+) -> str:
+    """Build a filesystem-safe transcript file name."""
+    stamp = (when or datetime.now()).strftime("%Y-%m-%d_%H%M%S")
+    safe_name = re.sub(r"[^\w.\-]+", "_", (session_name or "session").strip()) or "session"
+    safe_host = re.sub(r"[^\w.\-]+", "_", (host or "").strip())
+    suffix = f"_{safe_host}" if safe_host else ""
+    return f"{stamp}_{safe_name}{suffix}.log"
+
+
 def build_transcript_path(
     directory: Path,
     *,
@@ -47,20 +61,21 @@ def build_transcript_path(
     when: Optional[datetime] = None,
 ) -> Path:
     """Build a filesystem-safe transcript path under *directory*."""
-    stamp = (when or datetime.now()).strftime("%Y-%m-%d_%H%M%S")
-    safe_name = re.sub(r"[^\w.\-]+", "_", (session_name or "session").strip()) or "session"
-    safe_host = re.sub(r"[^\w.\-]+", "_", (host or "").strip())
-    suffix = f"_{safe_host}" if safe_host else ""
     directory.mkdir(parents=True, exist_ok=True)
-    return directory / f"{stamp}_{safe_name}{suffix}.log"
+    return directory / build_transcript_filename(
+        session_name=session_name, host=host, when=when
+    )
 
 
 class TranscriptWriter:
     """Append-only transcript file writer (thread-safe)."""
 
-    def __init__(self, path: Path, *, strip_escapes: bool = True) -> None:
+    def __init__(
+        self, path: Path, *, strip_escapes: bool = True, manual: bool = False
+    ) -> None:
         self.path = Path(path)
         self.strip_escapes = bool(strip_escapes)
+        self.manual = bool(manual)
         self._lock = threading.Lock()
         self._fh: Optional[TextIO] = None
         self._last_row = 0

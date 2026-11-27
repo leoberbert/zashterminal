@@ -8992,3 +8992,31 @@ msgstr "נא לבחור תיקייה תקינה!"
 #: src/zashterminal/ui/dialogs/tftp_server_dialog.py
 msgid "The TFTP server uses local directories for uploading and downloading files."
 msgstr "שרת ה-TFTP משתמש בתיקיות מקומיות להעלאה ולהורדה של קבצים."
+
+#: src/zashterminal/terminal/tabs.py
+msgid "Log Session"
+msgstr "תיעוד הפעלה"
+
+#: src/zashterminal/terminal/tabs.py
+msgid "Stop Session Log"
+msgstr "עצירת תיעוד ההפעלה"
+
+#: src/zashterminal/terminal/tabs.py
+msgid "Open Session Log Folder"
+msgstr "פתיחת תיקיית תיעוד ההפעלה"
+
+#: src/zashterminal/terminal/tabs.py
+msgid "Save Session Log As..."
+msgstr "שמירת תיעוד ההפעלה בשם..."
+
+#: src/zashterminal/terminal/manager.py
+msgid "Session log saved to {path}"
+msgstr "תיעוד ההפעלה נשמר ב-{path}"
+
+#: src/zashterminal/terminal/manager.py
+msgid "Could not open the log folder."
+msgstr "לא ניתן לפתוח את תיקיית התיעודים."
+
+#: src/zashterminal/terminal/tabs.py
+msgid "This tab has an active SSH connection. Closing will disconnect it. Are you sure?"
+msgstr "ללשונית זו יש חיבור SSH פעיל. הסגירה תנתק אותו. האם אתה בטוח?"
