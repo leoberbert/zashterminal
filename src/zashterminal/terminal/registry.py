@@ -42,6 +42,12 @@ class TerminalState(Enum):
     SPAWN_FAILED = "spawn_failed"
 
 
+# Registry statuses of a terminal whose process is still alive. "focused" and
+# "unfocused" replace "running" once the terminal is used; "connected" is set
+# when an SSH connection succeeds.
+LIVE_TERMINAL_STATUSES = frozenset({"running", "focused", "unfocused", "connected"})
+
+
 class TerminalLifecycleManager:
     def __init__(self, registry, logger):
         self.registry = registry

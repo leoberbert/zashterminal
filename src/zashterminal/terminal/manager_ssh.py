@@ -16,7 +16,7 @@ from gi.repository import Adw, GLib, Gtk, Vte
 from ..sessions.models import SessionItem
 from ..utils.logger import log_terminal_event
 from ..utils.translation_utils import _
-from .registry import TerminalState
+from .registry import LIVE_TERMINAL_STATUSES, TerminalState
 
 
 class TerminalSSHLifecycleMixin:
@@ -665,7 +665,10 @@ class TerminalSSHLifecycleMixin:
 
     def has_active_ssh_sessions(self) -> bool:
         for info in self.registry._terminals.values():
-            if info.get("type") == "ssh" and info.get("status") == "running":
+            if (
+                info.get("type") == "ssh"
+                and info.get("status") in LIVE_TERMINAL_STATUSES
+            ):
                 return True
         return False
 
