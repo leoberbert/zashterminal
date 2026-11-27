@@ -12,6 +12,7 @@ from ..helpers import generate_unique_name
 from ..settings.manager import SettingsManager
 from ..utils.logger import get_logger
 from ..utils.translation_utils import _
+from .dialogs.base_dialog import close_on_escape
 
 
 # NEW: Custom widget for editing a color with a hex entry field.
@@ -101,6 +102,7 @@ class _SchemeEditorDialog(Adw.Window):
         super().__init__(
             transient_for=parent, modal=True, default_width=700, default_height=600
         )
+        close_on_escape(self)
         # Add CSS class for theming
         self.add_css_class("zashterminal-dialog")
 

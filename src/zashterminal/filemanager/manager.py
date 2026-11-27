@@ -2639,9 +2639,11 @@ class FileManager(GObject.Object):
                     except Exception as e:
                         self.logger.error(f"Error preparing downloads: {e}")
 
+                        message = str(e)  # `e` is unbound once the except block ends
+
                         def show_error():
                             self.parent_window._show_error_dialog(
-                                _("Download Error"), str(e)
+                                _("Download Error"), message
                             )
                             return False
 
@@ -2723,9 +2725,11 @@ class FileManager(GObject.Object):
                     except Exception as e:
                         self.logger.error(f"Error preparing uploads: {e}")
 
+                        message = str(e)  # `e` is unbound once the except block ends
+
                         def show_error():
                             self.parent_window._show_error_dialog(
-                                _("Upload Error"), str(e)
+                                _("Upload Error"), message
                             )
                             return False
 

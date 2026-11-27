@@ -309,7 +309,6 @@ class ZashTerminalWindow(WindowSearchBroadcastMixin, Adw.ApplicationWindow):
         self.status_controller = StatusController(
             self,
             self.ui_builder.status_bar,
-            self.ui_builder.connection_banner,
             self.ui_builder.monitor_panel,
         )
         self.ui_builder._sync_rail()
@@ -1016,9 +1015,23 @@ class ZashTerminalWindow(WindowSearchBroadcastMixin, Adw.ApplicationWindow):
             )
             return
         if session.is_local():
-            self.tab_manager.create_local_tab(session=session)
+            terminal = self.tab_manager.create_local_tab(session=session)
         else:
-            self.tab_manager.create_ssh_tab(session)
+            terminal = self.tab_manager.create_ssh_tab(session)
+        if terminal is not None:
+            self._focus_terminal_later(terminal)
+
+    def _focus_terminal_later(self, terminal) -> None:
+        """Give the new terminal the keyboard focus once the sidebar (which
+        still holds it after the click/Enter) and any panel auto-hide settle."""
+
+        def focus() -> bool:
+            if terminal.get_realized() and terminal.get_mapped():
+                terminal.grab_focus()
+            return GLib.SOURCE_REMOVE
+
+        for delay_ms in (50, 250):
+            GLib.timeout_add(delay_ms, focus)
 
     def _on_terminal_focus_changed(self, terminal, _from_sidebar: bool) -> None:
         page = self.tab_manager.get_page_for_terminal(terminal)

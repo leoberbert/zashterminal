@@ -265,6 +265,9 @@ class DefaultSettings:
             "ai_openrouter_site_url": "",
             "ai_openrouter_site_name": "",
             "ai_local_base_url": "http://localhost:11434/v1",
+            # "Other (custom)" provider: any OpenAI/Anthropic-compatible endpoint
+            "ai_custom_base_url": "",
+            "ai_custom_api_format": "openai",
             "ai_custom_quick_prompts": [],  # List of {"emoji": "🔧", "text": "prompt"}
             # Search Settings
             "search_case_sensitive": False,

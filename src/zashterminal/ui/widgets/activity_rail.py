@@ -49,7 +49,8 @@ class ActivityRail(Gtk.Box):
             label=label,
             css_classes=["zash-rail-label"],
             ellipsize=Pango.EllipsizeMode.END,
-            max_width_chars=9,
+            # Room for captions like "Commands"/"Histórico" before ellipsizing
+            max_width_chars=12,
         )
         content.append(caption)
 

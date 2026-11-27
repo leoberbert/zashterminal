@@ -1,11 +1,11 @@
 # zashterminal/ui/status_controller.py
-"""Keeps the status bar, connection banner and monitor panel in sync with the
+"""Keeps the status bar and monitor panel in sync with the
 active terminal, polling host metrics in the background."""
 
 from __future__ import annotations
 
 import os
-from typing import TYPE_CHECKING, Any, Optional, Set, Tuple
+from typing import TYPE_CHECKING, Any, Dict, Optional, Tuple
 
 from gi.repository import GLib, Pango
 
@@ -18,10 +18,12 @@ if TYPE_CHECKING:
     from ..utils.system_metrics import SystemMetrics
     from ..window import ZashTerminalWindow
     from .widgets.monitor_panel import MonitorPanel
-    from .widgets.status_bar import ConnectionBanner, StatusBar
+    from .widgets.status_bar import StatusBar
 
 POLL_INTERVAL_SECONDS = 3.0
-STATE_TICK_SECONDS = 2
+# Terminals turn "live" asynchronously (process spawn / SSH login) with no
+# event, so the tick is what notices it; keep it short.
+STATE_TICK_MS = 250
 
 # (terminal id, terminal type, live)
 _Signature = Tuple[Optional[int], str, bool]
@@ -32,21 +34,24 @@ class StatusController:
         self,
         window: "ZashTerminalWindow",
         status_bar: "StatusBar",
-        banner: "ConnectionBanner",
         monitor_panel: "MonitorPanel",
     ) -> None:
         self.window = window
         self.status_bar = status_bar
-        self.banner = banner
         self.monitor_panel = monitor_panel
+        monitor_panel.on_detail_changed = self._on_detail_changed
         self.logger = get_logger("zashterminal.ui.status")
 
         self._poller: Any = None
+        self._collector: Any = None
+        self._session: Optional[SessionItem] = None
+        self._disk_path = "/"
         self._signature: Optional[_Signature] = None
-        self._dismissed: Set[int] = set()
-        self._last_os_name = ""
         self._monitor_active = False
-        self._tick_id = GLib.timeout_add_seconds(STATE_TICK_SECONDS, self._tick)
+        # Last sample per terminal: shown instantly when switching back to a tab
+        # while the fresh sample is still being collected.
+        self._metrics_cache: Dict[int, "SystemMetrics"] = {}
+        self._tick_id = GLib.timeout_add(STATE_TICK_MS, self._tick)
 
     # -- public API -------------------------------------------------------
 
@@ -58,18 +63,11 @@ class StatusController:
         """The monitor panel needs data even when the status bar is hidden."""
         if self._monitor_active != active:
             self._monitor_active = active
-            self._signature = None
-            self._evaluate()
+            self._sync_poller()
 
     def set_status_bar_visible(self, visible: bool) -> None:
         self.status_bar.set_visible(visible)
-        self._signature = None
-        self._evaluate()
-
-    def dismiss_banner(self) -> None:
-        if self._signature and self._signature[0] is not None:
-            self._dismissed.add(self._signature[0])
-        self.banner.hide_banner()
+        self._sync_poller()
 
     def shutdown(self) -> None:
         if self._tick_id:
@@ -78,6 +76,24 @@ class StatusController:
         self._stop_poller()
 
     # -- internals --------------------------------------------------------
+
+    def _active_terminal(self):
+        """Terminal of the visible tab.
+
+        ``get_selected_terminal`` prefers the last *focused* terminal, which
+        stays the previous tab's terminal until the new one takes focus; the
+        status bar must follow the tab, not the focus.
+        """
+        tabs = self.window.tab_manager
+        terminal = tabs.get_selected_terminal()
+        page = tabs.pages.get(tabs.active_tab) if tabs.active_tab else None
+        if page is not None and (
+            terminal is None or tabs.get_page_for_terminal(terminal) is not page
+        ):
+            terminals = tabs.get_all_terminals_in_page(page)
+            if terminals:
+                return terminals[0]
+        return terminal
 
     def _tick(self) -> bool:
         try:
@@ -103,20 +119,29 @@ class StatusController:
         return terminal_id, info.get("type", "none"), live, session
 
     def _evaluate(self) -> None:
-        terminal = self.window.tab_manager.get_selected_terminal()
+        terminal = self._active_terminal()
         terminal_id, kind, live, session = self._describe(terminal)
         self._update_terminal_info(terminal, kind)
+        self._sync_disk_path(terminal)
 
         signature: _Signature = (terminal_id, kind, live)
         if signature == self._signature:
             return
-        previous = self._signature
         self._signature = signature
-        self._last_os_name = ""
+        self._session = session
 
         self._stop_poller()
         self.status_bar.set_metrics(None)
-        self.monitor_panel.clear()
+        # Charts are kept per terminal: only terminals that are gone are dropped.
+        self.monitor_panel.set_terminal(terminal_id)
+        self._forget_dead_terminals()
+
+        cached = self._metrics_cache.get(terminal_id) if live else None
+        if cached is not None:
+            self.status_bar.set_metrics(cached)
+            self.monitor_panel.set_metrics(cached)
+        elif terminal_id is not None:
+            self._metrics_cache.pop(terminal_id, None)
 
         name = session.name if session else ""
         self.monitor_panel.set_title(name)
@@ -136,14 +161,7 @@ class StatusController:
         else:
             self.status_bar.set_connection(self.status_bar.NONE)
 
-        self._update_banner(terminal_id, kind, live, name, previous)
         self._start_poller(signature, session)
-
-    def _update_banner(self, terminal_id, kind, live, name, previous) -> None:
-        if kind == "ssh" and live and terminal_id not in self._dismissed:
-            self.banner.show_connected(name)
-        else:
-            self.banner.hide_banner()
 
     def _update_terminal_info(self, terminal, kind: str) -> None:
         if terminal is None:
@@ -167,8 +185,69 @@ class StatusController:
                 shell = shell.capitalize()
         self.status_bar.set_terminal_info(encoding, shell, font_size)
 
+    @staticmethod
+    def _terminal_cwd(terminal) -> str:
+        if terminal is None:
+            return "/"
+        try:
+            uri = terminal.get_current_directory_uri()
+        except Exception:
+            return "/"
+        if not uri:
+            return "/"
+        from urllib.parse import unquote, urlparse
+
+        return unquote(urlparse(uri).path) or "/"
+
+    def _sync_disk_path(self, terminal) -> None:
+        """Report the filesystem of the shell's current directory."""
+        path = self._terminal_cwd(terminal)
+        if path == self._disk_path:
+            return
+        self._disk_path = path
+        if self._collector is not None:
+            self._collector.disk_path = path
+        if self._poller is not None:
+            self._poller.poke()
+
+    def _detail_wanted(self) -> bool:
+        """Processes, per-core CPU and GPU are only collected when shown."""
+        return self._monitor_active or self.monitor_panel.is_expanded()
+
+    def _on_detail_changed(self) -> None:
+        self._sync_poller()
+
+    def _sync_poller(self) -> None:
+        """Start/stop collection as visibility changes, without touching data.
+
+        Closing the panel only stops sampling (when nothing else needs it);
+        everything already collected stays until its terminal is closed.
+        """
+        if self._collector is not None:
+            detail = self._detail_wanted()
+            turned_on = detail and not self._collector.detail
+            self._collector.detail = detail
+            if turned_on and self._poller is not None:
+                # Processes/GPU/cores were not being sampled: fetch them now
+                # instead of waiting for the next 3 s tick.
+                self._poller.poke()
+        wanted = self._metrics_wanted()
+        if wanted and self._poller is None and self._signature is not None:
+            self._start_poller(self._signature, self._session)
+        elif not wanted and self._poller is not None:
+            self._stop_poller()
+
+    def _terminal_alive(self, terminal_id: int) -> bool:
+        return self.window.terminal_manager.registry.get_terminal_info(terminal_id) is not None
+
+    def _forget_dead_terminals(self) -> None:
+        self.monitor_panel.forget_terminals(self._terminal_alive)
+        for terminal_id in list(self._metrics_cache):
+            if not self._terminal_alive(terminal_id):
+                del self._metrics_cache[terminal_id]
+
     def _metrics_wanted(self) -> bool:
-        return self.status_bar.get_visible() or self._monitor_active
+        return self.status_bar.get_visible() or self._detail_wanted()
 
     def _start_poller(self, signature: _Signature, session: Optional[SessionItem]) -> None:
         _terminal_id, kind, live, = signature
@@ -196,6 +275,9 @@ class StatusController:
             )
             return
 
+        collector.disk_path = self._disk_path
+        collector.detail = self._detail_wanted()
+        self._collector = collector
         self._poller = MetricsPoller(collector, interval=POLL_INTERVAL_SECONDS)
         self._poller.start(
             lambda metrics, sig=signature: GLib.idle_add(
@@ -207,6 +289,7 @@ class StatusController:
         )
 
     def _stop_poller(self) -> None:
+        self._collector = None
         if self._poller is not None:
             try:
                 self._poller.stop()
@@ -216,15 +299,27 @@ class StatusController:
     def _apply_sample(self, signature: _Signature, metrics: "SystemMetrics") -> bool:
         if signature != self._signature:
             return GLib.SOURCE_REMOVE
+        terminal_id = signature[0]
+        if terminal_id is not None:
+            previous = self._metrics_cache.get(terminal_id)
+            if previous is not None and not self._detail_wanted():
+                # Detail (processes, cores, GPU) is only sampled while shown:
+                # keep the last values instead of blanking them.
+                from dataclasses import replace
+
+                metrics = replace(
+                    metrics,
+                    core_percents=previous.core_percents,
+                    procs_total=previous.procs_total,
+                    top_cpu=previous.top_cpu,
+                    top_mem=previous.top_mem,
+                    gpu=previous.gpu,
+                )
+            if len(self._metrics_cache) > 64:
+                self._metrics_cache.pop(next(iter(self._metrics_cache)))
+            self._metrics_cache[terminal_id] = metrics
         self.status_bar.set_metrics(metrics)
         self.monitor_panel.set_metrics(metrics)
-        if metrics.os_name and metrics.os_name != self._last_os_name:
-            self._last_os_name = metrics.os_name
-            terminal_id, kind, live = signature
-            if kind == "ssh" and live and terminal_id not in self._dismissed:
-                session = self._session_for_signature()
-                if session is not None:
-                    self.banner.show_connected(session.name, metrics.os_name)
         return GLib.SOURCE_REMOVE
 
     def _apply_error(self, signature: _Signature, message: str) -> bool:
@@ -233,7 +328,3 @@ class StatusController:
         self.status_bar.set_metrics(None)
         self.monitor_panel.set_unavailable(message)
         return GLib.SOURCE_REMOVE
-
-    def _session_for_signature(self) -> Optional[SessionItem]:
-        terminal = self.window.tab_manager.get_selected_terminal()
-        return self._describe(terminal)[3]

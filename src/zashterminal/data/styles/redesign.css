@@ -57,8 +57,8 @@
 
 .sidebar-session-tree row {
     padding: 0;
-    margin: 3px 8px;
-    border-radius: 12px;
+    margin: 1px 8px;
+    border-radius: 10px;
     background: transparent;
 }
 
@@ -71,14 +71,18 @@
     box-shadow: inset 0 0 0 1px alpha(@zash_brand, 0.75);
 }
 
+.session-tree-label {
+    font-size: 0.86em;
+}
+
 .session-card {
-    padding: 8px 6px 8px 8px;
+    padding: 4px 6px 4px 8px;
 }
 
 .session-card-icon {
-    min-width: 34px;
-    min-height: 34px;
-    border-radius: 10px;
+    min-width: 26px;
+    min-height: 26px;
+    border-radius: 8px;
     background: alpha(@zash_brand, 0.16);
     color: @zash_brand;
 }
@@ -136,22 +140,6 @@
     background: alpha(currentColor, 0.04);
 }
 
-/* ---- Connection banner -------------------------------------------------- */
-
-.zash-banner {
-    margin: 6px 10px 0 10px;
-    padding: 4px 6px 4px 12px;
-    border-radius: 10px;
-    border: 1px solid alpha(@zash_brand, 0.35);
-    background: alpha(@zash_brand, 0.10);
-}
-
-.zash-banner-close {
-    min-width: 22px;
-    min-height: 22px;
-    padding: 0;
-}
-
 /* ---- Status bar --------------------------------------------------------- */
 
 .zash-statusbar {
@@ -186,10 +174,3 @@
 
 /* ---- Header bar --------------------------------------------------------- */
 
-.zash-palette-button {
-    padding: 2px 12px;
-    border-radius: 10px;
-    border: 1px solid alpha(currentColor, 0.12);
-    background: alpha(currentColor, 0.05);
-    font-size: 0.85em;
-}

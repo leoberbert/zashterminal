@@ -58,6 +58,16 @@
    theme overrides all four (ThemeEngine._get_brand_css) */
 @define-color zash_brand_fg #ffffff;
 @define-color zash_alert #e66100;
+/* Monitor panel series (the terminal/wallpaper theme overrides most of them) */
+@define-color zash_metric_cpu @zash_brand;
+@define-color zash_metric_mem #a56de2;
+@define-color zash_metric_net #2ec27e;
+@define-color zash_metric_tx @zash_brand_2;
+@define-color zash_metric_lat #33c7de;
+@define-color zash_metric_gpu @zash_alert;
+@define-color zash_metric_disk #2ec27e;
+@define-color zash_metric_warn #e5a50a;
+@define-color zash_metric_crit #e01b24;
 
 /* Header bar styles: one flat theme color (the tab strip paints its own
    background, so a gradient here showed as mismatched blocks) */
@@ -161,19 +171,19 @@ popover.menu separator {
 .custom-tab-button {
     padding: 5px 4px 5px 12px;
     margin: 0 3px;
-    border-radius: 10px;
+    border-radius: 999px;
     border: 1px solid alpha(currentColor, 0.10);
     background: alpha(currentColor, 0.04);
-    transition: background-color 120ms ease, border-color 120ms ease;
+    transition: background-color 120ms ease, box-shadow 120ms ease;
 }
 
+/* Active tab: brand gradient with a soft glow */
 .custom-tab-button.active {
-    background-image: none;
-    background-color: alpha(@zash_brand, 0.14);
-    border-color: @zash_brand;
-    color: inherit;
-    font-weight: 600;
-    box-shadow: 0 -2px 0 0 @zash_brand inset;
+    background-image: linear-gradient(90deg, @zash_brand, @zash_brand_2);
+    border-color: transparent;
+    color: @zash_brand_fg;
+    font-weight: 700;
+    box-shadow: 0 2px 10px alpha(@zash_brand, 0.5);
 }
 
 .custom-tab-button:hover:not(.active) {

@@ -246,6 +246,8 @@ class PreferencesDialog(Adw.Window):
                 Gtk.CallbackAction.new(self._on_escape),
             )
         )
+        # Bubble phase so an open dropdown popover closes first; the focused
+        # search entry consumes Escape itself (see _on_stop_search).
         self.add_controller(shortcuts)
 
     def _build_sidebar(self) -> Gtk.Box:
@@ -465,7 +467,7 @@ class PreferencesDialog(Adw.Window):
         return True
 
     def _on_stop_search(self, _entry) -> None:
-        self.search_entry.set_text("")
+        self._on_escape()
 
     # ------------------------------------------------------------------
     # Search
@@ -809,7 +811,10 @@ class PreferencesDialog(Adw.Window):
         font_row = Adw.ActionRow(title=_("Terminal Font"))
         self.font_button = Gtk.FontButton()
         self.font_button.set_valign(Gtk.Align.CENTER)
-        self.font_button.set_size_request(220, -1)
+        # The family name ellipsizes inside the button; otherwise its natural
+        # width squeezed the row title until it wrapped letter by letter.
+        self.font_button.set_size_request(180, -1)
+        self._ellipsize_labels(self.font_button)
         self.font_button.set_font(self.settings_manager.get("font", "Monospace 10"))
         # Filter to show only monospace fonts
         self.font_button.set_filter_func(self._font_filter_func)
@@ -1430,6 +1435,17 @@ class PreferencesDialog(Adw.Window):
     def _on_setting_changed(self, key: str, value) -> None:
         self._set(key, value)
         self.emit("setting-changed", key, value)
+
+    @staticmethod
+    def _ellipsize_labels(widget: Gtk.Widget) -> None:
+        """Let the labels inside a composite widget ellipsize (lower min width)."""
+        child = widget.get_first_child()
+        while child is not None:
+            if isinstance(child, Gtk.Label):
+                child.set_ellipsize(Pango.EllipsizeMode.END)
+            else:
+                PreferencesDialog._ellipsize_labels(child)
+            child = child.get_next_sibling()
 
     @staticmethod
     def _font_size_from(font: str) -> float:

@@ -72,6 +72,10 @@ class CommandPalette(Adw.Dialog):
         )
 
         header = Adw.HeaderBar()
+        # Esc closes (see hint); without the lone close button the centered
+        # search field is not pushed off-center by an empty slot on the left.
+        header.set_show_end_title_buttons(False)
+        header.set_show_start_title_buttons(False)
         header.set_title_widget(self._search)
         view = Adw.ToolbarView(content=self._stack)
         view.add_top_bar(header)

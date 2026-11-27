@@ -399,14 +399,6 @@ class WindowUIBuilder:
         self.new_tab_button.add_css_class("flat")
         self.new_tab_button.add_css_class("zash-new-tab")
 
-        # Command palette entry point (Ctrl+Shift+P by default)
-        self.palette_button = Gtk.Button(css_classes=["zash-palette-button", "flat"])
-        palette_box = Gtk.Box(spacing=6)
-        palette_box.append(icon_image("edit-find-symbolic", size=14))
-        palette_box.append(Gtk.Label(label=self._palette_shortcut_label()))
-        self.palette_button.set_child(palette_box)
-        self.palette_button.set_action_name("win.command-palette")
-
         # Add custom tooltips to header bar buttons (with dynamic shortcuts where applicable)
         self.tooltip_helper.add_tooltip_with_shortcut(
             self.toggle_sidebar_button, _("Sessions Panel"), "toggle-sidebar"
@@ -504,7 +496,6 @@ class WindowUIBuilder:
         shortcuts) but are not packed into the header.
         """
         return [
-            self.palette_button,
             self.broadcast_button,
             self.search_button,
             self.cleanup_button,
@@ -513,15 +504,6 @@ class WindowUIBuilder:
     def _header_end_buttons(self) -> list:
         """Buttons packed next to the window controls."""
         return [self.menu_button]
-
-    @staticmethod
-    def _palette_shortcut_label_for(shortcut: str) -> str:
-        ok, keyval, mods = Gtk.accelerator_parse(shortcut or "")
-        return Gtk.accelerator_get_label(keyval, mods) if ok else ""
-
-    def _palette_shortcut_label(self) -> str:
-        shortcut = self.settings_manager.get_shortcut("command-palette")
-        return self._palette_shortcut_label_for(shortcut) or _("Command Palette")
 
     def _pack_header_buttons(self, header_bar, controls_on_left: bool) -> None:
         """Pack header buttons; mirror sides when window controls are on the left."""
@@ -727,14 +709,15 @@ class WindowUIBuilder:
         )
         rail.add_item(
             "snippets",
-            "view-list-bullet-symbolic",
-            _("Snippets"),
+            "utilities-terminal-symbolic",
+            _("Commands"),
             _("Command Manager"),
             lambda active: active and self.window.activate_action(
                 "win.show-command-manager", None
             ),
             momentary=True,
             shortcut_action="show-command-manager",
+            use_bundled=True,
         )
         rail.add_item(
             "history",
@@ -996,7 +979,7 @@ class WindowUIBuilder:
 
     def _create_content_area(self) -> Gtk.Widget:
         """Create the main content area: tab strip, banner, terminals, status bar."""
-        from .widgets.status_bar import ConnectionBanner, StatusBar
+        from .widgets.status_bar import StatusBar
 
         view_stack = self.tab_manager.get_view_stack()
         view_stack.add_css_class("terminal-tab-view")
@@ -1023,17 +1006,16 @@ class WindowUIBuilder:
         tab_strip = Gtk.Box(spacing=4, css_classes=["zash-tabstrip"])
         tab_strip.append(self.scrolled_tab_bar)
 
-        self.connection_banner = ConnectionBanner(
-            lambda: self.window.status_controller.dismiss_banner()
-        )
         self.status_bar = StatusBar()
+        self.status_bar.on_metrics_activated = lambda: self._on_rail_page_toggled(
+            "monitor", True
+        )
         self.status_bar.set_visible(
             bool(self.settings_manager.get("status_bar_visible", True))
         )
 
         content = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
         content.append(tab_strip)
-        content.append(self.connection_banner)
         content.append(self.ai_paned)
         content.append(self.status_bar)
         return content

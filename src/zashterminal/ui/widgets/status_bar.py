@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, Callable, Optional
 import gi
 
 gi.require_version("Gtk", "4.0")
-from gi.repository import GLib, Gtk, Pango
+from gi.repository import Gtk
 
 from ...utils.icons import icon_image
 from ...utils.translation_utils import _
@@ -17,12 +17,14 @@ if TYPE_CHECKING:
     from ...utils.system_metrics import SystemMetrics
 
 
-def _item(icon_name: Optional[str], css: str = "") -> tuple[Gtk.Box, Gtk.Label]:
+def _item(
+    icon_name: Optional[str], css: str = "", bundled: Optional[bool] = None
+) -> tuple[Gtk.Box, Gtk.Label]:
     box = Gtk.Box(spacing=5, css_classes=["zash-status-item"])
     if css:
         box.add_css_class(css)
     if icon_name:
-        box.append(icon_image(icon_name, size=14))
+        box.append(icon_image(icon_name, size=14, use_bundled=bundled))
     label = Gtk.Label()
     box.append(label)
     return box, label
@@ -50,7 +52,7 @@ class StatusBar(Gtk.Box):
 
         self._os_box, self._os_label = _item("computer-symbolic")
         self._cpu_box, self._cpu_label = _item("utilities-system-monitor-symbolic")
-        self._ram_box, self._ram_label = _item("view-list-bullet-symbolic")
+        self._ram_box, self._ram_label = _item("memory-symbolic", bundled=True)
         self._disk_box, self._disk_label = _item("drive-harddisk-symbolic")
         self._latency_box, self._latency_label = _item("network-wireless-signal-good-symbolic")
         for box in (
@@ -62,6 +64,14 @@ class StatusBar(Gtk.Box):
         ):
             box.set_visible(False)
             self.append(box)
+
+        # Clicking a metric opens the Monitor panel (set by the window).
+        self.on_metrics_activated: Optional[Callable[[], None]] = None
+        for box in (self._cpu_box, self._ram_box, self._disk_box, self._latency_box):
+            click = Gtk.GestureClick.new()
+            click.connect("released", self._on_metric_clicked)
+            box.add_controller(click)
+            box.set_cursor_from_name("pointer")
 
         self.append(Gtk.Box(hexpand=True))
 
@@ -117,7 +127,7 @@ class StatusBar(Gtk.Box):
         put(
             self._ram_box,
             self._ram_label,
-            _("RAM: {value}%").format(value=f"{metrics.mem_percent:.0f}")
+            _("Memory: {value}%").format(value=f"{metrics.mem_percent:.0f}")
             if metrics.mem_percent is not None
             else None,
         )
@@ -128,6 +138,7 @@ class StatusBar(Gtk.Box):
             if metrics.disk_percent is not None
             else None,
         )
+        self._disk_box.set_tooltip_text(metrics.disk_mount or None)
         put(
             self._latency_box,
             self._latency_label,
@@ -135,6 +146,10 @@ class StatusBar(Gtk.Box):
             if metrics.latency_ms is not None
             else None,
         )
+
+    def _on_metric_clicked(self, *_args) -> None:
+        if self.on_metrics_activated is not None:
+            self.on_metrics_activated()
 
     def set_terminal_info(
         self,
@@ -154,42 +169,3 @@ class StatusBar(Gtk.Box):
             box.set_visible(bool(text))
             if text:
                 label.set_text(text)
-
-
-class ConnectionBanner(Gtk.Revealer):
-    """Slim info line above the terminal: "Connected to <host> (<OS>)"."""
-
-    def __init__(self, on_dismiss: Callable[[], None]) -> None:
-        super().__init__(
-            transition_type=Gtk.RevealerTransitionType.SLIDE_DOWN,
-            reveal_child=False,
-        )
-        row = Gtk.Box(spacing=8, css_classes=["zash-banner"])
-        row.append(icon_image("emblem-ok-symbolic", size=16))
-        self._label = Gtk.Label(
-            xalign=0.0, hexpand=True, ellipsize=Pango.EllipsizeMode.END, use_markup=True
-        )
-        row.append(self._label)
-        close = Gtk.Button(
-            icon_name="window-close-symbolic",
-            css_classes=["flat", "circular", "zash-banner-close"],
-            valign=Gtk.Align.CENTER,
-            tooltip_text=_("Dismiss"),
-        )
-        close.connect("clicked", lambda _b: on_dismiss())
-        row.append(close)
-        self.set_child(row)
-
-    def show_connected(self, name: str, os_name: str = "") -> None:
-        text = GLib.markup_escape_text(name)
-        if os_name:
-            markup = _("Connected to <b>{name}</b> ({os})").format(
-                name=text, os=GLib.markup_escape_text(os_name)
-            )
-        else:
-            markup = _("Connected to <b>{name}</b>").format(name=text)
-        self._label.set_markup(markup)
-        self.set_reveal_child(True)
-
-    def hide_banner(self) -> None:
-        self.set_reveal_child(False)

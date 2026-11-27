@@ -26,6 +26,7 @@ from ...settings.manager import SettingsManager
 from ...utils.syntax_utils import get_bash_pango_markup
 from ...utils.tooltip_helper import get_tooltip_helper
 from ...utils.translation_utils import _
+from .base_dialog import close_on_escape
 from ..widgets.bash_text_view import BashTextView
 from ..widgets.form_widget_builder import create_field_from_form_field
 
@@ -2471,6 +2472,17 @@ class CommandManagerDialog(Adw.Dialog):
 
     def present(self, parent=None):
         super().present(parent or self.parent_window)
+        # Keyboard focus must be inside the dialog or Escape never reaches it.
+        # set_focus() alone only records the dialog's focus child: on the
+        # second open the window focus stayed empty and Escape stopped working.
+        self.set_focus(self.search_entry)
+        self.search_entry.grab_focus()
+        GLib.idle_add(self._grab_search_focus)
+
+    def _grab_search_focus(self) -> bool:
+        if self.get_mapped():
+            self.search_entry.grab_focus()
+        return GLib.SOURCE_REMOVE
 
     def _apply_color_scheme(self):
         """Apply terminal color scheme to BashTextView when gtk_theme is 'terminal'.
@@ -3046,6 +3058,7 @@ class CommandManagerDialog(Adw.Dialog):
             default_height=400,
             title=_("Restore Hidden Commands"),
         )
+        close_on_escape(dialog)
 
         toolbar_view = Adw.ToolbarView()
         dialog.set_content(toolbar_view)

@@ -23,8 +23,18 @@ from zashterminal.utils.system_metrics import (
     cpu_percent_between,
     format_bytes,
     format_uptime,
+    core_percents_between,
+    net_rate,
+    parse_core_times,
     parse_cpu_times,
+    parse_df_disks,
+    parse_gpu,
+    parse_net_dev,
+    parse_proc_snapshot,
     parse_remote_output,
+    parse_temperature,
+    remote_latency_ms,
+    top_processes,
 )
 
 FULL_OUTPUT = """Welcome banner noise
@@ -182,9 +192,9 @@ class LocalCollectorTests(unittest.TestCase):
             self.assertTrue(0.0 <= m.disk_percent <= 100.0)
             self.assertGreater(m.uptime_seconds, 0)
             self.assertIsNone(m.latency_ms)
-        self.assertIsNone(first.cpu_percent)
-        if second.cpu_percent is not None:
-            self.assertTrue(0.0 <= second.cpu_percent <= 100.0)
+        for m in (first, second):
+            if m.cpu_percent is not None:
+                self.assertTrue(0.0 <= m.cpu_percent <= 100.0)
 
 
 class RemoteCollectorTests(unittest.TestCase):
@@ -294,6 +304,79 @@ class MetricsPollerTests(unittest.TestCase):
         poller.start(on_sample, lambda _msg: None)
         self.assertTrue(seen.wait(2.0))
         poller.stop()
+
+
+class ExtendedMetricsParserTests(unittest.TestCase):
+    def test_net_rate_ignores_loopback_and_virtual_interfaces(self):
+        text = (
+            "Inter-|   Receive\n face |bytes\n"
+            "    lo: 999 1 0 0 0 0 0 0 999 1 0 0 0 0 0 0\n"
+            "  eth0: 1000 1 0 0 0 0 0 0 400 1 0 0 0 0 0 0\n"
+            "docker0: 5000 1 0 0 0 0 0 0 5000 1 0 0 0 0 0 0\n"
+        )
+        later = text.replace("1000 1", "3000 1").replace("400 1", "900 1")
+        rx, tx = net_rate(parse_net_dev(text), parse_net_dev(later), 2.0)
+        self.assertEqual((rx, tx), (1000.0, 250.0))
+
+    def test_net_rate_joined_with_semicolons_like_the_remote_script(self):
+        joined = "  eth0: 10 1 0 0 0 0 0 0 20 1 0 0 0 0 0 0;"
+        self.assertEqual(parse_net_dev(joined), (10, 20))
+
+    def test_disks_keep_block_devices_and_drop_loop_snap_duplicates(self):
+        df = (
+            "Filesystem 1024-blocks Used Available Capacity Mounted on;"
+            "tmpfs 100 1 99 1% /run;"
+            "/dev/sda1 1000 580 420 58% /;"
+            "/dev/sda1 1000 580 420 58% /mnt/bind;"
+            "/dev/loop3 10 10 0 100% /snap/core/1;"
+            "/dev/sdb 2000 500 1500 25% /home dir;"
+        )
+        disks = parse_df_disks(df)
+        self.assertEqual([d.mount for d in disks], ["/", "/home dir"])
+        self.assertEqual(disks[1].percent, 25.0)
+        self.assertEqual(disks[1].size, 2000 * 1024)
+
+    def test_top_processes_use_current_cpu_not_lifetime_average(self):
+        before = parse_proc_snapshot(
+            "1|busy|1000|10;2|idle app|9000|5000;3|Web Content (x)|10|20;4|awk|5|1;"
+        )
+        after = parse_proc_snapshot(
+            "1|busy|1060|10;2|idle app|9000|5000;3|Web Content (x)|10|20;"
+            "4|awk|99|1;9|new|30|30;"
+        )
+        total, by_cpu, by_mem = top_processes(
+            before, after, seconds=1.0, clk_tck=100, page_size=4096, mem_total=10000 * 4096
+        )
+        self.assertEqual(total, 5)
+        self.assertEqual([p.name for p in by_cpu[:2]], ["busy", "new"])
+        self.assertAlmostEqual(by_cpu[0].cpu, 60.0)
+        self.assertAlmostEqual(by_cpu[1].cpu, 30.0)  # started inside the window
+        idle = next(p for p in by_cpu if p.name == "idle app")
+        self.assertEqual(idle.cpu, 0.0)  # high lifetime usage, idle right now
+        self.assertEqual(by_mem[0].name, "idle app")
+        self.assertAlmostEqual(by_mem[0].mem, 50.0)
+        self.assertNotIn("awk", [p.name for p in by_cpu])  # collector noise
+
+    def test_latency_excludes_remote_script_time(self):
+        # 0.62 s wall, script ran 0.55 s remotely (sleep + /proc scans) -> 70 ms
+        fields = {"t0": "100.10", "t1": "100.65", "sleep": "0.5"}
+        self.assertAlmostEqual(remote_latency_ms(fields, 0.62), 70.0, places=3)
+        # Without timestamps only the sleep is subtracted
+        self.assertAlmostEqual(remote_latency_ms({"sleep": "0.5"}, 0.62), 120.0, places=3)
+
+    def test_core_percents(self):
+        before = parse_core_times("cpu0 100 0 100 800 0 0 0 0;cpu1 0 0 0 100 0 0 0 0;")
+        after = parse_core_times("cpu0 150 0 150 900 0 0 0 0;cpu1 0 0 0 200 0 0 0 0;")
+        self.assertEqual(core_percents_between(before, after), (50.0, 0.0))
+
+    def test_gpu_and_temperature_absent_or_present(self):
+        gpu = parse_gpu("NVIDIA RTX 3060, 21, 960, 12288, 39")
+        self.assertEqual((gpu.name, gpu.util, gpu.temp), ("NVIDIA RTX 3060", 21.0, 39.0))
+        self.assertEqual(gpu.mem_total, 12288 * 1024 * 1024)
+        self.assertIsNone(parse_gpu(""))
+        self.assertIsNone(parse_gpu("N/A"))
+        self.assertEqual(parse_temperature("42000;51000;"), 51.0)
+        self.assertIsNone(parse_temperature(""))
 
 
 if __name__ == "__main__":

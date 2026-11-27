@@ -13,6 +13,7 @@ from gi.repository import Adw, GLib, GObject, Gtk, Pango
 from ..utils.icons import icon_button
 from ..utils.logger import get_logger
 from ..utils.tooltip_helper import get_tooltip_helper
+from ..ui.dialogs.base_dialog import close_on_escape
 from ..utils.translation_utils import _
 from .transfer_manager import TransferItem, TransferStatus, TransferType
 
@@ -322,6 +323,7 @@ class TransferManagerDialog(Adw.Window):
 
     def __init__(self, transfer_manager, parent_window):
         super().__init__(transient_for=parent_window)
+        close_on_escape(self)
         self.transfer_manager = transfer_manager
         self.parent_window = parent_window
         self.logger = get_logger(__name__)

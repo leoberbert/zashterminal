@@ -13,6 +13,43 @@ from ...utils.logger import get_logger
 from ...utils.translation_utils import _
 
 
+def close_on_escape(window: Gtk.Window) -> None:
+    """Close ``window`` on Escape, like Adw.Dialog and Adw.PreferencesWindow.
+
+    Bubble phase, so an open dropdown/menu popover still closes itself first.
+    A focused search entry consumes Escape (stop-search): there the first
+    Escape clears the text and the next one closes the window. Search
+    entries are hooked when the window is first shown (content built).
+    """
+    controller = Gtk.ShortcutController()
+    controller.add_shortcut(
+        Gtk.Shortcut.new(
+            Gtk.ShortcutTrigger.parse_string("Escape"),
+            Gtk.CallbackAction.new(lambda *_a: window.close() or True),
+        )
+    )
+    window.add_controller(controller)
+
+    def on_stop_search(entry: Gtk.SearchEntry) -> None:
+        if entry.get_text():
+            entry.set_text("")
+        else:
+            window.close()
+
+    def hook(widget: Gtk.Widget) -> None:
+        if isinstance(widget, Gtk.SearchEntry) and not getattr(
+            widget, "_zash_escape_hooked", False
+        ):
+            widget._zash_escape_hooked = True
+            widget.connect("stop-search", on_stop_search)
+        child = widget.get_first_child()
+        while child is not None:
+            hook(child)
+            child = child.get_next_sibling()
+
+    window.connect("map", hook)
+
+
 class BaseDialog(Adw.Window):
     """Base dialog class with enhanced functionality and error handling.
 

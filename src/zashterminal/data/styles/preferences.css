@@ -22,12 +22,18 @@ window.prefs-window headerbar {
     border-right: 1px solid alpha(@window_fg_color, 0.08);
 }
 
-.prefs-sidebar searchentry {
+/* GtkSearchEntry's CSS node is "entry.search" (there is no "searchentry") */
+.prefs-sidebar entry.search {
     border-radius: 10px;
     min-height: 34px;
     background-color: alpha(@window_fg_color, 0.05);
     border: 1px solid alpha(@window_fg_color, 0.1);
     box-shadow: none;
+}
+
+/* Leave room for the Ctrl+K badge so the placeholder never runs under it */
+.prefs-sidebar entry.search > text {
+    margin-right: 46px;
 }
 
 .prefs-search-badge {
@@ -59,6 +65,13 @@ window.prefs-window headerbar {
     background-image: none;
     color: @zash_brand_fg;
     font-weight: 600;
+}
+
+/* Labels/icons get explicit colors from the theme CSS; keep them readable on
+   the brand fill. */
+.prefs-category-list > row:selected label,
+.prefs-category-list > row:selected image {
+    color: @zash_brand_fg;
 }
 
 .prefs-sidebar-footer {
