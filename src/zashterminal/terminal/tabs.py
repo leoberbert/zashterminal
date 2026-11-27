@@ -879,6 +879,9 @@ class TabManager:
         menu.append(_("Move Tab"), "win.move-tab")
         menu.append(_("Duplicate Tab"), "win.duplicate-tab")
         menu.append(_("Detach Tab"), "win.detach-tab")
+        sftp_session = self._get_sftp_capable_session(tab_widget)
+        if sftp_session is not None:
+            menu.append(_("Connect with SFTP"), "win.connect-sftp-tab")
         popover = create_themed_popover_menu(menu, tab_widget)
 
         page = self.pages.get(tab_widget)
@@ -905,6 +908,14 @@ class TabManager:
                 "activate", lambda a, _, pg=page: self._request_detach_tab(pg)
             )
             action_group.add_action(action)
+
+            if sftp_session is not None:
+                sftp_action = Gio.SimpleAction.new("connect-sftp-tab", None)
+                sftp_action.connect(
+                    "activate",
+                    lambda _a, _p, s=sftp_session: self.create_sftp_tab(s),
+                )
+                action_group.add_action(sftp_action)
             popover.insert_action_group("win", action_group)
 
         rect = Gdk.Rectangle()
@@ -912,6 +923,24 @@ class TabManager:
         rect.y = int(y)
         popover.set_pointing_to(rect)
         popover.popup()
+
+    def _get_sftp_capable_session(self, tab_widget: Gtk.Box) -> Optional[SessionItem]:
+        """Returns the tab's SSH session if an SFTP tab can be opened from it."""
+        session = getattr(tab_widget, "session_item", None)
+        if not isinstance(session, SessionItem) or not session.is_ssh():
+            return None
+
+        page = self.pages.get(tab_widget)
+        if not page:
+            return None
+        terminals = self.get_all_terminals_in_page(page)
+        if not terminals:
+            return None
+        terminal_id = getattr(terminals[0], "terminal_id", None)
+        info = self.terminal_manager.registry.get_terminal_info(terminal_id)
+        if not info or info.get("type") != "ssh":
+            return None
+        return session
 
     def _request_detach_tab(self, page: Adw.ViewStackPage):
         if self.on_detach_tab_requested:
