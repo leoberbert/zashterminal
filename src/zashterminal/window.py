@@ -26,6 +26,8 @@ from .filemanager.tftp_server import (
 from .terminal.ai_assistant import TerminalAiAssistant
 from .terminal.manager import TerminalManager
 from .terminal.tabs import TabManager
+from .data.connection_history import ConnectionHistory
+from .ui.status_controller import StatusController
 from .ui.actions import WindowActions
 from .ui.sidebar_manager import SidebarManager
 from .utils.syntax_utils import get_bash_pango_markup
@@ -294,6 +296,8 @@ class ZashTerminalWindow(WindowSearchBroadcastMixin, Adw.ApplicationWindow):
         self.terminal_manager.set_tab_manager(self.tab_manager)
 
         # UI Builder
+        self.connection_history = ConnectionHistory()
+        self.tab_manager.on_session_opened = self._on_session_opened
         self.ui_builder = WindowUIBuilder(self)
         self.ui_builder.build_ui()
         self._assign_ui_components()
@@ -302,6 +306,13 @@ class ZashTerminalWindow(WindowSearchBroadcastMixin, Adw.ApplicationWindow):
         self.state_manager = WindowStateManager(self)
         self.action_handler = WindowActions(self)
         self.sidebar_manager = SidebarManager(self, self.ui_builder)
+        self.status_controller = StatusController(
+            self,
+            self.ui_builder.status_bar,
+            self.ui_builder.connection_banner,
+            self.ui_builder.monitor_panel,
+        )
+        self.ui_builder._sync_rail()
 
     def _assign_ui_components(self):
         """Assigns widgets created by the UI builder to the window instance."""
@@ -868,6 +879,9 @@ class ZashTerminalWindow(WindowSearchBroadcastMixin, Adw.ApplicationWindow):
             if not new_value and self.ui_builder.is_ai_panel_visible():
                 self.ui_builder.hide_ai_panel()
 
+        if key == "status_bar_visible" and getattr(self, "status_controller", None):
+            self.status_controller.set_status_bar_visible(bool(new_value))
+
         if key == "transcript_logging_enabled":
             stopped = self.terminal_manager.apply_transcript_preference_change(
                 bool(new_value)
@@ -1021,6 +1035,27 @@ class ZashTerminalWindow(WindowSearchBroadcastMixin, Adw.ApplicationWindow):
 
         # Trigger a title update to reflect the newly focused pane
         self.terminal_manager._update_title(terminal)
+        if getattr(self, "status_controller", None) is not None:
+            self.status_controller.refresh()
+
+    def _on_session_opened(self, session: SessionItem, kind: str) -> None:
+        """Record a connection in the history panel."""
+        try:
+            self.connection_history.record(session.name, session.host or "", kind)
+        except Exception as exc:
+            self.logger.debug(f"Could not record connection history: {exc}")
+
+    def _on_history_session_activated(self, _panel, session_name: str) -> None:
+        """Re-open a session picked from the history panel."""
+        session = next(
+            (item for item in self.session_store if item.name == session_name), None
+        )
+        if session is None:
+            self.toast_overlay.add_toast(
+                Adw.Toast(title=_("This session no longer exists."))
+            )
+            return
+        self._on_session_activated(session)
 
     def _on_tab_changed(self, view_stack, _param):
         """Handle tab changes."""
@@ -1225,6 +1260,8 @@ class ZashTerminalWindow(WindowSearchBroadcastMixin, Adw.ApplicationWindow):
         self._cleanup_performed = True
         self.logger.info("Performing window cleanup")
         self.terminal_manager.cleanup_all_terminals()
+        if getattr(self, "status_controller", None) is not None:
+            self.status_controller.shutdown()
 
         if self.settings_manager.get("clear_remote_edit_files_on_exit", False):
             self.logger.info("Clearing all temporary remote edit files on exit.")
@@ -1365,6 +1402,8 @@ class ZashTerminalWindow(WindowSearchBroadcastMixin, Adw.ApplicationWindow):
     def _update_font_sizer_widget(self):
         if self.font_sizer_widget:
             self.font_sizer_widget.update_display()
+        if getattr(self, "status_controller", None) is not None:
+            self.status_controller.refresh()
 
     def _sync_toggle_button_state(self):
         """Synchronize toggle button state with file manager visibility."""

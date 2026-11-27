@@ -355,7 +355,7 @@ class SessionTreeView:
         self, factory: Gtk.SignalListItemFactory, list_item: Gtk.ListItem
     ) -> None:
         """Sets up the widget structure for each row in the ColumnView."""
-        box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6, hexpand=True)
+        box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8, hexpand=True)
 
         # MODIFIED: Add a dedicated spacer for indentation
         spacer = Gtk.Box()
@@ -366,11 +366,21 @@ class SessionTreeView:
         arrow = Gtk.Image(pixel_size=12)
         arrow.set_size_request(12, -1)
         arrow.add_css_class("dim-label")
-        icon = Gtk.Image()
+        icon = Gtk.Image(halign=Gtk.Align.CENTER, valign=Gtk.Align.CENTER)
         label = Gtk.Label(xalign=0.0, hexpand=True, ellipsize=Pango.EllipsizeMode.END)
+        dot = Gtk.Box(css_classes=["session-status-dot"], valign=Gtk.Align.CENTER)
+        kebab = Gtk.Button(
+            icon_name="view-more-symbolic",
+            css_classes=["flat", "session-card-kebab"],
+            valign=Gtk.Align.CENTER,
+            focus_on_click=False,
+        )
+        kebab.connect("clicked", self._on_kebab_clicked, list_item)
         box.append(arrow)
         box.append(icon)
         box.append(label)
+        box.append(dot)
+        box.append(kebab)
         list_item.set_child(box)
 
         right_click = Gtk.GestureClick.new()
@@ -396,11 +406,13 @@ class SessionTreeView:
     ) -> None:
         """Binds data from a model item to a row widget."""
         box = list_item.get_child()
-        # MODIFIED: Find widgets by their position/type
+        # Widgets are found by position (see _on_factory_setup)
         spacer = box.get_first_child()
         arrow = spacer.get_next_sibling()
         icon = arrow.get_next_sibling()
         label = icon.get_next_sibling()
+        dot = label.get_next_sibling()
+        kebab = dot.get_next_sibling()
 
         tree_list_row = list_item.get_item()
         item = tree_list_row.get_item()
@@ -409,6 +421,23 @@ class SessionTreeView:
         list_item.set_selectable(not header)
         list_item.set_activatable(not header)
         box.set_sensitive(not header)
+
+        # Rows are recycled: reset the card chrome before styling this item
+        is_session = isinstance(item, SessionItem)
+        for widget, css in ((box, "session-card"), (icon, "session-card-icon")):
+            if is_session:
+                widget.add_css_class(css)
+            else:
+                widget.remove_css_class(css)
+        icon.set_pixel_size(18 if is_session else 16)
+        label.set_lines(2 if is_session else 1)
+        label.set_yalign(0.5)
+        dot.set_visible(is_session)
+        dot.remove_css_class("connected")
+        if is_session and item.name in getattr(self, "_connected_names", set()):
+            dot.add_css_class("connected")
+        kebab.set_visible(not header)
+
         if header:
             label.set_markup(
                 f"<small><b>{GLib.markup_escape_text(item.name.upper())}</b></small>"
@@ -419,6 +448,13 @@ class SessionTreeView:
             return
         label.remove_css_class("dim-label")
         label.set_markup(self._row_markup(item))
+        if isinstance(item, SessionFolder):
+            count = sum(1 for s in self.session_store if s.folder_path == item.path)
+            if count:
+                label.set_markup(
+                    f"{GLib.markup_escape_text(item.name or '')} "
+                    f"<span alpha='55%'>({count})</span>"
+                )
 
         # MODIFIED: Dynamic indentation using the spacer widget
         depth = tree_list_row.get_depth()
@@ -471,13 +507,24 @@ class SessionTreeView:
 
     @staticmethod
     def _row_markup(item) -> str:
-        """Row text: the name, plus a dim ``user@host`` for SSH sessions."""
+        """Row text: the name; session cards add a dim second line."""
         name = GLib.markup_escape_text(item.name or "")
-        if isinstance(item, SessionItem) and item.favorite:
-            name = f"★ {name}"
-        if isinstance(item, SessionItem) and item.is_ssh() and item.host:
-            target = GLib.markup_escape_text(item.get_connection_string())
-            return f"{name}  <span size='small' alpha='55%'>{target}</span>"
+        if isinstance(item, SessionItem):
+            if item.favorite:
+                name = f"★ {name}"
+            if item.is_ssh() and item.host:
+                subtitle = item.get_connection_string()
+            elif item.is_local():
+                subtitle = _("Local terminal")
+            else:
+                subtitle = ""
+            if subtitle:
+                return (
+                    f"<b>{name}</b>\n"
+                    f"<span size='small' alpha='60%'>"
+                    f"{GLib.markup_escape_text(subtitle)}</span>"
+                )
+            return f"<b>{name}</b>"
         return name
 
     def _on_factory_unbind(
@@ -908,8 +955,19 @@ class SessionTreeView:
         list_item: Gtk.ListItem,
     ) -> None:
         """Shows a context menu for a specific item."""
+        self._show_item_menu(list_item, x, y)
+        # Stop event propagation to prevent the empty area handler from being triggered
+        gesture.set_state(Gtk.EventSequenceState.CLAIMED)
+
+    def _on_kebab_clicked(self, button: Gtk.Button, list_item: Gtk.ListItem) -> None:
+        """The row's "⋮" button opens the same menu as a right click."""
+        row_box = list_item.get_child()
+        ok, x, y = button.translate_coordinates(row_box, 0, button.get_height())
+        self._show_item_menu(list_item, x if ok else 0, y if ok else 0)
+
+    def _show_item_menu(self, list_item: Gtk.ListItem, x: float, y: float) -> None:
         pos = list_item.get_position()
-        self.logger.debug(f"_on_item_right_click called for position: {pos}")
+        self.logger.debug(f"_show_item_menu called for position: {pos}")
         if not self.selection_model.is_selected(pos):
             self.selection_model.unselect_all()
             self.selection_model.select_item(pos, True)
@@ -939,9 +997,6 @@ class SessionTreeView:
             # Show traditional popover menu (for non-popover sidebar mode)
             self.logger.debug("Showing traditional popover context menu")
             self._show_popover_context_menu(item, list_item, x, y)
-
-        # Stop event propagation to prevent the empty area handler from being triggered
-        gesture.set_state(Gtk.EventSequenceState.CLAIMED)
 
     def _show_inline_context_menu(
         self, item: Union[SessionItem, SessionFolder, LayoutItem]

@@ -170,6 +170,8 @@ class TabManager:
         ] = weakref.WeakKeyDictionary()
         self.active_tab: Optional[Gtk.Box] = None
         self._tab_being_moved: Optional[Gtk.Box] = None  # Context-menu click-to-place
+        # Called with (session, kind) when an SSH/SFTP tab opens (connection history)
+        self.on_session_opened: Optional[Callable[[SessionItem, str], None]] = None
         self._drop_target_tab: Optional[Gtk.Box] = None
         self._drop_side: str = "left"
         # In-process tab reorder (GestureDrag — avoids HeaderBar window-move grab).
@@ -538,6 +540,7 @@ class TabManager:
         )
         if terminal:
             self._create_tab_for_terminal(terminal, session)
+            self._notify_session_opened(session, "ssh")
         return terminal
 
     def create_sftp_tab(self, session: SessionItem) -> Optional[Vte.Terminal]:
@@ -547,7 +550,12 @@ class TabManager:
             sftp_session = SessionItem.from_dict(session.to_dict())
             sftp_session.name = self._generate_unique_sftp_name(session.name)
             self._create_tab_for_terminal(terminal, sftp_session)
+            self._notify_session_opened(session, "sftp")
         return terminal
+
+    def _notify_session_opened(self, session: SessionItem, kind: str) -> None:
+        if self.on_session_opened is not None:
+            self.on_session_opened(session, kind)
 
     def _generate_unique_sftp_name(self, base_session_name: str) -> str:
         base_title = f"SFTP-{base_session_name}"

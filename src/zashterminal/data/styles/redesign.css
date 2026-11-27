@@ -1,0 +1,195 @@
+/* Visual redesign: activity rail, session cards, tab strip, banner, status bar.
+   Loaded after window.css at the same priority so these rules win ties; colours
+   come from the theme (@zash_brand follows the terminal/wallpaper theme). */
+
+@define-color zash_success #2ec27e;
+@define-color zash_idle #8a8f98;
+
+/* ---- Activity rail ------------------------------------------------------ */
+
+.zash-rail {
+    min-width: 68px;
+    padding: 10px 6px;
+    border-right: 1px solid alpha(currentColor, 0.08);
+    background: mix(@window_bg_color, @zash_brand, 0.06);
+}
+
+.zash-rail-item {
+    min-height: 0;
+    min-width: 0;
+    padding: 8px 2px;
+    border-radius: 12px;
+    border: 1px solid transparent;
+    background: transparent;
+    color: alpha(currentColor, 0.72);
+    transition: background-color 120ms ease, border-color 120ms ease;
+}
+
+.zash-rail-item:hover {
+    background: alpha(currentColor, 0.07);
+    color: inherit;
+}
+
+.zash-rail-item:checked {
+    background: alpha(@zash_brand, 0.20);
+    border-color: alpha(@zash_brand, 0.55);
+    color: inherit;
+}
+
+.zash-rail-label {
+    font-size: 0.72em;
+    font-weight: 500;
+}
+
+/* ---- Sessions panel ----------------------------------------------------- */
+
+.sidebar-container {
+    background: alpha(@zash_brand, 0.03);
+    border-right: 1px solid alpha(currentColor, 0.08);
+}
+
+.sidebar-search entry {
+    border-radius: 12px;
+    min-height: 34px;
+    border: 1px solid alpha(currentColor, 0.10);
+    background: alpha(currentColor, 0.04);
+}
+
+.sidebar-session-tree row {
+    padding: 0;
+    margin: 3px 8px;
+    border-radius: 12px;
+    background: transparent;
+}
+
+.sidebar-session-tree row:hover {
+    background: alpha(currentColor, 0.05);
+}
+
+.sidebar-session-tree row:selected {
+    background: alpha(@zash_brand, 0.16);
+    box-shadow: inset 0 0 0 1px alpha(@zash_brand, 0.75);
+}
+
+.session-card {
+    padding: 8px 6px 8px 8px;
+}
+
+.session-card-icon {
+    min-width: 34px;
+    min-height: 34px;
+    border-radius: 10px;
+    background: alpha(@zash_brand, 0.16);
+    color: @zash_brand;
+}
+
+.session-card-title {
+    font-weight: 600;
+}
+
+.session-card-subtitle {
+    font-size: 0.82em;
+    opacity: 0.62;
+}
+
+.session-status-dot {
+    min-width: 8px;
+    min-height: 8px;
+    border-radius: 999px;
+    background: @zash_idle;
+}
+
+.session-status-dot.connected {
+    background: @zash_success;
+    box-shadow: 0 0 6px alpha(@zash_success, 0.7);
+}
+
+.session-card-kebab {
+    min-width: 26px;
+    min-height: 26px;
+    padding: 0;
+    border-radius: 8px;
+    opacity: 0;
+}
+
+.sidebar-session-tree row:hover .session-card-kebab,
+.sidebar-session-tree row:selected .session-card-kebab {
+    opacity: 0.8;
+}
+
+/* ---- Tab strip (below the header bar) ----------------------------------- */
+
+.zash-tabstrip {
+    padding: 8px 8px 0 8px;
+}
+
+.zash-tabstrip .scrolled-tab-bar {
+    background: transparent;
+}
+
+.zash-tabstrip .zash-new-tab {
+    min-width: 30px;
+    min-height: 30px;
+    padding: 0;
+    border-radius: 10px;
+    border: 1px solid alpha(currentColor, 0.10);
+    background: alpha(currentColor, 0.04);
+}
+
+/* ---- Connection banner -------------------------------------------------- */
+
+.zash-banner {
+    margin: 6px 10px 0 10px;
+    padding: 4px 6px 4px 12px;
+    border-radius: 10px;
+    border: 1px solid alpha(@zash_brand, 0.35);
+    background: alpha(@zash_brand, 0.10);
+}
+
+.zash-banner-close {
+    min-width: 22px;
+    min-height: 22px;
+    padding: 0;
+}
+
+/* ---- Status bar --------------------------------------------------------- */
+
+.zash-statusbar {
+    padding: 5px 14px;
+    font-size: 0.85em;
+    border-top: 1px solid alpha(currentColor, 0.08);
+    background: alpha(@zash_brand, 0.04);
+}
+
+.zash-status-item {
+    opacity: 0.85;
+}
+
+.zash-status-dot {
+    min-width: 8px;
+    min-height: 8px;
+    border-radius: 999px;
+    background: @zash_idle;
+}
+
+.zash-status-dot.connected {
+    background: @zash_success;
+}
+
+.zash-status-dot.local {
+    background: @zash_brand;
+}
+
+.zash-status-dot.disconnected {
+    background: @destructive_color;
+}
+
+/* ---- Header bar --------------------------------------------------------- */
+
+.zash-palette-button {
+    padding: 2px 12px;
+    border-radius: 10px;
+    border: 1px solid alpha(currentColor, 0.12);
+    background: alpha(currentColor, 0.05);
+    font-size: 0.85em;
+}

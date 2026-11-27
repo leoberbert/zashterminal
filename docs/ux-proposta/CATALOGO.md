@@ -206,3 +206,31 @@ Cada item tem: problema, mudança, arquivos principais e critério de aceite.
 
 | 2026-11-16 | VIS-01 | (ver git log) | Visual Aurora + cor da sessão aplicado |
 | 2026-11-16 | VIS-02 | (ver git log) | Aurora em diálogos, paleta, barras e gerenciador de arquivos |
+
+### VIS-03 `[x]` Janela principal com trilho de atividades, cartões e barra de status
+- **Referência:** mockups de 2026-11-27 (trilho de ícones à esquerda, painel Sessões em cartões, abas abaixo do
+  cabeçalho, barra de status inferior). Branch `feat/visual-redesign`.
+- **Feito:**
+  - Trilho (`ui/widgets/activity_rail.py`): Sessões, Arquivos (alterna o gerenciador de arquivos), Snippets (abre o
+    Gerenciador de Comandos), Histórico, Monitor e IA. Os botões antigos do cabeçalho (painel, arquivos, comandos, IA)
+    continuam existindo como dono do estado e dos atalhos, mas não são mais empacotados no cabeçalho.
+  - Painel lateral com páginas Sessões / Histórico (`data/connection_history.py`, `ui/widgets/history_panel.py`) /
+    Monitor (`ui/widgets/monitor_panel.py`). Histórico grava sessões SSH/SFTP abertas.
+  - Sessões em cartões (ícone, nome, `usuário@host`, ponto verde quando conectada, menu "⋮"); pastas com contagem.
+  - Abas abaixo do cabeçalho, com "+" logo após a última aba; cabeçalho mostra título/subtítulo e botão da paleta.
+  - Barra de status (`ui/widgets/status_bar.py`, `ui/status_controller.py`): estado da conexão, SO, CPU/RAM/disco e
+    latência do host (local via `/proc`, remoto por uma execução `ssh` reutilizando o ControlMaster da aba, sem pedir
+    senha — `utils/system_metrics.py`), codificação, shell e tamanho da fonte. Preferência `status_bar_visible`.
+  - Faixa "Conectado a <sessão> (<SO>)" acima do terminal, dispensável.
+  - Cor de destaque padrão passou de violeta para azul; abas retangulares com contorno na ativa.
+- **Arquivos:** `ui/window_ui.py`, `window.py`, `sessions/tree.py`, `terminal/tabs.py`, `data/styles/redesign.css`,
+  `data/styles/panels.css`, `data/styles/window.css`.
+
+### VIS-04 `[x]` Preferências com navegação lateral e pré-visualização
+- **Revisão da decisão de UX-31:** a janela agora é `Adw.Window` própria (navegação lateral, busca própria, pré-visualização
+  ao vivo do terminal, rodapé Cancelar/Aplicar/Salvar). A API pública de `PreferencesDialog` foi mantida (paleta de
+  comandos continua abrindo páginas e configurações). Cancelar restaura os valores alterados desde o último Aplicar.
+- **Arquivos:** `ui/dialogs/preferences_dialog.py`, `ui/dialogs/preferences_preview.py`, `data/styles/preferences.css`.
+
+| 2026-11-27 | VIS-03 | (ver git log) | Trilho, cartões, abas abaixo do cabeçalho, barra de status, histórico e monitor |
+| 2026-11-27 | VIS-04 | (ver git log) | Preferências com navegação lateral e preview |

@@ -176,6 +176,17 @@ class WindowUIBuilder:
             Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION,
         )
 
+        # Redesign: activity rail, session cards, tab strip, banner, status bar
+        redesign_css = _STYLES_DIR / "redesign.css"
+        if redesign_css.exists():
+            redesign_provider = Gtk.CssProvider()
+            redesign_provider.load_from_path(str(redesign_css))
+            Gtk.StyleContext.add_provider_for_display(
+                Gdk.Display.get_default(),
+                redesign_provider,
+                Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION,
+            )
+
         # Shared visual identity, after the per-area stylesheets so it wins ties
         aurora_css = _STYLES_DIR / "aurora.css"
         if aurora_css.exists():
@@ -306,15 +317,20 @@ class WindowUIBuilder:
         self.split_view = Adw.OverlaySplitView()
         self.split_view.set_sidebar_position(Gtk.PackType.START)
         self.split_view.set_sidebar_width_unit(Adw.LengthUnit.PX)
-        self.split_view.set_min_sidebar_width(220)
-        self.split_view.set_max_sidebar_width(280)
+        self.split_view.set_min_sidebar_width(260)
+        self.split_view.set_max_sidebar_width(340)
         self.split_view.set_enable_show_gesture(False)
         self.split_view.set_enable_hide_gesture(False)
         self.split_view.set_vexpand(True)
         self.sidebar_box = self._create_sidebar()
         self.split_view.set_sidebar(self.sidebar_box)
         self.split_view.set_content(self._create_content_area())
-        main_box.append(self.split_view)
+
+        body = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, vexpand=True)
+        body.append(self._create_activity_rail())
+        self.split_view.set_hexpand(True)
+        body.append(self.split_view)
+        main_box.append(body)
         return main_box
 
     def _create_header_bar(self) -> Adw.HeaderBar:
@@ -381,6 +397,15 @@ class WindowUIBuilder:
         self.new_tab_button = icon_button("tab-new-symbolic")
         self.new_tab_button.connect("clicked", self.window._on_new_tab_clicked)
         self.new_tab_button.add_css_class("flat")
+        self.new_tab_button.add_css_class("zash-new-tab")
+
+        # Command palette entry point (Ctrl+Shift+P by default)
+        self.palette_button = Gtk.Button(css_classes=["zash-palette-button", "flat"])
+        palette_box = Gtk.Box(spacing=6)
+        palette_box.append(icon_image("edit-find-symbolic", size=14))
+        palette_box.append(Gtk.Label(label=self._palette_shortcut_label()))
+        self.palette_button.set_child(palette_box)
+        self.palette_button.set_action_name("win.command-palette")
 
         # Add custom tooltips to header bar buttons (with dynamic shortcuts where applicable)
         self.tooltip_helper.add_tooltip_with_shortcut(
@@ -420,7 +445,11 @@ class WindowUIBuilder:
         )
         self.scrolled_tab_bar.add_css_class("scrolled-tab-bar")
         self.scrolled_tab_bar.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.NEVER)
-        self.scrolled_tab_bar.set_child(self.tab_manager.get_tab_bar())
+        # "+" sits right after the last tab and scrolls with them
+        tab_row = Gtk.Box(spacing=4, halign=Gtk.Align.START)
+        tab_row.append(self.tab_manager.get_tab_bar())
+        tab_row.append(self.new_tab_button)
+        self.scrolled_tab_bar.set_child(tab_row)
 
         scroll_controller = Gtk.EventControllerScroll.new(
             Gtk.EventControllerScrollFlags.BOTH_AXES
@@ -428,10 +457,16 @@ class WindowUIBuilder:
         scroll_controller.connect("scroll", self.window._on_tab_bar_scroll)
         self.scrolled_tab_bar.add_controller(scroll_controller)
 
-        self.single_tab_title_widget = Adw.WindowTitle(title=_("Terminal Zash"))
+        # The tab strip lives below the header bar (see _create_content_area);
+        # the header shows the application title in both stack pages.
+        subtitle = _("Terminal • SSH • SFTP • Linux")
+        self.single_tab_title_widget = Adw.WindowTitle(
+            title=_("Terminal Zash"), subtitle=subtitle
+        )
+        tabs_title_widget = Adw.WindowTitle(title=_("Terminal Zash"), subtitle=subtitle)
 
         self.title_stack = Gtk.Stack()
-        self.title_stack.add_named(self.scrolled_tab_bar, "tabs-view")
+        self.title_stack.add_named(tabs_title_widget, "tabs-view")
         self.title_stack.add_named(self.single_tab_title_widget, "title-view")
         header_bar.set_title_widget(self.title_stack)
 
@@ -462,20 +497,31 @@ class WindowUIBuilder:
         return any(btn in left_part for btn in ("close", "minimize", "maximize"))
 
     def _header_tool_buttons(self) -> list:
-        """Tool buttons, packed away from the window controls (in this order)."""
+        """Tool buttons, packed away from the window controls (in this order).
+
+        Sessions, file manager, command manager and AI live on the activity
+        rail; their header buttons stay alive (they own the state and the
+        shortcuts) but are not packed into the header.
+        """
         return [
-            self.toggle_sidebar_button,
-            self.file_manager_button,
-            self.command_manager_button,
+            self.palette_button,
             self.broadcast_button,
-            self.ai_assistant_button,
             self.search_button,
             self.cleanup_button,
         ]
 
     def _header_end_buttons(self) -> list:
         """Buttons packed next to the window controls."""
-        return [self.menu_button, self.new_tab_button]
+        return [self.menu_button]
+
+    @staticmethod
+    def _palette_shortcut_label_for(shortcut: str) -> str:
+        ok, keyval, mods = Gtk.accelerator_parse(shortcut or "")
+        return Gtk.accelerator_get_label(keyval, mods) if ok else ""
+
+    def _palette_shortcut_label(self) -> str:
+        shortcut = self.settings_manager.get_shortcut("command-palette")
+        return self._palette_shortcut_label_for(shortcut) or _("Command Palette")
 
     def _pack_header_buttons(self, header_bar, controls_on_left: bool) -> None:
         """Pack header buttons; mirror sides when window controls are on the left."""
@@ -655,6 +701,117 @@ class WindowUIBuilder:
         command_manager.unpin_command(command.id)
         self._populate_command_toolbar(self._toolbar_inner)
 
+    def _create_activity_rail(self) -> Gtk.Widget:
+        """Left rail: sessions, files, snippets, history, monitor and AI."""
+        from .widgets.activity_rail import ActivityRail
+
+        self._rail_syncing = False
+        rail = ActivityRail()
+        self.activity_rail = rail
+
+        rail.add_item(
+            "sessions",
+            "network-server-symbolic",
+            _("Sessions"),
+            _("Sessions Panel"),
+            lambda active: self._on_rail_page_toggled("sessions", active),
+            shortcut_action="toggle-sidebar",
+        )
+        rail.add_item(
+            "sftp",
+            "folder-symbolic",
+            _("Files"),
+            _("File Manager"),
+            lambda active: self.file_manager_button.set_active(active),
+            shortcut_action="toggle-file-manager",
+        )
+        rail.add_item(
+            "snippets",
+            "view-list-bullet-symbolic",
+            _("Snippets"),
+            _("Command Manager"),
+            lambda active: active and self.window.activate_action(
+                "win.show-command-manager", None
+            ),
+            momentary=True,
+            shortcut_action="show-command-manager",
+        )
+        rail.add_item(
+            "history",
+            "view-history-symbolic",
+            _("History"),
+            _("Connection History"),
+            lambda active: self._on_rail_page_toggled("history", active),
+        )
+        rail.add_item(
+            "monitor",
+            "utilities-system-monitor-symbolic",
+            _("Monitor"),
+            _("Server Monitor"),
+            lambda active: self._on_rail_page_toggled("monitor", active),
+            use_bundled=False,
+        )
+        rail.add_spacer()
+        rail.add_item(
+            "ai",
+            "ai-assistant-symbolic",
+            _("AI"),
+            _("Ask AI Assistant"),
+            lambda active: self._on_rail_ai_toggled(active),
+            use_bundled=True,
+            shortcut_action="ai-assistant",
+        )
+        rail.set_item_visible(
+            "ai", bool(self.settings_manager.get("ai_assistant_enabled", False))
+        )
+
+        self.split_view.connect("notify::show-sidebar", lambda *_a: self._sync_rail())
+        self.sidebar_pages.connect(
+            "notify::visible-child-name", lambda *_a: self._sync_rail()
+        )
+        self.file_manager_button.connect("toggled", lambda *_a: self._sync_rail())
+        self._sync_rail()
+        return rail
+
+    def _on_rail_page_toggled(self, page: str, active: bool) -> None:
+        if self._rail_syncing:
+            return
+        if active:
+            self.sidebar_pages.set_visible_child_name(page)
+            self.split_view.set_show_sidebar(True)
+        elif self.sidebar_pages.get_visible_child_name() == page:
+            self.split_view.set_show_sidebar(False)
+        self._sync_rail()
+
+    def _on_rail_ai_toggled(self, active: bool) -> None:
+        if self._rail_syncing:
+            return
+        if active != self._ai_panel_visible:
+            self.window._on_ai_assistant_requested()
+        self._sync_rail()
+
+    def _sync_rail(self) -> None:
+        """Mirror panel state (sidebar page, file manager, AI) onto the rail."""
+        rail = getattr(self, "activity_rail", None)
+        if rail is None:
+            return
+        self._rail_syncing = True
+        try:
+            shown = self.split_view.get_show_sidebar()
+            page = self.sidebar_pages.get_visible_child_name()
+            for key in ("sessions", "history", "monitor"):
+                rail.set_active(key, shown and page == key)
+            rail.set_active("sftp", self.file_manager_button.get_active())
+            rail.set_active("ai", self._ai_panel_visible)
+        finally:
+            self._rail_syncing = False
+        controller = getattr(self.window, "status_controller", None)
+        if controller is not None:
+            controller.set_monitor_active(
+                self.split_view.get_show_sidebar()
+                and self.sidebar_pages.get_visible_child_name() == "monitor"
+            )
+
     def _create_sidebar(self) -> Gtk.Widget:
         """Create the sidebar with session tree using a simple Box layout."""
         # Main container for sidebar
@@ -765,7 +922,11 @@ class WindowUIBuilder:
         self.inline_context_menu_box.add_css_class("inline-context-menu")
         self.sidebar_main_stack.add_named(self.inline_context_menu_box, "context-menu")
 
-        sidebar_box.append(self.sidebar_main_stack)
+        self.sidebar_pages = Gtk.Stack(vexpand=True)
+        self.sidebar_pages.set_transition_type(Gtk.StackTransitionType.CROSSFADE)
+        self.sidebar_pages.add_named(self.sidebar_main_stack, "sessions")
+        self._create_extra_sidebar_pages()
+        sidebar_box.append(self.sidebar_pages)
 
         # Store reference to the stack for switching (keeping old name for compatibility)
         self.sidebar_content_stack = self.sidebar_main_stack
@@ -814,8 +975,29 @@ class WindowUIBuilder:
             page = "empty"
         self.sidebar_list_stack.set_visible_child_name(page)
 
+    def _create_extra_sidebar_pages(self) -> None:
+        """History and monitor pages that share the sessions panel's column."""
+        from .widgets.history_panel import HistoryPanel
+        from .widgets.monitor_panel import MonitorPanel
+
+        self.history_panel = HistoryPanel(self.window.connection_history)
+        self.history_panel.connect(
+            "session-activated", self.window._on_history_session_activated
+        )
+        self.monitor_panel = MonitorPanel()
+        self.sidebar_pages.add_named(self.history_panel, "history")
+        self.sidebar_pages.add_named(self.monitor_panel, "monitor")
+        self.sidebar_pages.connect(
+            "notify::visible-child-name",
+            lambda *_a: self.history_panel.refresh()
+            if self.sidebar_pages.get_visible_child_name() == "history"
+            else None,
+        )
+
     def _create_content_area(self) -> Gtk.Widget:
-        """Create the main content area with tabs, file manager, and AI panel."""
+        """Create the main content area: tab strip, banner, terminals, status bar."""
+        from .widgets.status_bar import ConnectionBanner, StatusBar
+
         view_stack = self.tab_manager.get_view_stack()
         view_stack.add_css_class("terminal-tab-view")
 
@@ -832,12 +1014,29 @@ class WindowUIBuilder:
         self.ai_paned.set_end_child(None)
         self.ai_paned.set_resize_end_child(True)
         self.ai_paned.set_shrink_end_child(False)
+        self.ai_paned.set_vexpand(True)
 
         # Panel will be created on first use
         self.ai_chat_panel = None
         self._ai_panel_visible = False
 
-        return self.ai_paned
+        tab_strip = Gtk.Box(spacing=4, css_classes=["zash-tabstrip"])
+        tab_strip.append(self.scrolled_tab_bar)
+
+        self.connection_banner = ConnectionBanner(
+            lambda: self.window.status_controller.dismiss_banner()
+        )
+        self.status_bar = StatusBar()
+        self.status_bar.set_visible(
+            bool(self.settings_manager.get("status_bar_visible", True))
+        )
+
+        content = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        content.append(tab_strip)
+        content.append(self.connection_banner)
+        content.append(self.ai_paned)
+        content.append(self.status_bar)
+        return content
 
     def _setup_lazy_menu_popover(self) -> None:
         """Set up lazy loading for the main menu popover using a lightweight placeholder."""
@@ -952,6 +1151,7 @@ class WindowUIBuilder:
             self.ai_paned.set_position(target_pos)
 
             self._ai_panel_visible = True
+            self._sync_rail()
 
     def hide_ai_panel(self) -> None:
         """Hide the AI chat panel."""
@@ -968,6 +1168,7 @@ class WindowUIBuilder:
             # Remove panel
             self.ai_paned.set_end_child(None)
             self._ai_panel_visible = False
+        self._sync_rail()
 
     def toggle_ai_panel(self) -> None:
         """Toggle the AI chat panel visibility."""
@@ -982,9 +1183,11 @@ class WindowUIBuilder:
 
     def update_ai_button_visibility(self) -> None:
         """Update AI button visibility based on settings."""
+        enabled = self.settings_manager.get("ai_assistant_enabled", False)
         if self.ai_assistant_button:
-            enabled = self.settings_manager.get("ai_assistant_enabled", False)
             self.ai_assistant_button.set_visible(enabled)
+        if getattr(self, "activity_rail", None) is not None:
+            self.activity_rail.set_item_visible("ai", bool(enabled))
 
     def _update_border_css(self):
         """Update the window border CSS based on maximized state."""

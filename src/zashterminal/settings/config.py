@@ -195,7 +195,7 @@ class DefaultSettings:
             "font": DefaultSettings.get_available_default_font(),
             "line_spacing": 1.0,
             "bold_is_bright": False,
-            "tab_alignment": "center",
+            "tab_alignment": "left",
             # Window State
             "window_width": 1200,
             "window_height": 700,
@@ -242,6 +242,8 @@ class DefaultSettings:
             # Logging Settings
             "log_to_file": False,
             "console_log_level": "ERROR",
+            # Bottom status bar (connection, host metrics, encoding, font)
+            "status_bar_visible": True,
             # Session transcript logging (terminal output capture)
             "transcript_logging_enabled": False,
             "transcript_strip_ansi": True,

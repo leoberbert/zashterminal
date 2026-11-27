@@ -52,8 +52,8 @@
 }
 
 /* Brand colors (violet → blue), used for the active tab, focus and selection */
-@define-color zash_brand #7c5cff;
-@define-color zash_brand_2 #3aa8f5;
+@define-color zash_brand #3b7bff;
+@define-color zash_brand_2 #5b9bff;
 /* Text on brand gradients and the broadcast highlight; the terminal/wallpaper
    theme overrides all four (ThemeEngine._get_brand_css) */
 @define-color zash_brand_fg #ffffff;
@@ -159,21 +159,25 @@ popover.menu separator {
 /* Custom tab button styling: pill tabs, brand gradient on the active one.
    A session "Tab Color" replaces the gradient (see TabManager._apply_tab_color). */
 .custom-tab-button {
-    padding: 4px 2px 4px 14px;
-    margin: 0 2px;
-    border-radius: 999px;
-    transition: background-color 120ms ease, box-shadow 120ms ease;
+    padding: 5px 4px 5px 12px;
+    margin: 0 3px;
+    border-radius: 10px;
+    border: 1px solid alpha(currentColor, 0.10);
+    background: alpha(currentColor, 0.04);
+    transition: background-color 120ms ease, border-color 120ms ease;
 }
 
 .custom-tab-button.active {
-    background-image: linear-gradient(90deg, @zash_brand, @zash_brand_2);
-    color: @zash_brand_fg;
-    font-weight: 700;
-    box-shadow: 0 2px 10px alpha(@zash_brand, 0.5);
+    background-image: none;
+    background-color: alpha(@zash_brand, 0.14);
+    border-color: @zash_brand;
+    color: inherit;
+    font-weight: 600;
+    box-shadow: 0 -2px 0 0 @zash_brand inset;
 }
 
 .custom-tab-button:hover:not(.active) {
-    background: alpha(currentColor, 0.08);
+    background: alpha(currentColor, 0.09);
 }
 
 /* Sidebar toolbar view */
