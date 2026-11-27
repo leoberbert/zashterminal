@@ -954,7 +954,7 @@ class TerminalManager(
     ) -> Optional[pathlib.Path]:
         """Start recording *terminal* to a new transcript file; returns its path."""
         existing = getattr(terminal, "_zashterminal_transcript", None)
-        if existing is not None:
+        if isinstance(existing, TranscriptWriter):
             return existing.path
 
         session = identifier if isinstance(identifier, SessionItem) else None
@@ -1105,8 +1105,11 @@ class TerminalManager(
             return
         handler_id = getattr(terminal, "_zashterminal_transcript_handler", None)
         if handler_id is not None:
-            if GObject.signal_handler_is_connected(terminal, handler_id):
-                terminal.disconnect(handler_id)
+            try:
+                if GObject.signal_handler_is_connected(terminal, handler_id):
+                    terminal.disconnect(handler_id)
+            except Exception as exc:
+                self.logger.debug(f"Transcript handler disconnect failed: {exc}")
             terminal._zashterminal_transcript_handler = None
         try:
             # Flush any remaining text on the current line before close.
