@@ -281,17 +281,17 @@ class WindowActions:
     def zoom_in(self, *_args):
         if terminal := self.window.tab_manager.get_selected_terminal():
             terminal.set_font_scale(terminal.get_font_scale() * 1.1)
-            self.window._update_font_sizer_widget()
+            self.window._refresh_status_bar()
 
     def zoom_out(self, *_args):
         if terminal := self.window.tab_manager.get_selected_terminal():
             terminal.set_font_scale(terminal.get_font_scale() / 1.1)
-            self.window._update_font_sizer_widget()
+            self.window._refresh_status_bar()
 
     def zoom_reset(self, *_args):
         if terminal := self.window.tab_manager.get_selected_terminal():
             terminal.set_font_scale(1.0)
-            self.window._update_font_sizer_widget()
+            self.window._refresh_status_bar()
 
     # --- Session Tree Actions ---
 

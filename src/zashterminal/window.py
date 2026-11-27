@@ -324,7 +324,6 @@ class ZashTerminalWindow(WindowSearchBroadcastMixin, Adw.ApplicationWindow):
         self.file_manager_button = self.ui_builder.file_manager_button
         self.cleanup_button = self.ui_builder.cleanup_button
         self.cleanup_popover = self.ui_builder.cleanup_popover
-        self.font_sizer_widget = self.ui_builder.font_sizer_widget
         self.scrolled_tab_bar = self.ui_builder.scrolled_tab_bar
         self.single_tab_title_widget = self.ui_builder.single_tab_title_widget
         self.title_stack = self.ui_builder.title_stack
@@ -975,8 +974,8 @@ class ZashTerminalWindow(WindowSearchBroadcastMixin, Adw.ApplicationWindow):
                 GLib.idle_add(self._update_tooltip_colors)
             if key in ["transparency", "headerbar_transparency"]:
                 self._update_file_manager_transparency()
-            if self.font_sizer_widget and key == "font":
-                self.font_sizer_widget.update_display()
+            if key == "font":
+                self._refresh_status_bar()
 
         # Update headerbar buttons visibility when this setting changes
         if key == "hide_headerbar_buttons_when_maximized":
@@ -1079,7 +1078,7 @@ class ZashTerminalWindow(WindowSearchBroadcastMixin, Adw.ApplicationWindow):
         self._hide_search_if_terminal_changed()
 
         self._sync_toggle_button_state()
-        self._update_font_sizer_widget()
+        self._refresh_status_bar()
         self._update_tab_layout()
 
     def _on_toggle_file_manager(self, button: Gtk.ToggleButton):
@@ -1412,9 +1411,7 @@ class ZashTerminalWindow(WindowSearchBroadcastMixin, Adw.ApplicationWindow):
             self.title_stack.set_visible_child_name("title-view")
             self.single_tab_title_widget.set_title(_("Terminal Zash"))
 
-    def _update_font_sizer_widget(self):
-        if self.font_sizer_widget:
-            self.font_sizer_widget.update_display()
+    def _refresh_status_bar(self):
         if getattr(self, "status_controller", None) is not None:
             self.status_controller.refresh()
 

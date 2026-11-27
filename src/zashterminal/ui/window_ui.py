@@ -94,7 +94,6 @@ class WindowUIBuilder:
         self.file_manager_button = None
         self.command_manager_button = None
         self.cleanup_button = None
-        self.font_sizer_widget = None
         self.scrolled_tab_bar = None
         self.single_tab_title_widget = None
         self.title_stack = None
@@ -1034,9 +1033,7 @@ class WindowUIBuilder:
 
         from .menus import MainApplicationMenu
 
-        real_popover, self.font_sizer_widget = MainApplicationMenu.create_main_popover(
-            self.window
-        )
+        real_popover = MainApplicationMenu.create_main_popover(self.window)
         real_popover.connect("show", self._on_main_menu_popover_show)
         self._main_menu_popover = real_popover
         self.menu_button.set_popover(real_popover)
@@ -1049,9 +1046,7 @@ class WindowUIBuilder:
         if self._main_menu_popover is None:
             from .menus import MainApplicationMenu
 
-            popover, self.font_sizer_widget = MainApplicationMenu.create_main_popover(
-                self.window
-            )
+            popover = MainApplicationMenu.create_main_popover(self.window)
             popover.connect("show", self._on_main_menu_popover_show)
             self._main_menu_popover = popover
             self.menu_button.set_popover(popover)

@@ -265,9 +265,6 @@ class MenuModelTests(unittest.TestCase):
             "win.new-window",
             "win.command-palette",
             "win.preferences",
-            "win.highlight-settings",
-            "win.configure-ai",
-            "win.shortcuts",
             "win.import-securecrt-sessions",
             "win.import-putty-sessions",
             "win.import-multiputty-sessions",
@@ -277,6 +274,9 @@ class MenuModelTests(unittest.TestCase):
             "app.quit",
         ):
             self.assertIn(name, actions)
+        # Moved to Preferences: no duplicate entries in the main menu
+        for name in ("win.highlight-settings", "win.configure-ai", "win.shortcuts"):
+            self.assertNotIn(name, actions)
         self.assertEqual(tools.get_n_items(), 1)
 
     def test_tftp_label_follows_server_state_in_place(self):

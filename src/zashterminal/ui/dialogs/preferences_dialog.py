@@ -676,11 +676,41 @@ class PreferencesDialog(Adw.Window):
         scale.set_value(value)
         scale.set_draw_value(True)
         scale.set_value_pos(Gtk.PositionType.RIGHT)
-        scale.set_size_request(220, -1)
+        scale.set_hexpand(True)
         scale.set_valign(Gtk.Align.CENTER)
         if percent:
             scale.set_format_value_func(lambda _s, v: f"{int(v)}%")
         return scale
+
+    @staticmethod
+    def _create_scale_row(title: str, subtitle: str, scale: Gtk.Scale) -> Adw.PreferencesRow:
+        """Row with the text on top and the slider on the line below.
+
+        A slider as a row suffix is squeezed beside the title in narrow
+        columns, wrapping the title letter by letter.
+        """
+        row = Adw.PreferencesRow(title=title, activatable=False, use_markup=False)
+        box = Gtk.Box(
+            orientation=Gtk.Orientation.VERTICAL,
+            spacing=4,
+            margin_top=10,
+            margin_bottom=10,
+            margin_start=12,
+            margin_end=12,
+        )
+        box.append(Gtk.Label(label=title, xalign=0, wrap=True))
+        if subtitle:
+            box.append(
+                Gtk.Label(
+                    label=subtitle,
+                    xalign=0,
+                    wrap=True,
+                    css_classes=["dim-label", "caption"],
+                )
+            )
+        box.append(scale)
+        row.set_child(box)
+        return row
 
     def _create_launcher_row(
         self, title: str, subtitle: str, action: str
@@ -907,14 +937,16 @@ class PreferencesDialog(Adw.Window):
 
         window_group = self._make_group(page, _("Window & Effects"))
 
-        transparency_row = Adw.ActionRow(title=_("Terminal Transparency"))
         self.transparency_scale = self._create_scale(
             0, 100, self.settings_manager.get("transparency", 0), percent=True
         )
         self.transparency_scale.connect("value-changed", self._on_transparency_changed)
-        transparency_row.add_suffix(self.transparency_scale)
-        transparency_row.set_activatable_widget(self.transparency_scale)
-        self._register_row(window_group, transparency_row)
+        self._register_row(
+            window_group,
+            self._create_scale_row(
+                _("Terminal Transparency"), "", self.transparency_scale
+            ),
+        )
 
         parent = self.get_transient_for()
         blur_supported = parent.background_blur_supported()
@@ -936,35 +968,36 @@ class PreferencesDialog(Adw.Window):
         self.blur_row.connect("notify::active", self._on_background_blur_changed)
         self._register_row(window_group, self.blur_row)
 
-        self.blur_strength_row = Adw.ActionRow(
-            title=_("Blur Strength"),
-            subtitle=_("Applies only to this terminal window.")
-            if self._blur_strength_supported
-            else _(
-                "Install the Zashterminal KWin effect to control strength independently."
-            ),
-            sensitive=self._blur_strength_supported and self.blur_row.get_active(),
-        )
         self.blur_strength_scale = self._create_scale(
             1, 15, parent.background_blur_strength
         )
         self.blur_strength_scale.connect("value-changed", self._on_blur_strength_changed)
-        self.blur_strength_row.add_suffix(self.blur_strength_scale)
-        self.blur_strength_row.set_activatable_widget(self.blur_strength_scale)
+        self.blur_strength_row = self._create_scale_row(
+            _("Blur Strength"),
+            _("Applies only to this terminal window.")
+            if self._blur_strength_supported
+            else _(
+                "Install the Zashterminal KWin effect to control strength independently."
+            ),
+            self.blur_strength_scale,
+        )
+        self.blur_strength_row.set_sensitive(
+            self._blur_strength_supported and self.blur_row.get_active()
+        )
         self._register_row(window_group, self.blur_strength_row)
 
-        headerbar_transparency_row = Adw.ActionRow(title=_("Headerbar Transparency"))
         self.headerbar_transparency_scale = self._create_scale(
             0, 100, self.settings_manager.get("headerbar_transparency", 0), percent=True
         )
         self.headerbar_transparency_scale.connect(
             "value-changed", self._on_headerbar_transparency_changed
         )
-        headerbar_transparency_row.add_suffix(self.headerbar_transparency_scale)
-        headerbar_transparency_row.set_activatable_widget(
-            self.headerbar_transparency_scale
+        self._register_row(
+            window_group,
+            self._create_scale_row(
+                _("Headerbar Transparency"), "", self.headerbar_transparency_scale
+            ),
         )
-        self._register_row(window_group, headerbar_transparency_row)
 
         self._register_row(
             window_group,

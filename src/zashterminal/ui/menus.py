@@ -4,144 +4,10 @@ import gi
 
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
-from gi.repository import Adw, Gio, GLib, Gtk
+from gi.repository import Gio, Gtk
 
 from ..helpers import is_valid_url
-from ..settings.config import DefaultSettings
-from ..settings.manager import SettingsManager
-from ..utils.icons import icon_button
 from ..utils.translation_utils import _
-
-
-class ThemeSelectorWidget(Gtk.Box):
-    """Custom widget for selecting the GTK color scheme."""
-
-    def __init__(self, settings_manager: SettingsManager, parent_window):
-        super().__init__(orientation=Gtk.Orientation.HORIZONTAL, spacing=30)
-        self.settings_manager = settings_manager
-        self.parent_window = parent_window
-        self.style_manager = Adw.StyleManager.get_default()
-
-        self.add_css_class("themeselector")
-        self.set_halign(Gtk.Align.CENTER)
-
-        self.system_button = Gtk.CheckButton(tooltip_text=_("Follow System Style"))
-        self.system_button.add_css_class("follow")
-        self.system_button.add_css_class("theme-selector")
-        self.system_button.connect("toggled", self._on_theme_changed, "default")
-
-        self.light_button = Gtk.CheckButton(
-            group=self.system_button, tooltip_text=_("Light Style")
-        )
-        self.light_button.add_css_class("light")
-        self.light_button.add_css_class("theme-selector")
-        self.light_button.connect("toggled", self._on_theme_changed, "light")
-
-        self.dark_button = Gtk.CheckButton(
-            group=self.system_button, tooltip_text=_("Dark Style")
-        )
-        self.dark_button.add_css_class("dark")
-        self.dark_button.add_css_class("theme-selector")
-        self.dark_button.connect("toggled", self._on_theme_changed, "dark")
-
-        self.terminal_button = Gtk.CheckButton(
-            group=self.system_button, tooltip_text=_("Match Terminal Colors")
-        )
-        self.terminal_button.add_css_class("terminal")
-        self.terminal_button.add_css_class("theme-selector")
-        self.terminal_button.connect("toggled", self._on_theme_changed, "terminal")
-
-        self.append(self.system_button)
-        self.append(self.light_button)
-        self.append(self.dark_button)
-        self.append(self.terminal_button)
-
-        self._update_button_state()
-
-    def _on_theme_changed(self, button: Gtk.CheckButton, theme: str):
-        if not button.get_active():
-            return
-        # Just set the setting. The SettingsManager will handle the theme application logic.
-        self.settings_manager.set("gtk_theme", theme)
-
-    def _update_button_state(self):
-        current_theme = self.settings_manager.get("gtk_theme", "default")
-        if current_theme == "light":
-            self.light_button.set_active(True)
-        elif current_theme == "dark":
-            self.dark_button.set_active(True)
-        elif current_theme == "terminal":
-            self.terminal_button.set_active(True)
-        else:
-            self.system_button.set_active(True)
-
-
-class FontSizerWidget(Gtk.CenterBox):
-    """Custom widget for changing the base font size."""
-
-    def __init__(self, parent_window):
-        super().__init__()
-        self.parent_window = parent_window
-        self.settings_manager = parent_window.settings_manager
-
-        self.add_css_class("font-sizer")
-
-        zoom_controls_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=20)
-
-        decrement_btn = icon_button("zoom-out-symbolic")
-        decrement_btn.add_css_class("flat")
-        decrement_btn.connect("clicked", self._on_decrement)
-
-        font_size_button = Gtk.Button(css_classes=["flat"])
-        font_size_button.connect("clicked", self._on_reset)
-
-        self.font_size_label = Gtk.Label(label="12 pt", halign=Gtk.Align.CENTER)
-        self.font_size_label.set_size_request(60, -1)
-        font_size_button.set_child(self.font_size_label)
-
-        increment_btn = icon_button("zoom-in-symbolic")
-        increment_btn.add_css_class("flat")
-        increment_btn.connect("clicked", self._on_increment)
-
-        zoom_controls_box.append(decrement_btn)
-        zoom_controls_box.append(font_size_button)
-        zoom_controls_box.append(increment_btn)
-
-        self.set_center_widget(zoom_controls_box)
-        self.update_display()
-
-    def _parse_font_string(self, font_string: str) -> tuple[str, int]:
-        try:
-            parts = font_string.rsplit(" ", 1)
-            family = parts[0]
-            size = int(parts[1])
-            return family, size
-        except (IndexError, ValueError):
-            return "Monospace", 12
-
-    def _change_font_size(self, delta: int):
-        current_font = self.settings_manager.get("font")
-        family, size = self._parse_font_string(current_font)
-        new_size = max(6, min(72, size + delta))
-        new_font_string = f"{family} {new_size}"
-        self.settings_manager.set("font", new_font_string)
-        self.update_display()
-
-    def _on_decrement(self, button):
-        self._change_font_size(-1)
-
-    def _on_increment(self, button):
-        self._change_font_size(1)
-
-    def _on_reset(self, button):
-        default_font = DefaultSettings.get_defaults()["font"]
-        self.settings_manager.set("font", default_font)
-        self.update_display()
-
-    def update_display(self):
-        font_string = self.settings_manager.get("font")
-        _family, size = self._parse_font_string(font_string)
-        self.font_size_label.set_text(f"{size} pt")
 
 
 class MainApplicationMenu:
@@ -156,24 +22,12 @@ class MainApplicationMenu:
         """Return the menu model and its "Tools" section (holds the TFTP item)."""
         menu = Gio.Menu()
 
-        quick = Gio.Menu()
-        for custom_id in ("theme-selector", "font-sizer"):
-            item = Gio.MenuItem.new(None, None)
-            item.set_attribute_value("custom", GLib.Variant.new_string(custom_id))
-            quick.append_item(item)
-        menu.append_section(None, quick)
-
+        # Theme, fonts, colors, AI and shortcuts live in Preferences.
         window_section = Gio.Menu()
         window_section.append(_("New Window"), "win.new-window")
         window_section.append(_("Command Palette"), "win.command-palette")
+        window_section.append(_("Preferences"), "win.preferences")
         menu.append_section(None, window_section)
-
-        customize = Gio.Menu()
-        customize.append(_("Preferences"), "win.preferences")
-        customize.append(_("Colors & Highlighting"), "win.highlight-settings")
-        customize.append(_("AI Assistant"), "win.configure-ai")
-        customize.append(_("Keyboard Shortcuts"), "win.shortcuts")
-        menu.append_section(_("Customize"), customize)
 
         imports = Gio.Menu()
         # Product names: identical in every language.
@@ -196,19 +50,12 @@ class MainApplicationMenu:
         return menu, tools
 
     @staticmethod
-    def create_main_popover(parent_window) -> tuple[Gtk.PopoverMenu, FontSizerWidget]:
+    def create_main_popover(parent_window) -> Gtk.PopoverMenu:
         menu, tools = MainApplicationMenu.build_menu_model(parent_window)
         popover = Gtk.PopoverMenu.new_from_model(menu)
         popover.add_css_class("zashterminal-popover")
         popover.tftp_section = tools
-
-        font_sizer_widget = FontSizerWidget(parent_window)
-        popover.add_child(
-            ThemeSelectorWidget(parent_window.settings_manager, parent_window),
-            "theme-selector",
-        )
-        popover.add_child(font_sizer_widget, "font-sizer")
-        return popover, font_sizer_widget
+        return popover
 
     @staticmethod
     def _tftp_menu_item(parent_window) -> Gio.MenuItem:
