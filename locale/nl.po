@@ -9055,3 +9055,451 @@ msgstr "Kon de logmap niet openen."
 #: src/zashterminal/terminal/tabs.py
 msgid "This tab has an active SSH connection. Closing will disconnect it. Are you sure?"
 msgstr "Dit tabblad heeft een actieve SSH-verbinding. Sluiten verbreekt de verbinding. Weet u het zeker?"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "Snippets"
+msgstr "Snippets"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "History"
+msgstr "Geschiedenis"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "Monitor"
+msgstr "Monitor"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "Connection History"
+msgstr "Verbindingsgeschiedenis"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "Server Monitor"
+msgstr "Servermonitor"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "AI"
+msgstr "AI"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "Terminal • SSH • SFTP • Linux"
+msgstr "Terminal • SSH • SFTP • Linux"
+
+#: src/zashterminal/ui/widgets/status_bar.py
+msgid "SSH connected"
+msgstr "SSH verbonden"
+
+#: src/zashterminal/ui/status_controller.py
+msgid "Disconnected"
+msgstr "Verbinding verbroken"
+
+#: src/zashterminal/sessions/tree.py
+msgid "Local terminal"
+msgstr "Lokale terminal"
+
+#: src/zashterminal/ui/widgets/status_bar.py
+msgid "No terminal"
+msgstr "Geen terminal"
+
+#: src/zashterminal/ui/widgets/status_bar.py
+msgid "CPU: {value}%"
+msgstr "CPU: {value}%"
+
+#: src/zashterminal/ui/widgets/status_bar.py
+msgid "RAM: {value}%"
+msgstr "RAM: {value}%"
+
+#: src/zashterminal/ui/widgets/status_bar.py
+msgid "Disk: {value}%"
+msgstr "Schijf: {value}%"
+
+#: src/zashterminal/ui/widgets/status_bar.py
+msgid "{value} ms"
+msgstr "{value} ms"
+
+#: src/zashterminal/ui/widgets/status_bar.py
+msgid "Dismiss"
+msgstr "Sluiten"
+
+#: src/zashterminal/ui/widgets/status_bar.py
+msgid "Connected to <b>{name}</b> ({os})"
+msgstr "Verbonden met <b>{name}</b> ({os})"
+
+#: src/zashterminal/ui/widgets/status_bar.py
+msgid "Connected to <b>{name}</b>"
+msgstr "Verbonden met <b>{name}</b>"
+
+#: src/zashterminal/ui/status_controller.py
+msgid "SFTP connected"
+msgstr "SFTP verbonden"
+
+#: src/zashterminal/ui/status_controller.py
+msgid "Not connected"
+msgstr "Niet verbonden"
+
+#: src/zashterminal/ui/status_controller.py
+msgid "Metrics are not available for this tab"
+msgstr "Statistieken zijn niet beschikbaar voor dit tabblad"
+
+#: src/zashterminal/window.py
+msgid "This session no longer exists."
+msgstr "Deze sessie bestaat niet meer."
+
+#: src/zashterminal/ui/widgets/history_panel.py
+msgid "Search history..."
+msgstr "Geschiedenis zoeken..."
+
+#: src/zashterminal/ui/widgets/history_panel.py
+msgid "No history yet"
+msgstr "Nog geen geschiedenis"
+
+#: src/zashterminal/ui/widgets/history_panel.py
+msgid "just now"
+msgstr "zojuist"
+
+#: src/zashterminal/ui/widgets/history_panel.py
+msgid "{n} min ago"
+msgstr "{n} min geleden"
+
+#: src/zashterminal/ui/widgets/history_panel.py
+msgid "{n} h ago"
+msgstr "{n} u geleden"
+
+#: src/zashterminal/ui/widgets/history_panel.py
+msgid "{n} d ago"
+msgstr "{n} d geleden"
+
+#: src/zashterminal/ui/widgets/history_panel.py
+msgid "Remove from history"
+msgstr "Verwijderen uit geschiedenis"
+
+#: src/zashterminal/ui/widgets/monitor_panel.py
+msgid "CPU"
+msgstr "CPU"
+
+#: src/zashterminal/ui/widgets/monitor_panel.py
+msgid "RAM"
+msgstr "RAM"
+
+#: src/zashterminal/ui/widgets/monitor_panel.py
+msgid "Disk"
+msgstr "Schijf"
+
+#: src/zashterminal/ui/widgets/monitor_panel.py
+msgid "Monitor unavailable"
+msgstr "Monitor niet beschikbaar"
+
+#: src/zashterminal/ui/widgets/monitor_panel.py
+msgid "Waiting for data..."
+msgstr "Wachten op gegevens..."
+
+#: src/zashterminal/ui/widgets/monitor_panel.py
+msgid "Kernel: {v}"
+msgstr "Kernel: {v}"
+
+#: src/zashterminal/ui/widgets/monitor_panel.py
+msgid "Uptime: {v}"
+msgstr "Uptime: {v}"
+
+#: src/zashterminal/ui/widgets/monitor_panel.py
+msgid "Latency: {v} ms"
+msgstr "Latentie: {v} ms"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "General"
+msgstr "Algemeen"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Startup behavior, interface and updates."
+msgstr "Opstartgedrag, interface en updates."
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Customize the look, colors and window behavior of the terminal."
+msgstr "Pas het uiterlijk, de kleuren en het venstergedrag van de terminal aan."
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Cursor, scrolling and shell behavior."
+msgstr "Cursor, scrollen en shellgedrag."
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Profiles & Sessions"
+msgstr "Profielen en sessies"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Session restore and backups."
+msgstr "Sessieherstel en back-ups."
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "SSH Connections"
+msgstr "SSH-verbindingen"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Connection persistence for SSH sessions."
+msgstr "Verbindingspersistentie voor SSH-sessies."
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Security"
+msgstr "Beveiliging"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Temporary files created while editing remote files."
+msgstr "Tijdelijke bestanden die worden aangemaakt bij het bewerken van externe bestanden."
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Configure the AI assistant."
+msgstr "De AI-assistent configureren."
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "View and customize keyboard shortcuts."
+msgstr "Sneltoetsen bekijken en aanpassen."
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Text rendering, compatibility, logs and maintenance."
+msgstr "Tekstweergave, compatibiliteit, logs en onderhoud."
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Version and project information."
+msgstr "Versie- en projectinformatie."
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Search Results"
+msgstr "Zoekresultaten"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Interface"
+msgstr "Interface"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Font & Text"
+msgstr "Lettertype en tekst"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Colors & Theme"
+msgstr "Kleuren en thema"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Window & Effects"
+msgstr "Venster en effecten"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Search settings..."
+msgstr "Instellingen zoeken..."
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Window Buttons When Maximized"
+msgstr "Vensterknoppen bij maximaliseren"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "For KDE Plasma panel integration"
+msgstr "Voor integratie met het KDE Plasma-paneel"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Font Size"
+msgstr "Lettergrootte"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Interface Theme"
+msgstr "Interfacethema"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Terminal Color Scheme"
+msgstr "Kleurenschema van terminal"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Color schemes, wallpaper colors and highlight rules"
+msgstr "Kleurenschema's, achtergrondkleuren en markeerregels"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Show Status Bar"
+msgstr "Statusbalk tonen"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Connection, CPU/RAM/disk, encoding and font at the bottom of the window."
+msgstr "Verbinding, CPU/RAM/schijf, codering en lettertype onderaan het venster."
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Open the AI assistant settings"
+msgstr "De instellingen van de AI-assistent openen"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Open the keyboard shortcuts editor"
+msgstr "De sneltoetseneditor openen"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Version"
+msgstr "Versie"
+
+#: src/zashterminal/app.py
+msgid "Source Code"
+msgstr "Broncode"
+
+#: src/zashterminal/app.py
+msgid "Report an Issue"
+msgstr "Een probleem melden"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Save Changes"
+msgstr "Wijzigingen opslaan"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "{count} matching settings"
+msgstr "{count} overeenkomende instellingen"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Auto-detect"
+msgstr "Automatisch detecteren"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Always hide"
+msgstr "Altijd verbergen"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Never hide"
+msgstr "Nooit verbergen"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Settings applied"
+msgstr "Instellingen toegepast"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "No settings found"
+msgstr "Geen instellingen gevonden"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Try a different search term."
+msgstr "Probeer een andere zoekterm."
+
+#: src/zashterminal/ui/dialogs/preferences_preview.py
+msgid "Terminal Preview"
+msgstr "Terminalvoorbeeld"
+
+#: src/zashterminal/ui/dialogs/preferences_preview.py
+msgid "Theme & Palette"
+msgstr "Thema en palet"
+
+#: src/zashterminal/ui/dialogs/preferences_preview.py
+msgid "Manage Themes"
+msgstr "Thema's beheren"
+
+#: src/zashterminal/ui/widgets/status_bar.py
+msgid "Memory: {value}%"
+msgstr "Geheugen: {value}%"
+
+#: src/zashterminal/ui/widgets/monitor_panel.py
+msgid "Memory"
+msgstr "Geheugen"
+
+#: src/zashterminal/ui/widgets/monitor_panel.py
+msgid "Latency"
+msgstr "Latentie"
+
+#: src/zashterminal/ui/widgets/monitor_panel.py
+msgid "Kernel"
+msgstr "Kernel"
+
+#: src/zashterminal/ui/widgets/monitor_panel.py
+msgid "Processor"
+msgstr "Processor"
+
+#: src/zashterminal/ui/widgets/monitor_panel.py
+msgid "Cores"
+msgstr "Kernen"
+
+#: src/zashterminal/ui/widgets/monitor_panel.py
+msgid "Uptime"
+msgstr "Uptime"
+
+#: src/zashterminal/ui/widgets/monitor_panel.py
+msgid "Load"
+msgstr "Belasting"
+
+#: src/zashterminal/ui/widgets/monitor_panel.py
+msgid "Processes"
+msgstr "Processen"
+
+#: src/zashterminal/ui/widgets/monitor_panel.py
+msgid "Network"
+msgstr "Netwerk"
+
+#: src/zashterminal/ui/widgets/monitor_panel.py
+msgid "Disks"
+msgstr "Schijven"
+
+#: src/zashterminal/ui/widgets/monitor_panel.py
+msgid "Top CPU"
+msgstr "Top CPU"
+
+#: src/zashterminal/ui/widgets/monitor_panel.py
+msgid "Top memory"
+msgstr "Top geheugen"
+
+#: src/zashterminal/ui/widgets/monitor_panel.py
+msgid "Swap: {used} / {total}"
+msgstr "Swap: {used} / {total}"
+
+#: src/zashterminal/ui/widgets/monitor_panel.py
+msgid "Expand monitor"
+msgstr "Monitor uitbreiden"
+
+#: src/zashterminal/ui/dialogs/ai_config_dialog.py
+msgid "API Format"
+msgstr "API-formaat"
+
+#: src/zashterminal/ui/dialogs/ai_config_dialog.py
+msgid "Anthropic-compatible"
+msgstr "Anthropic-compatibel"
+
+#: src/zashterminal/ui/dialogs/ai_config_dialog.py
+msgid "Base URL (e.g. https://api.example.com/v1)"
+msgstr "Basis-URL (bijv. https://api.example.com/v1)"
+
+#: src/zashterminal/ui/dialogs/ai_config_dialog.py
+msgid "Choose a cloud provider, a local server or your own endpoint."
+msgstr "Kies een cloudprovider, een lokale server of je eigen endpoint."
+
+#: src/zashterminal/ui/dialogs/ai_config_dialog.py
+msgid "Configure the base URL in the AI Assistant settings."
+msgstr "Stel de basis-URL in bij de instellingen van de AI-assistent."
+
+#: src/zashterminal/ui/dialogs/ai_config_dialog.py
+msgid "Could not store API key securely. Is the system keyring available?"
+msgstr "De API-sleutel kon niet veilig worden opgeslagen. Is de systeemsleutelbos beschikbaar?"
+
+#: src/zashterminal/terminal/ai_providers.py
+msgid "Failed to reach {provider}: {error}"
+msgstr "Kan {provider} niet bereiken: {error}"
+
+#: src/zashterminal/ui/dialogs/ai_config_dialog.py
+msgid "OpenAI-compatible"
+msgstr "OpenAI-compatibel"
+
+#: src/zashterminal/ui/dialogs/ai_config_dialog.py
+msgid "Other (custom)"
+msgstr "Anders (aangepast)"
+
+#: src/zashterminal/ui/dialogs/ai_config_dialog.py
+msgid "Request format: /chat/completions (OpenAI) or /messages (Anthropic)."
+msgstr "Verzoekformaat: /chat/completions (OpenAI) of /messages (Anthropic)."
+
+#: src/zashterminal/ui/dialogs/ai_config_dialog.py
+msgid "Search and select from the models offered by the provider."
+msgstr "Zoek en kies uit de modellen van de provider."
+
+#: src/zashterminal/terminal/ai_providers.py
+msgid "Select an AI provider in the AI Assistant settings."
+msgstr "Kies een AI-provider bij de instellingen van de AI-assistent."
+
+#: src/zashterminal/ui/dialogs/ai_config_dialog.py
+msgid "Select {provider} Model"
+msgstr "{provider}-model kiezen"
+
+#: src/zashterminal/ui/dialogs/ai_config_dialog.py
+msgid "{provider} API Key"
+msgstr "{provider} API-sleutel"
+
+#: src/zashterminal/terminal/ai_providers.py
+msgid "{provider} did not return any usable content."
+msgstr "{provider} gaf geen bruikbare inhoud terug."
+
+#: src/zashterminal/terminal/ai_providers.py
+msgid "{provider} returned HTTP {status}: {message}{detail}"
+msgstr "{provider} antwoordde met HTTP {status}: {message}{detail}"

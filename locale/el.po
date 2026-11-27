@@ -9073,3 +9073,451 @@ msgstr "Δεν ήταν δυνατό το άνοιγμα του φακέλου �
 #: src/zashterminal/terminal/tabs.py
 msgid "This tab has an active SSH connection. Closing will disconnect it. Are you sure?"
 msgstr "Αυτή η καρτέλα έχει ενεργή σύνδεση SSH. Το κλείσιμο θα την αποσυνδέσει. Είστε σίγουροι;"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "Snippets"
+msgstr "Αποσπάσματα"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "History"
+msgstr "Ιστορικό"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "Monitor"
+msgstr "Παρακολούθηση"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "Connection History"
+msgstr "Ιστορικό συνδέσεων"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "Server Monitor"
+msgstr "Παρακολούθηση διακομιστή"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "AI"
+msgstr "AI"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "Terminal • SSH • SFTP • Linux"
+msgstr "Τερματικό • SSH • SFTP • Linux"
+
+#: src/zashterminal/ui/widgets/status_bar.py
+msgid "SSH connected"
+msgstr "SSH συνδεδεμένο"
+
+#: src/zashterminal/ui/status_controller.py
+msgid "Disconnected"
+msgstr "Αποσυνδέθηκε"
+
+#: src/zashterminal/sessions/tree.py
+msgid "Local terminal"
+msgstr "Τοπικό τερματικό"
+
+#: src/zashterminal/ui/widgets/status_bar.py
+msgid "No terminal"
+msgstr "Κανένα τερματικό"
+
+#: src/zashterminal/ui/widgets/status_bar.py
+msgid "CPU: {value}%"
+msgstr "CPU: {value}%"
+
+#: src/zashterminal/ui/widgets/status_bar.py
+msgid "RAM: {value}%"
+msgstr "RAM: {value}%"
+
+#: src/zashterminal/ui/widgets/status_bar.py
+msgid "Disk: {value}%"
+msgstr "Δίσκος: {value}%"
+
+#: src/zashterminal/ui/widgets/status_bar.py
+msgid "{value} ms"
+msgstr "{value} ms"
+
+#: src/zashterminal/ui/widgets/status_bar.py
+msgid "Dismiss"
+msgstr "Απόρριψη"
+
+#: src/zashterminal/ui/widgets/status_bar.py
+msgid "Connected to <b>{name}</b> ({os})"
+msgstr "Συνδέθηκε στο <b>{name}</b> ({os})"
+
+#: src/zashterminal/ui/widgets/status_bar.py
+msgid "Connected to <b>{name}</b>"
+msgstr "Συνδέθηκε στο <b>{name}</b>"
+
+#: src/zashterminal/ui/status_controller.py
+msgid "SFTP connected"
+msgstr "SFTP συνδεδεμένο"
+
+#: src/zashterminal/ui/status_controller.py
+msgid "Not connected"
+msgstr "Μη συνδεδεμένο"
+
+#: src/zashterminal/ui/status_controller.py
+msgid "Metrics are not available for this tab"
+msgstr "Οι μετρήσεις δεν είναι διαθέσιμες για αυτήν την καρτέλα"
+
+#: src/zashterminal/window.py
+msgid "This session no longer exists."
+msgstr "Αυτή η συνεδρία δεν υπάρχει πλέον."
+
+#: src/zashterminal/ui/widgets/history_panel.py
+msgid "Search history..."
+msgstr "Αναζήτηση στο ιστορικό..."
+
+#: src/zashterminal/ui/widgets/history_panel.py
+msgid "No history yet"
+msgstr "Δεν υπάρχει ιστορικό ακόμη"
+
+#: src/zashterminal/ui/widgets/history_panel.py
+msgid "just now"
+msgstr "μόλις τώρα"
+
+#: src/zashterminal/ui/widgets/history_panel.py
+msgid "{n} min ago"
+msgstr "πριν από {n} λ."
+
+#: src/zashterminal/ui/widgets/history_panel.py
+msgid "{n} h ago"
+msgstr "πριν από {n} ώ."
+
+#: src/zashterminal/ui/widgets/history_panel.py
+msgid "{n} d ago"
+msgstr "πριν από {n} ημ."
+
+#: src/zashterminal/ui/widgets/history_panel.py
+msgid "Remove from history"
+msgstr "Κατάργηση από το ιστορικό"
+
+#: src/zashterminal/ui/widgets/monitor_panel.py
+msgid "CPU"
+msgstr "CPU"
+
+#: src/zashterminal/ui/widgets/monitor_panel.py
+msgid "RAM"
+msgstr "RAM"
+
+#: src/zashterminal/ui/widgets/monitor_panel.py
+msgid "Disk"
+msgstr "Δίσκος"
+
+#: src/zashterminal/ui/widgets/monitor_panel.py
+msgid "Monitor unavailable"
+msgstr "Η παρακολούθηση δεν είναι διαθέσιμη"
+
+#: src/zashterminal/ui/widgets/monitor_panel.py
+msgid "Waiting for data..."
+msgstr "Αναμονή δεδομένων..."
+
+#: src/zashterminal/ui/widgets/monitor_panel.py
+msgid "Kernel: {v}"
+msgstr "Πυρήνας: {v}"
+
+#: src/zashterminal/ui/widgets/monitor_panel.py
+msgid "Uptime: {v}"
+msgstr "Χρόνος λειτουργίας: {v}"
+
+#: src/zashterminal/ui/widgets/monitor_panel.py
+msgid "Latency: {v} ms"
+msgstr "Καθυστέρηση: {v} ms"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "General"
+msgstr "Γενικά"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Startup behavior, interface and updates."
+msgstr "Συμπεριφορά εκκίνησης, διεπαφή και ενημερώσεις."
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Customize the look, colors and window behavior of the terminal."
+msgstr "Προσαρμόστε την εμφάνιση, τα χρώματα και τη συμπεριφορά του παραθύρου του τερματικού."
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Cursor, scrolling and shell behavior."
+msgstr "Δρομέας, κύλιση και συμπεριφορά του φλοιού."
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Profiles & Sessions"
+msgstr "Προφίλ και συνεδρίες"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Session restore and backups."
+msgstr "Επαναφορά συνεδριών και αντίγραφα ασφαλείας."
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "SSH Connections"
+msgstr "Συνδέσεις SSH"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Connection persistence for SSH sessions."
+msgstr "Διατήρηση σύνδεσης για συνεδρίες SSH."
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Security"
+msgstr "Ασφάλεια"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Temporary files created while editing remote files."
+msgstr "Προσωρινά αρχεία που δημιουργούνται κατά την επεξεργασία απομακρυσμένων αρχείων."
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Configure the AI assistant."
+msgstr "Ρύθμιση του βοηθού AI."
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "View and customize keyboard shortcuts."
+msgstr "Προβολή και προσαρμογή των συντομεύσεων πληκτρολογίου."
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Text rendering, compatibility, logs and maintenance."
+msgstr "Απόδοση κειμένου, συμβατότητα, αρχεία καταγραφής και συντήρηση."
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Version and project information."
+msgstr "Πληροφορίες έκδοσης και έργου."
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Search Results"
+msgstr "Αποτελέσματα αναζήτησης"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Interface"
+msgstr "Διεπαφή"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Font & Text"
+msgstr "Γραμματοσειρά και κείμενο"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Colors & Theme"
+msgstr "Χρώματα και θέμα"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Window & Effects"
+msgstr "Παράθυρο και εφέ"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Search settings..."
+msgstr "Αναζήτηση ρυθμίσεων..."
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Window Buttons When Maximized"
+msgstr "Κουμπιά παραθύρου κατά τη μεγιστοποίηση"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "For KDE Plasma panel integration"
+msgstr "Για ενσωμάτωση με το πάνελ του KDE Plasma"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Font Size"
+msgstr "Μέγεθος γραμματοσειράς"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Interface Theme"
+msgstr "Θέμα διεπαφής"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Terminal Color Scheme"
+msgstr "Χρωματικό σχήμα τερματικού"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Color schemes, wallpaper colors and highlight rules"
+msgstr "Χρωματικά σχήματα, χρώματα ταπετσαρίας και κανόνες επισήμανσης"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Show Status Bar"
+msgstr "Εμφάνιση γραμμής κατάστασης"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Connection, CPU/RAM/disk, encoding and font at the bottom of the window."
+msgstr "Σύνδεση, CPU/RAM/δίσκος, κωδικοποίηση και γραμματοσειρά στο κάτω μέρος του παραθύρου."
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Open the AI assistant settings"
+msgstr "Άνοιγμα ρυθμίσεων του βοηθού AI"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Open the keyboard shortcuts editor"
+msgstr "Άνοιγμα του επεξεργαστή συντομεύσεων πληκτρολογίου"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Version"
+msgstr "Έκδοση"
+
+#: src/zashterminal/app.py
+msgid "Source Code"
+msgstr "Πηγαίος κώδικας"
+
+#: src/zashterminal/app.py
+msgid "Report an Issue"
+msgstr "Αναφορά προβλήματος"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Save Changes"
+msgstr "Αποθήκευση αλλαγών"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "{count} matching settings"
+msgstr "{count} ρυθμίσεις που ταιριάζουν"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Auto-detect"
+msgstr "Αυτόματη ανίχνευση"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Always hide"
+msgstr "Πάντα απόκρυψη"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Never hide"
+msgstr "Ποτέ απόκρυψη"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Settings applied"
+msgstr "Οι ρυθμίσεις εφαρμόστηκαν"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "No settings found"
+msgstr "Δεν βρέθηκαν ρυθμίσεις"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Try a different search term."
+msgstr "Δοκιμάστε διαφορετικό όρο αναζήτησης."
+
+#: src/zashterminal/ui/dialogs/preferences_preview.py
+msgid "Terminal Preview"
+msgstr "Προεπισκόπηση τερματικού"
+
+#: src/zashterminal/ui/dialogs/preferences_preview.py
+msgid "Theme & Palette"
+msgstr "Θέμα και παλέτα"
+
+#: src/zashterminal/ui/dialogs/preferences_preview.py
+msgid "Manage Themes"
+msgstr "Διαχείριση θεμάτων"
+
+#: src/zashterminal/ui/widgets/status_bar.py
+msgid "Memory: {value}%"
+msgstr "Μνήμη: {value}%"
+
+#: src/zashterminal/ui/widgets/monitor_panel.py
+msgid "Memory"
+msgstr "Μνήμη"
+
+#: src/zashterminal/ui/widgets/monitor_panel.py
+msgid "Latency"
+msgstr "Καθυστέρηση"
+
+#: src/zashterminal/ui/widgets/monitor_panel.py
+msgid "Kernel"
+msgstr "Πυρήνας"
+
+#: src/zashterminal/ui/widgets/monitor_panel.py
+msgid "Processor"
+msgstr "Επεξεργαστής"
+
+#: src/zashterminal/ui/widgets/monitor_panel.py
+msgid "Cores"
+msgstr "Πυρήνες"
+
+#: src/zashterminal/ui/widgets/monitor_panel.py
+msgid "Uptime"
+msgstr "Χρόνος λειτουργίας"
+
+#: src/zashterminal/ui/widgets/monitor_panel.py
+msgid "Load"
+msgstr "Φορτίο"
+
+#: src/zashterminal/ui/widgets/monitor_panel.py
+msgid "Processes"
+msgstr "Διεργασίες"
+
+#: src/zashterminal/ui/widgets/monitor_panel.py
+msgid "Network"
+msgstr "Δίκτυο"
+
+#: src/zashterminal/ui/widgets/monitor_panel.py
+msgid "Disks"
+msgstr "Δίσκοι"
+
+#: src/zashterminal/ui/widgets/monitor_panel.py
+msgid "Top CPU"
+msgstr "Κορυφαία CPU"
+
+#: src/zashterminal/ui/widgets/monitor_panel.py
+msgid "Top memory"
+msgstr "Κορυφαία μνήμη"
+
+#: src/zashterminal/ui/widgets/monitor_panel.py
+msgid "Swap: {used} / {total}"
+msgstr "Swap: {used} / {total}"
+
+#: src/zashterminal/ui/widgets/monitor_panel.py
+msgid "Expand monitor"
+msgstr "Ανάπτυξη παρακολούθησης"
+
+#: src/zashterminal/ui/dialogs/ai_config_dialog.py
+msgid "API Format"
+msgstr "Μορφή API"
+
+#: src/zashterminal/ui/dialogs/ai_config_dialog.py
+msgid "Anthropic-compatible"
+msgstr "Συμβατό με Anthropic"
+
+#: src/zashterminal/ui/dialogs/ai_config_dialog.py
+msgid "Base URL (e.g. https://api.example.com/v1)"
+msgstr "Βασικό URL (π.χ. https://api.example.com/v1)"
+
+#: src/zashterminal/ui/dialogs/ai_config_dialog.py
+msgid "Choose a cloud provider, a local server or your own endpoint."
+msgstr "Επιλέξτε πάροχο cloud, τοπικό διακομιστή ή δικό σας endpoint."
+
+#: src/zashterminal/ui/dialogs/ai_config_dialog.py
+msgid "Configure the base URL in the AI Assistant settings."
+msgstr "Ορίστε το βασικό URL στις ρυθμίσεις του Βοηθού ΤΝ."
+
+#: src/zashterminal/ui/dialogs/ai_config_dialog.py
+msgid "Could not store API key securely. Is the system keyring available?"
+msgstr "Δεν ήταν δυνατή η ασφαλής αποθήκευση του κλειδιού API. Είναι διαθέσιμη η κλειδοθήκη του συστήματος;"
+
+#: src/zashterminal/terminal/ai_providers.py
+msgid "Failed to reach {provider}: {error}"
+msgstr "Δεν είναι δυνατή η σύνδεση με {provider}: {error}"
+
+#: src/zashterminal/ui/dialogs/ai_config_dialog.py
+msgid "OpenAI-compatible"
+msgstr "Συμβατό με OpenAI"
+
+#: src/zashterminal/ui/dialogs/ai_config_dialog.py
+msgid "Other (custom)"
+msgstr "Άλλο (προσαρμοσμένο)"
+
+#: src/zashterminal/ui/dialogs/ai_config_dialog.py
+msgid "Request format: /chat/completions (OpenAI) or /messages (Anthropic)."
+msgstr "Μορφή αιτήματος: /chat/completions (OpenAI) ή /messages (Anthropic)."
+
+#: src/zashterminal/ui/dialogs/ai_config_dialog.py
+msgid "Search and select from the models offered by the provider."
+msgstr "Αναζητήστε και επιλέξτε από τα μοντέλα του παρόχου."
+
+#: src/zashterminal/terminal/ai_providers.py
+msgid "Select an AI provider in the AI Assistant settings."
+msgstr "Επιλέξτε πάροχο ΤΝ στις ρυθμίσεις του Βοηθού ΤΝ."
+
+#: src/zashterminal/ui/dialogs/ai_config_dialog.py
+msgid "Select {provider} Model"
+msgstr "Επιλογή μοντέλου {provider}"
+
+#: src/zashterminal/ui/dialogs/ai_config_dialog.py
+msgid "{provider} API Key"
+msgstr "Κλειδί API {provider}"
+
+#: src/zashterminal/terminal/ai_providers.py
+msgid "{provider} did not return any usable content."
+msgstr "Ο {provider} δεν επέστρεψε αξιοποιήσιμο περιεχόμενο."
+
+#: src/zashterminal/terminal/ai_providers.py
+msgid "{provider} returned HTTP {status}: {message}{detail}"
+msgstr "Ο {provider} απάντησε HTTP {status}: {message}{detail}"

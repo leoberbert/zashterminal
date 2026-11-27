@@ -161,14 +161,16 @@ class SessionTreeLogicTests(unittest.TestCase):
     def test_row_markup_shows_target_for_ssh_and_escapes_markup(self):
         ssh = SessionItem("a&b", host="h", user="u", favorite=True)
         markup = SessionTreeView._row_markup(ssh)
-        self.assertTrue(markup.startswith("★ a&amp;b"))
+        self.assertTrue(markup.startswith("<b>★ a&amp;b</b>\n"))
         self.assertIn("u@h", markup)
 
-    def test_row_markup_is_plain_name_for_local_and_hostless(self):
+    def test_row_markup_is_title_only_without_a_subtitle(self):
+        local = SessionTreeView._row_markup(SessionItem("l", session_type="local"))
+        self.assertTrue(local.startswith("<b>l</b>\n"))  # "Local terminal" subtitle
         self.assertEqual(
-            SessionTreeView._row_markup(SessionItem("l", session_type="local")), "l"
+            SessionTreeView._row_markup(SessionItem("x", host="")), "<b>x</b>"
         )
-        self.assertEqual(SessionTreeView._row_markup(SessionItem("x", host="")), "x")
+        # Folders and other rows stay plain text
         self.assertEqual(SessionTreeView._row_markup(SimpleNamespace(name=None)), "")
 
     def test_open_session_names_only_counts_saved_sessions(self):
@@ -263,9 +265,6 @@ class MenuModelTests(unittest.TestCase):
             "win.new-window",
             "win.command-palette",
             "win.preferences",
-            "win.highlight-settings",
-            "win.configure-ai",
-            "win.shortcuts",
             "win.import-securecrt-sessions",
             "win.import-putty-sessions",
             "win.import-multiputty-sessions",
@@ -275,6 +274,9 @@ class MenuModelTests(unittest.TestCase):
             "app.quit",
         ):
             self.assertIn(name, actions)
+        # Moved to Preferences: no duplicate entries in the main menu
+        for name in ("win.highlight-settings", "win.configure-ai", "win.shortcuts"):
+            self.assertNotIn(name, actions)
         self.assertEqual(tools.get_n_items(), 1)
 
     def test_tftp_label_follows_server_state_in_place(self):

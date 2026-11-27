@@ -195,7 +195,7 @@ class DefaultSettings:
             "font": DefaultSettings.get_available_default_font(),
             "line_spacing": 1.0,
             "bold_is_bright": False,
-            "tab_alignment": "center",
+            "tab_alignment": "left",
             # Window State
             "window_width": 1200,
             "window_height": 700,
@@ -242,6 +242,8 @@ class DefaultSettings:
             # Logging Settings
             "log_to_file": False,
             "console_log_level": "ERROR",
+            # Bottom status bar (connection, host metrics, encoding, font)
+            "status_bar_visible": True,
             # Session transcript logging (terminal output capture)
             "transcript_logging_enabled": False,
             "transcript_strip_ansi": True,
@@ -263,6 +265,9 @@ class DefaultSettings:
             "ai_openrouter_site_url": "",
             "ai_openrouter_site_name": "",
             "ai_local_base_url": "http://localhost:11434/v1",
+            # "Other (custom)" provider: any OpenAI/Anthropic-compatible endpoint
+            "ai_custom_base_url": "",
+            "ai_custom_api_format": "openai",
             "ai_custom_quick_prompts": [],  # List of {"emoji": "🔧", "text": "prompt"}
             # Search Settings
             "search_case_sensitive": False,

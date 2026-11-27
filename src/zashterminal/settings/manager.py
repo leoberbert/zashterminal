@@ -515,26 +515,42 @@ class SettingsManager:
 
         threading.Thread(target=save_task, daemon=True).start()
 
+    def _ai_provider(self) -> str:
+        provider = self._settings.get("ai_assistant_provider", "")
+        return provider.strip() if isinstance(provider, str) else ""
+
     def _migrate_api_key_to_keyring(self) -> None:
-        """One-shot move of plaintext AI API key from settings.json into libsecret."""
+        """One-shot moves into the active provider's keyring entry.
+
+        * plaintext key from settings.json -> libsecret
+        * the old single shared keyring entry -> per-provider entry
+        """
         from ..utils import crypto
 
         raw = self._settings.get("ai_assistant_api_key", "")
-        if not isinstance(raw, str):
-            return
-        value = raw.strip()
-        if not value or value == crypto.API_KEY_SETTINGS_SENTINEL:
-            return
+        value = raw.strip() if isinstance(raw, str) else ""
         try:
             if not crypto.is_encryption_available():
-                self.logger.warning(
-                    "Cannot migrate AI API key to keyring: Secret Service unavailable."
-                )
+                if value and value != crypto.API_KEY_SETTINGS_SENTINEL:
+                    self.logger.warning(
+                        "Cannot migrate AI API key to keyring: Secret Service unavailable."
+                    )
                 return
-            crypto.store_api_key(crypto.AI_ASSISTANT_API_KEY_NAME, value)
-            self._settings["ai_assistant_api_key"] = crypto.API_KEY_SETTINGS_SENTINEL
-            self._dirty = True
-            self.logger.info("Migrated AI API key from settings.json to libsecret.")
+            target = crypto.ai_api_key_name(self._ai_provider())
+            if value and value != crypto.API_KEY_SETTINGS_SENTINEL:
+                crypto.store_api_key(target, value)
+                self._settings["ai_assistant_api_key"] = crypto.API_KEY_SETTINGS_SENTINEL
+                self._dirty = True
+                self.logger.info("Migrated AI API key from settings.json to libsecret.")
+            legacy_name = crypto.AI_ASSISTANT_API_KEY_NAME
+            if target != legacy_name:
+                legacy = crypto.lookup_api_key(legacy_name)
+                if legacy:
+                    # The shared key belonged to the provider in use back then.
+                    if not crypto.lookup_api_key(target):
+                        crypto.store_api_key(target, legacy)
+                    crypto.clear_api_key(legacy_name)
+                    self.logger.info("Moved shared AI API key to its provider entry.")
         except Exception as e:
             self.logger.error(f"Failed to migrate AI API key to keyring: {e}")
 
@@ -555,11 +571,14 @@ class SettingsManager:
                                 "[redacted]",
                                 "Secret Service is unavailable; cannot store API key.",
                             )
-                        crypto.store_api_key(crypto.AI_ASSISTANT_API_KEY_NAME, api_key)
-                        value = crypto.API_KEY_SETTINGS_SENTINEL
+                        crypto.store_api_key(
+                            crypto.ai_api_key_name(self._ai_provider()), api_key
+                        )
                     else:
-                        crypto.clear_api_key(crypto.AI_ASSISTANT_API_KEY_NAME)
-                        value = ""
+                        crypto.clear_api_key(crypto.ai_api_key_name(self._ai_provider()))
+                    # Keys live per provider in the keyring; settings only
+                    # records that (other providers keep their own keys).
+                    value = crypto.API_KEY_SETTINGS_SENTINEL
 
                 if "." in key:
                     keys = key.split(".")
@@ -603,7 +622,8 @@ class SettingsManager:
 
                     stored = self._settings.get(key, default)
                     return crypto.resolve_ai_assistant_api_key(
-                        stored if isinstance(stored, str) else ""
+                        stored if isinstance(stored, str) else "",
+                        self._ai_provider(),
                     )
                 if "." in key:
                     keys = key.split(".")

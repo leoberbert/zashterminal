@@ -25,12 +25,13 @@ Zashterminal pairs a VTE terminal with session management, an integrated file ma
 
 | | |
 |---|---|
-| 🔌 **Sessions that stay organized** | Local, SSH and SFTP sessions in folders, with favorites and a live "Connected" list. |
-| ⌨️ **Command palette** | `Ctrl+Shift+P` finds sessions, layouts, snippets, actions and preferences. |
+| 🔌 **Sessions that stay organized** | Local, SSH and SFTP sessions in folders, with favorites, connection status and history. |
+| 📊 **Know your host at a glance** | Status bar and Monitor panel with CPU, memory, disks, network, processes, latency — local or over SSH. |
+| ⌨️ **Command palette** | `Ctrl+Shift+P` finds sessions, layouts, commands, actions and preferences. |
 | 🪟 **Real multitasking** | Split panes, saved layouts, search across all tabs, broadcast to many panes. |
 | 📁 **Files next to your shell** | Local and remote browser with drag-and-drop and edit-and-upload. |
-| 🎨 **Readable output** | Highlight rules for 50+ commands and 30 color schemes. |
-| 🤖 **AI, only when you ask** | Multi-provider assistant; only text you send leaves your machine. |
+| 🎨 **Readable output** | Highlight rules for 50+ commands and 30 color schemes; the UI follows the terminal theme. |
+| 🤖 **AI, only when you ask** | OpenAI, Anthropic, Gemini, xAI, Mistral, DeepSeek, Groq and more, or your own endpoint; only text you send leaves your machine. |
 | 📥 **Easy migration** | Import SecureCRT, PuTTY, mRemoteNG and OpenSSH configs. |
 
 **Installs:** Arch/Manjaro (AUR), Debian/Ubuntu, Fedora, openSUSE, Gentoo, NixOS. WSL (Ubuntu) is experimental.
@@ -62,17 +63,39 @@ Arch users: `yay -S zashterminal`. Other platforms: see [Installation](#installa
 
 Screenshots live in [`docs/gallery/`](docs/gallery/). Regenerate them with `PYTHONPATH=src python3 scripts/capture_gallery.py`.
 
-### Sessions panel
+### Activity rail and sessions panel
 
-Search at the top, folders, favorites and a "Connected" section. It auto-hides after you open a session (configurable in Preferences).
+The rail on the left switches the side panel: **Sessions**, **Files**, **Commands**, **History**, **Monitor** and **AI**. Sessions are cards with `user@host` and a connection dot, grouped in folders (single-click the arrow to expand, drag several at once to move them). It auto-hides after you open a session (configurable in Preferences). Tabs are named after the session; extra copies become `name(1)`, `name(2)`…
 
 <p align="center">
   <img src="docs/gallery/13-sessions-sidebar.png" alt="Sessions panel" width="880">
 </p>
 
+### Status bar and Monitor
+
+The status bar shows the connection, OS, CPU, memory, disk (of the shell's current directory) and latency of the active tab; click a metric to open the Monitor. Local hosts are read from `/proc`; SSH hosts through the tab's existing connection (no new login, no prompts). Data is kept per tab, so switching tabs is instant.
+
+<p align="center">
+  <img src="docs/gallery/15-monitor-panel.png" alt="Monitor side panel" width="880">
+</p>
+
+Expand the Monitor into its own window for load, swap, per-core CPU, all disks and the top processes by CPU and memory (as `top` shows them). GPU and temperature appear when the host has them.
+
+<p align="center">
+  <img src="docs/gallery/16-monitor-window.png" alt="Expanded monitor window" width="760">
+</p>
+
+### Connection history
+
+Recently used sessions with search, newest first; click to reconnect.
+
+<p align="center">
+  <img src="docs/gallery/17-history.png" alt="Connection history panel" width="880">
+</p>
+
 ### Command palette
 
-`Ctrl+Shift+P`: one search box for sessions, SFTP, layouts, commands, actions and preferences. Type `@` for sessions and layouts only, `>` for actions only.
+`Ctrl+Shift+P`: one search box for sessions, SFTP, layouts, commands, actions and preferences. Type `@` for sessions and layouts only, `>` for actions only. `Esc` closes it (and every other dialog).
 
 <p align="center">
   <img src="docs/gallery/14-command-palette.png" alt="Command palette" width="880">
@@ -144,7 +167,7 @@ SSH/local sessions with folders, auth, post-login commands, forwards, favorite f
 
 ### AI assistant
 
-Optional multi-provider AI (Groq, Gemini, OpenRouter, Ollama / LM Studio). Only text you explicitly send is shared.
+Optional AI chat with **OpenAI, Anthropic (Claude), Google Gemini, xAI (Grok), Mistral, DeepSeek, Groq, Perplexity, Together AI, OpenRouter, local Ollama / LM Studio**, or **Other (custom)**: any OpenAI- or Anthropic-compatible endpoint with your base URL, API key and model. Each provider keeps its own key in the system keyring; "Browse models" lists what the provider offers. Only text you explicitly send is shared.
 
 <p align="center">
   <img src="docs/gallery/08-ai-config.png" alt="AI assistant configuration" width="620">
@@ -172,14 +195,15 @@ Browse, search and customize accelerators; conflicts are flagged.
 
 | Area | What you get |
 |------|----------------|
-| **Sessions** | Local, SSH and SFTP sessions with folders, favorites, restore and layouts |
+| **Sessions** | Local, SSH and SFTP sessions with folders, favorites, history, restore and layouts |
+| **Monitor** | Status bar + Monitor panel/window: CPU, memory, swap, disks, network, processes, GPU, latency (local and SSH) |
 | **Command palette** | `Ctrl+Shift+P` over sessions, layouts, commands, actions and preferences |
 | **Imports** | SecureCRT directory trees, PuTTY `.reg`/`.ini`, mRemoteNG `confCons.xml`, OpenSSH `~/.ssh/config` |
 | **Layouts** | Horizontal/vertical splits; save and restore multi-pane setups |
 | **File manager** | Local and remote browsing, drag-and-drop transfer, remote edit + upload on save |
 | **Search** | In-terminal find with case/regex; **All tabs** scope jumps across panes |
 | **Highlighting** | Output rules for 50+ commands; optional Pygments for `cat` / input |
-| **AI (optional)** | Multi-provider chat, quick prompts, click-to-run snippets (selection only) |
+| **AI (optional)** | 12 providers + custom OpenAI/Anthropic-compatible endpoint, per-provider keys, quick prompts, click-to-run snippets |
 | **Broadcast** | Type once; run across selected tabs/panes |
 | **Appearance** | 30 built-in schemes (default: GitHub Dark), transparency, blur, shortcuts |
 

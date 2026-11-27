@@ -9043,3 +9043,451 @@ msgstr "Ekki tókst að opna skráamöppuna."
 #: src/zashterminal/terminal/tabs.py
 msgid "This tab has an active SSH connection. Closing will disconnect it. Are you sure?"
 msgstr "Þessi flipi er með virka SSH-tengingu. Ef honum er lokað rofnar hún. Ertu viss?"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "Snippets"
+msgstr "Textabútar"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "History"
+msgstr "Saga"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "Monitor"
+msgstr "Vöktun"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "Connection History"
+msgstr "Tengingarsaga"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "Server Monitor"
+msgstr "Miðlaravöktun"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "AI"
+msgstr "gervigreind"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "Terminal • SSH • SFTP • Linux"
+msgstr "Terminal • SSH • SFTP • Linux"
+
+#: src/zashterminal/ui/widgets/status_bar.py
+msgid "SSH connected"
+msgstr "SSH tengt"
+
+#: src/zashterminal/ui/status_controller.py
+msgid "Disconnected"
+msgstr "Aftengt"
+
+#: src/zashterminal/sessions/tree.py
+msgid "Local terminal"
+msgstr "Staðbundið terminal"
+
+#: src/zashterminal/ui/widgets/status_bar.py
+msgid "No terminal"
+msgstr "Ekkert terminal"
+
+#: src/zashterminal/ui/widgets/status_bar.py
+msgid "CPU: {value}%"
+msgstr "CPU: {value}%"
+
+#: src/zashterminal/ui/widgets/status_bar.py
+msgid "RAM: {value}%"
+msgstr "RAM: {value}%"
+
+#: src/zashterminal/ui/widgets/status_bar.py
+msgid "Disk: {value}%"
+msgstr "Diskur: {value}%"
+
+#: src/zashterminal/ui/widgets/status_bar.py
+msgid "{value} ms"
+msgstr "{value} ms"
+
+#: src/zashterminal/ui/widgets/status_bar.py
+msgid "Dismiss"
+msgstr "Hunsa"
+
+#: src/zashterminal/ui/widgets/status_bar.py
+msgid "Connected to <b>{name}</b> ({os})"
+msgstr "Tengt við <b>{name}</b> ({os})"
+
+#: src/zashterminal/ui/widgets/status_bar.py
+msgid "Connected to <b>{name}</b>"
+msgstr "Tengt við <b>{name}</b>"
+
+#: src/zashterminal/ui/status_controller.py
+msgid "SFTP connected"
+msgstr "SFTP tengt"
+
+#: src/zashterminal/ui/status_controller.py
+msgid "Not connected"
+msgstr "Ekki tengt"
+
+#: src/zashterminal/ui/status_controller.py
+msgid "Metrics are not available for this tab"
+msgstr "Mælikvarðar eru ekki tiltækir fyrir þennan flipa"
+
+#: src/zashterminal/window.py
+msgid "This session no longer exists."
+msgstr "Þessi seta er ekki lengur til."
+
+#: src/zashterminal/ui/widgets/history_panel.py
+msgid "Search history..."
+msgstr "Leita í sögu..."
+
+#: src/zashterminal/ui/widgets/history_panel.py
+msgid "No history yet"
+msgstr "Engin saga ennþá"
+
+#: src/zashterminal/ui/widgets/history_panel.py
+msgid "just now"
+msgstr "rétt í þessu"
+
+#: src/zashterminal/ui/widgets/history_panel.py
+msgid "{n} min ago"
+msgstr "fyrir {n} mín."
+
+#: src/zashterminal/ui/widgets/history_panel.py
+msgid "{n} h ago"
+msgstr "fyrir {n} klst."
+
+#: src/zashterminal/ui/widgets/history_panel.py
+msgid "{n} d ago"
+msgstr "fyrir {n} d."
+
+#: src/zashterminal/ui/widgets/history_panel.py
+msgid "Remove from history"
+msgstr "Fjarlægja úr sögu"
+
+#: src/zashterminal/ui/widgets/monitor_panel.py
+msgid "CPU"
+msgstr "CPU"
+
+#: src/zashterminal/ui/widgets/monitor_panel.py
+msgid "RAM"
+msgstr "RAM"
+
+#: src/zashterminal/ui/widgets/monitor_panel.py
+msgid "Disk"
+msgstr "Diskur"
+
+#: src/zashterminal/ui/widgets/monitor_panel.py
+msgid "Monitor unavailable"
+msgstr "Vöktun ekki tiltæk"
+
+#: src/zashterminal/ui/widgets/monitor_panel.py
+msgid "Waiting for data..."
+msgstr "Bíð eftir gögnum..."
+
+#: src/zashterminal/ui/widgets/monitor_panel.py
+msgid "Kernel: {v}"
+msgstr "Kjarni: {v}"
+
+#: src/zashterminal/ui/widgets/monitor_panel.py
+msgid "Uptime: {v}"
+msgstr "Uppitími: {v}"
+
+#: src/zashterminal/ui/widgets/monitor_panel.py
+msgid "Latency: {v} ms"
+msgstr "Svartími: {v} ms"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "General"
+msgstr "Almennt"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Startup behavior, interface and updates."
+msgstr "Ræsihegðun, viðmót og uppfærslur."
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Customize the look, colors and window behavior of the terminal."
+msgstr "Sérsníddu útlit, liti og gluggahegðun terminalsins."
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Cursor, scrolling and shell behavior."
+msgstr "Bendill, skrun og hegðun skeljar."
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Profiles & Sessions"
+msgstr "Prófílar og setur"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Session restore and backups."
+msgstr "Endurheimt setna og afritun."
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "SSH Connections"
+msgstr "SSH-tengingar"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Connection persistence for SSH sessions."
+msgstr "Viðvarandi tenging fyrir SSH-setur."
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Security"
+msgstr "Öryggi"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Temporary files created while editing remote files."
+msgstr "Tímabundnar skrár sem verða til við breytingar á fjarskrám."
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Configure the AI assistant."
+msgstr "Stilltu gervigreindaraðstoðarmanninn."
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "View and customize keyboard shortcuts."
+msgstr "Skoða og sérsníða flýtilykla."
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Text rendering, compatibility, logs and maintenance."
+msgstr "Textabirting, samhæfni, annálar og viðhald."
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Version and project information."
+msgstr "Upplýsingar um útgáfu og verkefni."
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Search Results"
+msgstr "Leitarniðurstöður"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Interface"
+msgstr "Viðmót"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Font & Text"
+msgstr "Letur og texti"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Colors & Theme"
+msgstr "Litir og þema"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Window & Effects"
+msgstr "Gluggi og áhrif"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Search settings..."
+msgstr "Leita í stillingum..."
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Window Buttons When Maximized"
+msgstr "Gluggahnappar þegar hámarkað"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "For KDE Plasma panel integration"
+msgstr "Fyrir samþættingu við KDE Plasma spjald"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Font Size"
+msgstr "Leturstærð"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Interface Theme"
+msgstr "Viðmótsþema"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Terminal Color Scheme"
+msgstr "Litasamsetning terminals"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Color schemes, wallpaper colors and highlight rules"
+msgstr "Litasamsetningar, veggfóðurslitir og áherslureglur"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Show Status Bar"
+msgstr "Sýna stöðustiku"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Connection, CPU/RAM/disk, encoding and font at the bottom of the window."
+msgstr "Tenging, CPU/RAM/diskur, kóðun og letur neðst í glugganum."
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Open the AI assistant settings"
+msgstr "Opna stillingar gervigreindaraðstoðarmanns"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Open the keyboard shortcuts editor"
+msgstr "Opna flýtilyklaritil"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Version"
+msgstr "Útgáfa"
+
+#: src/zashterminal/app.py
+msgid "Source Code"
+msgstr "Frumkóði"
+
+#: src/zashterminal/app.py
+msgid "Report an Issue"
+msgstr "Tilkynna vandamál"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Save Changes"
+msgstr "Vista breytingar"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "{count} matching settings"
+msgstr "{count} samsvarandi stillingar"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Auto-detect"
+msgstr "Greina sjálfvirkt"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Always hide"
+msgstr "Fela alltaf"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Never hide"
+msgstr "Fela aldrei"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Settings applied"
+msgstr "Stillingar virkjaðar"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "No settings found"
+msgstr "Engar stillingar fundust"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Try a different search term."
+msgstr "Prófaðu annað leitarorð."
+
+#: src/zashterminal/ui/dialogs/preferences_preview.py
+msgid "Terminal Preview"
+msgstr "Forskoðun terminals"
+
+#: src/zashterminal/ui/dialogs/preferences_preview.py
+msgid "Theme & Palette"
+msgstr "Þema og litapalletta"
+
+#: src/zashterminal/ui/dialogs/preferences_preview.py
+msgid "Manage Themes"
+msgstr "Stjórna þemum"
+
+#: src/zashterminal/ui/widgets/status_bar.py
+msgid "Memory: {value}%"
+msgstr "Minni: {value}%"
+
+#: src/zashterminal/ui/widgets/monitor_panel.py
+msgid "Memory"
+msgstr "Minni"
+
+#: src/zashterminal/ui/widgets/monitor_panel.py
+msgid "Latency"
+msgstr "Seinkun"
+
+#: src/zashterminal/ui/widgets/monitor_panel.py
+msgid "Kernel"
+msgstr "Kjarni"
+
+#: src/zashterminal/ui/widgets/monitor_panel.py
+msgid "Processor"
+msgstr "Örgjörvi"
+
+#: src/zashterminal/ui/widgets/monitor_panel.py
+msgid "Cores"
+msgstr "Kjarnar"
+
+#: src/zashterminal/ui/widgets/monitor_panel.py
+msgid "Uptime"
+msgstr "Spenntími"
+
+#: src/zashterminal/ui/widgets/monitor_panel.py
+msgid "Load"
+msgstr "Álag"
+
+#: src/zashterminal/ui/widgets/monitor_panel.py
+msgid "Processes"
+msgstr "Ferli"
+
+#: src/zashterminal/ui/widgets/monitor_panel.py
+msgid "Network"
+msgstr "Net"
+
+#: src/zashterminal/ui/widgets/monitor_panel.py
+msgid "Disks"
+msgstr "Diskar"
+
+#: src/zashterminal/ui/widgets/monitor_panel.py
+msgid "Top CPU"
+msgstr "Mest CPU"
+
+#: src/zashterminal/ui/widgets/monitor_panel.py
+msgid "Top memory"
+msgstr "Mest minni"
+
+#: src/zashterminal/ui/widgets/monitor_panel.py
+msgid "Swap: {used} / {total}"
+msgstr "Swap: {used} / {total}"
+
+#: src/zashterminal/ui/widgets/monitor_panel.py
+msgid "Expand monitor"
+msgstr "Stækka vöktun"
+
+#: src/zashterminal/ui/dialogs/ai_config_dialog.py
+msgid "API Format"
+msgstr "API-snið"
+
+#: src/zashterminal/ui/dialogs/ai_config_dialog.py
+msgid "Anthropic-compatible"
+msgstr "Samhæft Anthropic"
+
+#: src/zashterminal/ui/dialogs/ai_config_dialog.py
+msgid "Base URL (e.g. https://api.example.com/v1)"
+msgstr "Grunnslóð (t.d. https://api.example.com/v1)"
+
+#: src/zashterminal/ui/dialogs/ai_config_dialog.py
+msgid "Choose a cloud provider, a local server or your own endpoint."
+msgstr "Veldu skýjaþjónustu, staðbundinn þjón eða eigin endapunkt."
+
+#: src/zashterminal/ui/dialogs/ai_config_dialog.py
+msgid "Configure the base URL in the AI Assistant settings."
+msgstr "Stilltu grunnslóð í stillingum gervigreindaraðstoðar."
+
+#: src/zashterminal/ui/dialogs/ai_config_dialog.py
+msgid "Could not store API key securely. Is the system keyring available?"
+msgstr "Ekki tókst að vista API-lykil á öruggan hátt. Er lyklakippa kerfisins tiltæk?"
+
+#: src/zashterminal/terminal/ai_providers.py
+msgid "Failed to reach {provider}: {error}"
+msgstr "Næst ekki í {provider}: {error}"
+
+#: src/zashterminal/ui/dialogs/ai_config_dialog.py
+msgid "OpenAI-compatible"
+msgstr "Samhæft OpenAI"
+
+#: src/zashterminal/ui/dialogs/ai_config_dialog.py
+msgid "Other (custom)"
+msgstr "Annað (sérsniðið)"
+
+#: src/zashterminal/ui/dialogs/ai_config_dialog.py
+msgid "Request format: /chat/completions (OpenAI) or /messages (Anthropic)."
+msgstr "Snið beiðna: /chat/completions (OpenAI) eða /messages (Anthropic)."
+
+#: src/zashterminal/ui/dialogs/ai_config_dialog.py
+msgid "Search and select from the models offered by the provider."
+msgstr "Leitaðu og veldu úr líkönum þjónustunnar."
+
+#: src/zashterminal/terminal/ai_providers.py
+msgid "Select an AI provider in the AI Assistant settings."
+msgstr "Veldu gervigreindarþjónustu í stillingum gervigreindaraðstoðar."
+
+#: src/zashterminal/ui/dialogs/ai_config_dialog.py
+msgid "Select {provider} Model"
+msgstr "Veldu {provider}-líkan"
+
+#: src/zashterminal/ui/dialogs/ai_config_dialog.py
+msgid "{provider} API Key"
+msgstr "{provider} API-lykill"
+
+#: src/zashterminal/terminal/ai_providers.py
+msgid "{provider} did not return any usable content."
+msgstr "{provider} skilaði engu nothæfu efni."
+
+#: src/zashterminal/terminal/ai_providers.py
+msgid "{provider} returned HTTP {status}: {message}{detail}"
+msgstr "{provider} svaraði HTTP {status}: {message}{detail}"

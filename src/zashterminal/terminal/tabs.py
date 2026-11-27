@@ -170,6 +170,8 @@ class TabManager:
         ] = weakref.WeakKeyDictionary()
         self.active_tab: Optional[Gtk.Box] = None
         self._tab_being_moved: Optional[Gtk.Box] = None  # Context-menu click-to-place
+        # Called with (session, kind) when an SSH/SFTP tab opens (connection history)
+        self.on_session_opened: Optional[Callable[[SessionItem, str], None]] = None
         self._drop_target_tab: Optional[Gtk.Box] = None
         self._drop_side: str = "left"
         # In-process tab reorder (GestureDrag — avoids HeaderBar window-move grab).
@@ -538,6 +540,7 @@ class TabManager:
         )
         if terminal:
             self._create_tab_for_terminal(terminal, session)
+            self._notify_session_opened(session, "ssh")
         return terminal
 
     def create_sftp_tab(self, session: SessionItem) -> Optional[Vte.Terminal]:
@@ -547,7 +550,12 @@ class TabManager:
             sftp_session = SessionItem.from_dict(session.to_dict())
             sftp_session.name = self._generate_unique_sftp_name(session.name)
             self._create_tab_for_terminal(terminal, sftp_session)
+            self._notify_session_opened(session, "sftp")
         return terminal
+
+    def _notify_session_opened(self, session: SessionItem, kind: str) -> None:
+        if self.on_session_opened is not None:
+            self.on_session_opened(session, kind)
 
     def _generate_unique_sftp_name(self, base_session_name: str) -> str:
         base_title = f"SFTP-{base_session_name}"
@@ -841,12 +849,30 @@ class TabManager:
         tab_widget.label_widget = label
         tab_widget.close_button = close_button  # Store direct reference
         tab_widget._base_title = session.name
-        tab_widget._is_local = session.is_local()
+        # Only the throwaway "Local" terminal follows the working directory;
+        # every saved session keeps its own name as the tab title.
+        tab_widget._follow_cwd = session.is_local() and session.name == "Local"
+        tab_widget._tab_number = (
+            0 if tab_widget._follow_cwd else self._next_tab_number(session.name)
+        )
         tab_widget.session_item = session
 
         self._apply_tab_color(tab_widget, session.tab_color)
 
         return tab_widget
+
+    def _next_tab_number(self, session_name: str) -> int:
+        """Smallest positive number not used by another open tab of this session."""
+        used = {
+            getattr(tab, "_tab_number", 0)
+            for tab in self.tabs
+            if getattr(tab, "_base_title", None) == session_name
+            and not getattr(tab, "_follow_cwd", False)
+        }
+        number = 0
+        while number in used:
+            number += 1
+        return number
 
     def _on_tab_clicked(self, gesture, _n_press, x, y, tab_widget):
         # Claim the sequence so Adw.HeaderBar does not start window interactive move.
@@ -1772,17 +1798,12 @@ class TabManager:
         if tab_button:
             base_title = tab_button._base_title
 
-            if tab_button._is_local:
+            if tab_button._follow_cwd:
                 display_title = new_title
             else:
-                if new_title.startswith(base_title + ":"):
-                    display_title = new_title
-                else:
-                    display_title = (
-                        base_title
-                        if new_title == base_title
-                        else f"{base_title}: {new_title}"
-                    )
+                display_title = base_title
+                if tab_button._tab_number > 0:
+                    display_title = f"{base_title}({tab_button._tab_number})"
 
             terminal_count = len(self.get_all_terminals_in_page(page))
             if terminal_count > 1:

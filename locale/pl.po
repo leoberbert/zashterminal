@@ -9057,3 +9057,451 @@ msgstr "Nie można otworzyć folderu dzienników."
 #: src/zashterminal/terminal/tabs.py
 msgid "This tab has an active SSH connection. Closing will disconnect it. Are you sure?"
 msgstr "Ta karta ma aktywne połączenie SSH. Zamknięcie spowoduje jego rozłączenie. Czy na pewno?"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "Snippets"
+msgstr "Snippety"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "History"
+msgstr "Historia"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "Monitor"
+msgstr "Monitor"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "Connection History"
+msgstr "Historia połączeń"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "Server Monitor"
+msgstr "Monitor serwera"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "AI"
+msgstr "AI"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "Terminal • SSH • SFTP • Linux"
+msgstr "Terminal • SSH • SFTP • Linux"
+
+#: src/zashterminal/ui/widgets/status_bar.py
+msgid "SSH connected"
+msgstr "SSH połączono"
+
+#: src/zashterminal/ui/status_controller.py
+msgid "Disconnected"
+msgstr "Rozłączono"
+
+#: src/zashterminal/sessions/tree.py
+msgid "Local terminal"
+msgstr "Terminal lokalny"
+
+#: src/zashterminal/ui/widgets/status_bar.py
+msgid "No terminal"
+msgstr "Brak terminala"
+
+#: src/zashterminal/ui/widgets/status_bar.py
+msgid "CPU: {value}%"
+msgstr "CPU: {value}%"
+
+#: src/zashterminal/ui/widgets/status_bar.py
+msgid "RAM: {value}%"
+msgstr "RAM: {value}%"
+
+#: src/zashterminal/ui/widgets/status_bar.py
+msgid "Disk: {value}%"
+msgstr "Dysk: {value}%"
+
+#: src/zashterminal/ui/widgets/status_bar.py
+msgid "{value} ms"
+msgstr "{value} ms"
+
+#: src/zashterminal/ui/widgets/status_bar.py
+msgid "Dismiss"
+msgstr "Zamknij"
+
+#: src/zashterminal/ui/widgets/status_bar.py
+msgid "Connected to <b>{name}</b> ({os})"
+msgstr "Połączono z <b>{name}</b> ({os})"
+
+#: src/zashterminal/ui/widgets/status_bar.py
+msgid "Connected to <b>{name}</b>"
+msgstr "Połączono z <b>{name}</b>"
+
+#: src/zashterminal/ui/status_controller.py
+msgid "SFTP connected"
+msgstr "SFTP połączono"
+
+#: src/zashterminal/ui/status_controller.py
+msgid "Not connected"
+msgstr "Brak połączenia"
+
+#: src/zashterminal/ui/status_controller.py
+msgid "Metrics are not available for this tab"
+msgstr "Metryki są niedostępne dla tej karty"
+
+#: src/zashterminal/window.py
+msgid "This session no longer exists."
+msgstr "Ta sesja już nie istnieje."
+
+#: src/zashterminal/ui/widgets/history_panel.py
+msgid "Search history..."
+msgstr "Szukaj w historii..."
+
+#: src/zashterminal/ui/widgets/history_panel.py
+msgid "No history yet"
+msgstr "Brak historii"
+
+#: src/zashterminal/ui/widgets/history_panel.py
+msgid "just now"
+msgstr "przed chwilą"
+
+#: src/zashterminal/ui/widgets/history_panel.py
+msgid "{n} min ago"
+msgstr "{n} min temu"
+
+#: src/zashterminal/ui/widgets/history_panel.py
+msgid "{n} h ago"
+msgstr "{n} godz. temu"
+
+#: src/zashterminal/ui/widgets/history_panel.py
+msgid "{n} d ago"
+msgstr "{n} dn. temu"
+
+#: src/zashterminal/ui/widgets/history_panel.py
+msgid "Remove from history"
+msgstr "Usuń z historii"
+
+#: src/zashterminal/ui/widgets/monitor_panel.py
+msgid "CPU"
+msgstr "CPU"
+
+#: src/zashterminal/ui/widgets/monitor_panel.py
+msgid "RAM"
+msgstr "RAM"
+
+#: src/zashterminal/ui/widgets/monitor_panel.py
+msgid "Disk"
+msgstr "Dysk"
+
+#: src/zashterminal/ui/widgets/monitor_panel.py
+msgid "Monitor unavailable"
+msgstr "Monitor niedostępny"
+
+#: src/zashterminal/ui/widgets/monitor_panel.py
+msgid "Waiting for data..."
+msgstr "Oczekiwanie na dane..."
+
+#: src/zashterminal/ui/widgets/monitor_panel.py
+msgid "Kernel: {v}"
+msgstr "Jądro: {v}"
+
+#: src/zashterminal/ui/widgets/monitor_panel.py
+msgid "Uptime: {v}"
+msgstr "Czas działania: {v}"
+
+#: src/zashterminal/ui/widgets/monitor_panel.py
+msgid "Latency: {v} ms"
+msgstr "Opóźnienie: {v} ms"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "General"
+msgstr "Ogólne"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Startup behavior, interface and updates."
+msgstr "Zachowanie przy uruchamianiu, interfejs i aktualizacje."
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Customize the look, colors and window behavior of the terminal."
+msgstr "Dostosuj wygląd, kolory i zachowanie okna terminala."
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Cursor, scrolling and shell behavior."
+msgstr "Kursor, przewijanie i zachowanie powłoki."
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Profiles & Sessions"
+msgstr "Profile i sesje"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Session restore and backups."
+msgstr "Przywracanie sesji i kopie zapasowe."
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "SSH Connections"
+msgstr "Połączenia SSH"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Connection persistence for SSH sessions."
+msgstr "Trwałość połączeń dla sesji SSH."
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Security"
+msgstr "Bezpieczeństwo"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Temporary files created while editing remote files."
+msgstr "Pliki tymczasowe tworzone podczas edycji plików zdalnych."
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Configure the AI assistant."
+msgstr "Skonfiguruj asystenta AI."
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "View and customize keyboard shortcuts."
+msgstr "Wyświetl i dostosuj skróty klawiszowe."
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Text rendering, compatibility, logs and maintenance."
+msgstr "Renderowanie tekstu, zgodność, dzienniki i konserwacja."
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Version and project information."
+msgstr "Informacje o wersji i projekcie."
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Search Results"
+msgstr "Wyniki wyszukiwania"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Interface"
+msgstr "Interfejs"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Font & Text"
+msgstr "Czcionka i tekst"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Colors & Theme"
+msgstr "Kolory i motyw"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Window & Effects"
+msgstr "Okno i efekty"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Search settings..."
+msgstr "Szukaj w ustawieniach..."
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Window Buttons When Maximized"
+msgstr "Przyciski okna po maksymalizacji"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "For KDE Plasma panel integration"
+msgstr "Do integracji z panelem KDE Plasma"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Font Size"
+msgstr "Rozmiar czcionki"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Interface Theme"
+msgstr "Motyw interfejsu"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Terminal Color Scheme"
+msgstr "Schemat kolorów terminala"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Color schemes, wallpaper colors and highlight rules"
+msgstr "Schematy kolorów, kolory tapety i reguły podświetlania"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Show Status Bar"
+msgstr "Pokaż pasek stanu"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Connection, CPU/RAM/disk, encoding and font at the bottom of the window."
+msgstr "Połączenie, CPU/RAM/dysk, kodowanie i czcionka na dole okna."
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Open the AI assistant settings"
+msgstr "Otwórz ustawienia asystenta AI"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Open the keyboard shortcuts editor"
+msgstr "Otwórz edytor skrótów klawiszowych"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Version"
+msgstr "Wersja"
+
+#: src/zashterminal/app.py
+msgid "Source Code"
+msgstr "Kod źródłowy"
+
+#: src/zashterminal/app.py
+msgid "Report an Issue"
+msgstr "Zgłoś problem"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Save Changes"
+msgstr "Zapisz zmiany"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "{count} matching settings"
+msgstr "Pasujące ustawienia: {count}"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Auto-detect"
+msgstr "Wykryj automatycznie"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Always hide"
+msgstr "Zawsze ukrywaj"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Never hide"
+msgstr "Nigdy nie ukrywaj"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Settings applied"
+msgstr "Zastosowano ustawienia"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "No settings found"
+msgstr "Nie znaleziono ustawień"
+
+#: src/zashterminal/ui/dialogs/preferences_dialog.py
+msgid "Try a different search term."
+msgstr "Spróbuj innego wyszukiwanego hasła."
+
+#: src/zashterminal/ui/dialogs/preferences_preview.py
+msgid "Terminal Preview"
+msgstr "Podgląd terminala"
+
+#: src/zashterminal/ui/dialogs/preferences_preview.py
+msgid "Theme & Palette"
+msgstr "Motyw i paleta"
+
+#: src/zashterminal/ui/dialogs/preferences_preview.py
+msgid "Manage Themes"
+msgstr "Zarządzaj motywami"
+
+#: src/zashterminal/ui/widgets/status_bar.py
+msgid "Memory: {value}%"
+msgstr "Pamięć: {value}%"
+
+#: src/zashterminal/ui/widgets/monitor_panel.py
+msgid "Memory"
+msgstr "Pamięć"
+
+#: src/zashterminal/ui/widgets/monitor_panel.py
+msgid "Latency"
+msgstr "Opóźnienie"
+
+#: src/zashterminal/ui/widgets/monitor_panel.py
+msgid "Kernel"
+msgstr "Jądro"
+
+#: src/zashterminal/ui/widgets/monitor_panel.py
+msgid "Processor"
+msgstr "Procesor"
+
+#: src/zashterminal/ui/widgets/monitor_panel.py
+msgid "Cores"
+msgstr "Rdzenie"
+
+#: src/zashterminal/ui/widgets/monitor_panel.py
+msgid "Uptime"
+msgstr "Czas działania"
+
+#: src/zashterminal/ui/widgets/monitor_panel.py
+msgid "Load"
+msgstr "Obciążenie"
+
+#: src/zashterminal/ui/widgets/monitor_panel.py
+msgid "Processes"
+msgstr "Procesy"
+
+#: src/zashterminal/ui/widgets/monitor_panel.py
+msgid "Network"
+msgstr "Sieć"
+
+#: src/zashterminal/ui/widgets/monitor_panel.py
+msgid "Disks"
+msgstr "Dyski"
+
+#: src/zashterminal/ui/widgets/monitor_panel.py
+msgid "Top CPU"
+msgstr "Najwięcej CPU"
+
+#: src/zashterminal/ui/widgets/monitor_panel.py
+msgid "Top memory"
+msgstr "Najwięcej pamięci"
+
+#: src/zashterminal/ui/widgets/monitor_panel.py
+msgid "Swap: {used} / {total}"
+msgstr "Swap: {used} / {total}"
+
+#: src/zashterminal/ui/widgets/monitor_panel.py
+msgid "Expand monitor"
+msgstr "Rozwiń monitor"
+
+#: src/zashterminal/ui/dialogs/ai_config_dialog.py
+msgid "API Format"
+msgstr "Format API"
+
+#: src/zashterminal/ui/dialogs/ai_config_dialog.py
+msgid "Anthropic-compatible"
+msgstr "Zgodny z Anthropic"
+
+#: src/zashterminal/ui/dialogs/ai_config_dialog.py
+msgid "Base URL (e.g. https://api.example.com/v1)"
+msgstr "Bazowy URL (np. https://api.example.com/v1)"
+
+#: src/zashterminal/ui/dialogs/ai_config_dialog.py
+msgid "Choose a cloud provider, a local server or your own endpoint."
+msgstr "Wybierz dostawcę chmurowego, serwer lokalny lub własny punkt końcowy."
+
+#: src/zashterminal/ui/dialogs/ai_config_dialog.py
+msgid "Configure the base URL in the AI Assistant settings."
+msgstr "Ustaw bazowy URL w ustawieniach Asystenta AI."
+
+#: src/zashterminal/ui/dialogs/ai_config_dialog.py
+msgid "Could not store API key securely. Is the system keyring available?"
+msgstr "Nie udało się bezpiecznie zapisać klucza API. Czy systemowy pęk kluczy jest dostępny?"
+
+#: src/zashterminal/terminal/ai_providers.py
+msgid "Failed to reach {provider}: {error}"
+msgstr "Nie można połączyć się z {provider}: {error}"
+
+#: src/zashterminal/ui/dialogs/ai_config_dialog.py
+msgid "OpenAI-compatible"
+msgstr "Zgodny z OpenAI"
+
+#: src/zashterminal/ui/dialogs/ai_config_dialog.py
+msgid "Other (custom)"
+msgstr "Inny (własny)"
+
+#: src/zashterminal/ui/dialogs/ai_config_dialog.py
+msgid "Request format: /chat/completions (OpenAI) or /messages (Anthropic)."
+msgstr "Format żądania: /chat/completions (OpenAI) lub /messages (Anthropic)."
+
+#: src/zashterminal/ui/dialogs/ai_config_dialog.py
+msgid "Search and select from the models offered by the provider."
+msgstr "Wyszukaj i wybierz spośród modeli oferowanych przez dostawcę."
+
+#: src/zashterminal/terminal/ai_providers.py
+msgid "Select an AI provider in the AI Assistant settings."
+msgstr "Wybierz dostawcę AI w ustawieniach Asystenta AI."
+
+#: src/zashterminal/ui/dialogs/ai_config_dialog.py
+msgid "Select {provider} Model"
+msgstr "Wybierz model {provider}"
+
+#: src/zashterminal/ui/dialogs/ai_config_dialog.py
+msgid "{provider} API Key"
+msgstr "Klucz API {provider}"
+
+#: src/zashterminal/terminal/ai_providers.py
+msgid "{provider} did not return any usable content."
+msgstr "{provider} nie zwrócił użytecznej treści."
+
+#: src/zashterminal/terminal/ai_providers.py
+msgid "{provider} returned HTTP {status}: {message}{detail}"
+msgstr "{provider} zwrócił HTTP {status}: {message}{detail}"

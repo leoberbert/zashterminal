@@ -1,0 +1,58 @@
+/* History and monitor side panels */
+.zash-history-panel, .zash-monitor-panel { padding: 12px; }
+.zash-history-title, .zash-monitor-title { font-weight: 700; font-size: 1.05em; }
+.zash-history-list { background: transparent; }
+.zash-history-row {
+  border-radius: 10px;
+  margin: 3px 0;
+  border: 1px solid alpha(currentColor, 0.08);
+  background: alpha(currentColor, 0.04);
+}
+.zash-history-row:hover { background: alpha(currentColor, 0.08); }
+.zash-history-icon { color: #2f6df6; }
+.zash-history-name { font-weight: 700; }
+.zash-history-sub, .zash-history-time { opacity: 0.6; font-size: 0.85em; }
+.zash-history-remove { min-width: 24px; min-height: 24px; padding: 0; opacity: 0.5; }
+.zash-history-remove:hover { opacity: 1; }
+
+.zash-monitor-card {
+  border-radius: 12px;
+  padding: 12px;
+  border: 1px solid alpha(currentColor, 0.08);
+  background: alpha(currentColor, 0.04);
+}
+.zash-monitor-host { font-weight: 700; }
+.zash-monitor-dim { opacity: 0.6; font-size: 0.85em; }
+.zash-monitor-card-title { font-weight: 700; font-size: 1.05em; }
+.zash-monitor-chip { font-size: 0.85em; font-variant-numeric: tabular-nums; }
+.zash-monitor-chip image { opacity: 0.85; }
+.zash-monitor-bar trough { min-height: 8px; border-radius: 4px; }
+.zash-monitor-bar block { min-height: 8px; border-radius: 4px; }
+.zash-monitor-spark { min-height: 36px; }
+.zash-monitor-compact .zash-monitor-card { padding: 8px 10px; }
+.zash-monitor-compact .zash-monitor-card-title { font-size: 0.95em; }
+.zash-monitor-compact .zash-monitor-chip { font-size: 0.8em; }
+
+/* Per-metric accent: chart/bar color and chip icon (theme-driven named colors) */
+.zash-monitor-cpu .zash-monitor-spark,
+.zash-monitor-cpu .zash-monitor-chip image { color: @zash_metric_cpu; }
+.zash-monitor-mem .zash-monitor-spark,
+.zash-monitor-mem .zash-monitor-chip image { color: @zash_metric_mem; }
+.zash-monitor-lat .zash-monitor-spark,
+.zash-monitor-lat .zash-monitor-chip image { color: @zash_metric_lat; }
+.zash-monitor-disk .zash-monitor-chip image { color: @zash_metric_disk; }
+.zash-monitor-disk .zash-monitor-bar block.filled { background: @zash_metric_disk; }
+.zash-monitor-net .zash-monitor-spark,
+.zash-monitor-net .zash-monitor-chip image { color: @zash_metric_net; }
+.zash-monitor-gpu .zash-monitor-spark,
+.zash-monitor-gpu .zash-monitor-chip image { color: @zash_metric_gpu; }
+.zash-monitor-cores .zash-monitor-bar block.filled { background: @zash_metric_cpu; }
+.zash-monitor-current { font-weight: 700; }
+
+/* Warning / critical override the accent */
+.zash-monitor-warn .zash-monitor-spark,
+.zash-monitor-warn .zash-monitor-chip image { color: @zash_metric_warn; }
+.zash-monitor-warn .zash-monitor-bar block.filled { background: @zash_metric_warn; }
+.zash-monitor-crit .zash-monitor-spark,
+.zash-monitor-crit .zash-monitor-chip image { color: @zash_metric_crit; }
+.zash-monitor-crit .zash-monitor-bar block.filled { background: @zash_metric_crit; }

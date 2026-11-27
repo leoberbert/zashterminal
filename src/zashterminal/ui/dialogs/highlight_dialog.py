@@ -29,6 +29,7 @@ from ...utils.icons import icon_image
 from ...utils.logger import get_logger
 from ...utils.tooltip_helper import get_tooltip_helper
 from ...utils.translation_utils import _
+from .base_dialog import close_on_escape
 from ..colors import (
     get_background_color_options,
     get_foreground_color_options,
@@ -377,6 +378,7 @@ class RuleEditDialog(Adw.Window):
         saved_height = settings.get(self._SIZE_KEY_HEIGHT, self._DEFAULT_HEIGHT)
 
         super().__init__()
+        close_on_escape(self)
         self.add_css_class("zashterminal-dialog")
         self.logger = get_logger("zashterminal.ui.dialogs.rule_edit")
         self._parent = parent
@@ -528,7 +530,8 @@ class RuleEditDialog(Adw.Window):
 
         # Colors group
         self._colors_group = Adw.PreferencesGroup(
-            title=_("Colors & Effects"),
+            # Group titles are markup: an unescaped "&" left the title blank.
+            title=GLib.markup_escape_text(_("Colors & Effects")),
             description=_("First color applies to entire match if no groups."),
         )
         content_box.append(self._colors_group)
@@ -740,7 +743,9 @@ class RuleEditDialog(Adw.Window):
         content.append(quant_group)
 
         # Groups and alternatives
-        groups_group = Adw.PreferencesGroup(title=_("Groups & Alternatives"))
+        groups_group = Adw.PreferencesGroup(
+            title=GLib.markup_escape_text(_("Groups & Alternatives"))
+        )
         groups_items = [
             ("(abc)", _("Capture group (gets a color)")),
             ("(?:abc)", _("Non-capturing group")),
@@ -833,6 +838,7 @@ class ContextRulesDialog(Adw.Window):
         saved_height = settings.get(self._SIZE_KEY_HEIGHT, self._DEFAULT_HEIGHT)
 
         super().__init__()
+        close_on_escape(self)
         self.add_css_class("zashterminal-dialog")
         self.logger = get_logger("zashterminal.ui.dialogs.context_rules")
         self._parent = parent

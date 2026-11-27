@@ -334,6 +334,14 @@ class SessionTreeView:
         empty_area_gesture.connect("pressed", self._on_empty_area_right_click)
         list_view.add_controller(empty_area_gesture)
 
+        # Snapshot the selection before the row's own click handling can
+        # collapse it, so dragging one of several selected rows moves them all.
+        press_snapshot = Gtk.GestureClick.new()
+        press_snapshot.set_button(Gdk.BUTTON_PRIMARY)
+        press_snapshot.set_propagation_phase(Gtk.PropagationPhase.CAPTURE)
+        press_snapshot.connect("pressed", self._on_list_pressed)
+        list_view.add_controller(press_snapshot)
+
         root_drop_target = Gtk.DropTarget.new(GObject.TYPE_STRING, Gdk.DragAction.MOVE)
         root_drop_target.connect("accept", lambda _, __: True)
         root_drop_target.connect("drop", self._on_root_drop)
@@ -355,7 +363,7 @@ class SessionTreeView:
         self, factory: Gtk.SignalListItemFactory, list_item: Gtk.ListItem
     ) -> None:
         """Sets up the widget structure for each row in the ColumnView."""
-        box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6, hexpand=True)
+        box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8, hexpand=True)
 
         # MODIFIED: Add a dedicated spacer for indentation
         spacer = Gtk.Box()
@@ -364,19 +372,39 @@ class SessionTreeView:
 
         # Disclosure arrow for folders (blank for other rows, keeps alignment)
         arrow = Gtk.Image(pixel_size=12)
-        arrow.set_size_request(12, -1)
+        arrow.set_size_request(22, -1)
         arrow.add_css_class("dim-label")
-        icon = Gtk.Image()
-        label = Gtk.Label(xalign=0.0, hexpand=True, ellipsize=Pango.EllipsizeMode.END)
+        icon = Gtk.Image(halign=Gtk.Align.CENTER, valign=Gtk.Align.CENTER)
+        label = Gtk.Label(
+            xalign=0.0,
+            hexpand=True,
+            ellipsize=Pango.EllipsizeMode.END,
+            css_classes=["session-tree-label"],
+        )
+        dot = Gtk.Box(css_classes=["session-status-dot"], valign=Gtk.Align.CENTER)
+        kebab = Gtk.Button(
+            icon_name="view-more-symbolic",
+            css_classes=["flat", "session-card-kebab"],
+            valign=Gtk.Align.CENTER,
+            focus_on_click=False,
+        )
+        kebab.connect("clicked", self._on_kebab_clicked, list_item)
         box.append(arrow)
         box.append(icon)
         box.append(label)
+        box.append(dot)
+        box.append(kebab)
         list_item.set_child(box)
 
         right_click = Gtk.GestureClick.new()
         right_click.set_button(Gdk.BUTTON_SECONDARY)
         right_click.connect("pressed", self._on_item_right_click, list_item)
         box.add_controller(right_click)
+
+        arrow_click = Gtk.GestureClick.new()
+        arrow_click.set_button(Gdk.BUTTON_PRIMARY)
+        arrow_click.connect("pressed", self._on_arrow_pressed, list_item)
+        arrow.add_controller(arrow_click)
 
         drag_source = Gtk.DragSource.new()
         drag_source.set_actions(Gdk.DragAction.MOVE)
@@ -391,16 +419,38 @@ class SessionTreeView:
         drop_target.connect("leave", self._on_folder_drag_leave, list_item)
         box.add_controller(drop_target)
 
+    def _on_list_pressed(
+        self, _gesture: Gtk.GestureClick, _n_press: int, _x: float, _y: float
+    ) -> None:
+        self._press_selection = self.get_selected_items()
+
+    def _on_arrow_pressed(
+        self,
+        gesture: Gtk.GestureClick,
+        _n_press: int,
+        _x: float,
+        _y: float,
+        list_item: Gtk.ListItem,
+    ) -> None:
+        """A single click on a folder's disclosure arrow expands/collapses it."""
+        row = list_item.get_item()
+        if row is None or not isinstance(row.get_item(), SessionFolder):
+            return
+        gesture.set_state(Gtk.EventSequenceState.CLAIMED)
+        row.set_expanded(not row.get_expanded())
+
     def _on_factory_bind(
         self, factory: Gtk.SignalListItemFactory, list_item: Gtk.ListItem
     ) -> None:
         """Binds data from a model item to a row widget."""
         box = list_item.get_child()
-        # MODIFIED: Find widgets by their position/type
+        # Widgets are found by position (see _on_factory_setup)
         spacer = box.get_first_child()
         arrow = spacer.get_next_sibling()
         icon = arrow.get_next_sibling()
         label = icon.get_next_sibling()
+        dot = label.get_next_sibling()
+        kebab = dot.get_next_sibling()
 
         tree_list_row = list_item.get_item()
         item = tree_list_row.get_item()
@@ -409,6 +459,23 @@ class SessionTreeView:
         list_item.set_selectable(not header)
         list_item.set_activatable(not header)
         box.set_sensitive(not header)
+
+        # Rows are recycled: reset the card chrome before styling this item
+        is_session = isinstance(item, SessionItem)
+        for widget, css in ((box, "session-card"), (icon, "session-card-icon")):
+            if is_session:
+                widget.add_css_class(css)
+            else:
+                widget.remove_css_class(css)
+        icon.set_pixel_size(14)
+        label.set_lines(2 if is_session else 1)
+        label.set_yalign(0.5)
+        dot.set_visible(is_session)
+        dot.remove_css_class("connected")
+        if is_session and item.name in getattr(self, "_connected_names", set()):
+            dot.add_css_class("connected")
+        kebab.set_visible(not header)
+
         if header:
             label.set_markup(
                 f"<small><b>{GLib.markup_escape_text(item.name.upper())}</b></small>"
@@ -419,6 +486,13 @@ class SessionTreeView:
             return
         label.remove_css_class("dim-label")
         label.set_markup(self._row_markup(item))
+        if isinstance(item, SessionFolder):
+            count = sum(1 for s in self.session_store if s.folder_path == item.path)
+            if count:
+                label.set_markup(
+                    f"{GLib.markup_escape_text(item.name or '')} "
+                    f"<span alpha='55%'>({count})</span>"
+                )
 
         # MODIFIED: Dynamic indentation using the spacer widget
         depth = tree_list_row.get_depth()
@@ -471,13 +545,24 @@ class SessionTreeView:
 
     @staticmethod
     def _row_markup(item) -> str:
-        """Row text: the name, plus a dim ``user@host`` for SSH sessions."""
+        """Row text: the name; session cards add a dim second line."""
         name = GLib.markup_escape_text(item.name or "")
-        if isinstance(item, SessionItem) and item.favorite:
-            name = f"★ {name}"
-        if isinstance(item, SessionItem) and item.is_ssh() and item.host:
-            target = GLib.markup_escape_text(item.get_connection_string())
-            return f"{name}  <span size='small' alpha='55%'>{target}</span>"
+        if isinstance(item, SessionItem):
+            if item.favorite:
+                name = f"★ {name}"
+            if item.is_ssh() and item.host:
+                subtitle = item.get_connection_string()
+            elif item.is_local():
+                subtitle = _("Local terminal")
+            else:
+                subtitle = ""
+            if subtitle:
+                return (
+                    f"<b>{name}</b>\n"
+                    f"<span size='small' alpha='60%'>"
+                    f"{GLib.markup_escape_text(subtitle)}</span>"
+                )
+            return f"<b>{name}</b>"
         return name
 
     def _on_factory_unbind(
@@ -515,28 +600,40 @@ class SessionTreeView:
         except Exception as e:
             self.logger.error(f"Failed to save folder expansion state: {e}")
 
+    @staticmethod
+    def _encode_drag_item(item) -> Optional[str]:
+        if isinstance(item, SessionItem):
+            return f"session|{item.name}|{item.folder_path}"
+        if isinstance(item, SessionFolder):
+            return f"folder|{item.name}|{item.path}"
+        if isinstance(item, LayoutItem):
+            return f"layout|{item.name}|{item.folder_path}"
+        return None
+
     def _on_drag_prepare(
         self, source: Gtk.DragSource, x: float, y: float, list_item: Gtk.ListItem
     ) -> Optional[Gdk.ContentProvider]:
-        """Prepares the data for a drag operation."""
+        """Prepares the data for a drag operation (all selected rows if the
+        dragged row is part of the selection)."""
         item = list_item.get_item().get_item()
-        if isinstance(item, SessionItem):
-            data_string = f"session|{item.name}|{item.folder_path}"
-        elif isinstance(item, SessionFolder):
-            data_string = f"folder|{item.name}|{item.path}"
-        elif isinstance(item, LayoutItem):
-            data_string = f"layout|{item.name}|{item.folder_path}"
-        else:
+        selection = getattr(self, "_press_selection", [])
+        items = selection if any(i is item for i in selection) else [item]
+        entries = [e for e in map(self._encode_drag_item, items) if e]
+        if not entries:
             return None
-        return Gdk.ContentProvider.new_for_value(data_string)
+        self._drag_count = len(entries)
+        return Gdk.ContentProvider.new_for_value("\n".join(entries))
 
     def _on_drag_begin(
         self, source: Gtk.DragSource, _drag: Gdk.Drag, list_item: Gtk.ListItem
     ) -> None:
         """Sets the drag icon when a drag begins."""
         item = list_item.get_item().get_item()
+        text = item.name
+        if getattr(self, "_drag_count", 1) > 1:
+            text = f"{text} (+{self._drag_count - 1})"
         paintable = Gtk.WidgetPaintable.new(
-            Gtk.Label(label=item.name, css_classes=["drag-icon"])
+            Gtk.Label(label=text, css_classes=["drag-icon"])
         )
         source.set_icon(paintable, 0, 0)
 
@@ -584,38 +681,51 @@ class SessionTreeView:
 
     def _perform_move(self, data_string: str, target_folder_path: str) -> None:
         """
-        Delegates the logic to move a session or folder to the operations layer.
+        Delegates the logic to move sessions/folders/layouts (one per line of
+        data_string) to the operations layer.
         """
+        moved = False
         try:
-            item_type, name, source_path = data_string.split("|", 2)
-            result = None
-            if item_type == "session":
-                session, _ = self.operations.find_session_by_name_and_path(
-                    name, source_path
-                )
-                if session:
-                    result = self.operations.move_session_to_folder(
-                        session, target_folder_path
+            for entry in data_string.split("\n"):
+                if not entry:
+                    continue
+                item_type, name, source_path = entry.split("|", 2)
+                result = None
+                if item_type == "session":
+                    session, _pos = self.operations.find_session_by_name_and_path(
+                        name, source_path
                     )
-            elif item_type == "folder":
-                folder, _ = self.operations.find_folder_by_path(source_path)
-                if folder:
-                    result = self.operations.move_folder(folder, target_folder_path)
-            elif item_type == "layout":
-                self.parent_window.move_layout(name, source_path, target_folder_path)
-                return  # move_layout handles its own refresh
+                    if session:
+                        result = self.operations.move_session_to_folder(
+                            session, target_folder_path
+                        )
+                elif item_type == "folder":
+                    folder, _pos = self.operations.find_folder_by_path(source_path)
+                    if folder:
+                        result = self.operations.move_folder(
+                            folder, target_folder_path
+                        )
+                elif item_type == "layout":
+                    # move_layout handles its own refresh
+                    self.parent_window.move_layout(
+                        name, source_path, target_folder_path
+                    )
+                    continue
 
-            if result and result.success:
-                self.refresh_tree()
-            elif result:
-                if hasattr(self.parent_window, "_show_error_dialog"):
-                    self.parent_window._show_error_dialog(
-                        _("Move Error"), result.message
-                    )
+                if result and result.success:
+                    moved = True
+                elif result:
+                    if hasattr(self.parent_window, "_show_error_dialog"):
+                        self.parent_window._show_error_dialog(
+                            _("Move Error"), result.message
+                        )
+                    break
         except Exception as e:
             self.logger.error(f"Drag-and-drop move error: {e}")
             if hasattr(self.parent_window, "_show_error_dialog"):
                 self.parent_window._show_error_dialog(_("Move Error"), str(e))
+        if moved:
+            self.refresh_tree()
 
     def refresh_tree(self) -> None:
         """Rebuilds the entire tree view from the session and folder stores."""
@@ -908,8 +1018,19 @@ class SessionTreeView:
         list_item: Gtk.ListItem,
     ) -> None:
         """Shows a context menu for a specific item."""
+        self._show_item_menu(list_item, x, y)
+        # Stop event propagation to prevent the empty area handler from being triggered
+        gesture.set_state(Gtk.EventSequenceState.CLAIMED)
+
+    def _on_kebab_clicked(self, button: Gtk.Button, list_item: Gtk.ListItem) -> None:
+        """The row's "⋮" button opens the same menu as a right click."""
+        row_box = list_item.get_child()
+        ok, x, y = button.translate_coordinates(row_box, 0, button.get_height())
+        self._show_item_menu(list_item, x if ok else 0, y if ok else 0)
+
+    def _show_item_menu(self, list_item: Gtk.ListItem, x: float, y: float) -> None:
         pos = list_item.get_position()
-        self.logger.debug(f"_on_item_right_click called for position: {pos}")
+        self.logger.debug(f"_show_item_menu called for position: {pos}")
         if not self.selection_model.is_selected(pos):
             self.selection_model.unselect_all()
             self.selection_model.select_item(pos, True)
@@ -939,9 +1060,6 @@ class SessionTreeView:
             # Show traditional popover menu (for non-popover sidebar mode)
             self.logger.debug("Showing traditional popover context menu")
             self._show_popover_context_menu(item, list_item, x, y)
-
-        # Stop event propagation to prevent the empty area handler from being triggered
-        gesture.set_state(Gtk.EventSequenceState.CLAIMED)
 
     def _show_inline_context_menu(
         self, item: Union[SessionItem, SessionFolder, LayoutItem]

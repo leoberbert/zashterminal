@@ -211,10 +211,20 @@
     opacity: 1;
 }
 
-/* Tooltip container styling - high contrast for readability */
-.tooltip-popover>contents {
-    border-radius: 8px;
-    padding: 2px;
+/* The popover shell is invisible; .zash-tooltip-body paints the tooltip
+   (opaque; the theme colors are applied by TooltipHelper.update_colors). */
+popover.tooltip-popover > contents {
+    background: none;
+    border: none;
+    box-shadow: none;
+    padding: 0;
+}
+
+.zash-tooltip-body {
+    background-color: @popover_bg_color;
+    color: @popover_fg_color;
+    border: 1px solid alpha(currentColor, 0.25);
+    border-radius: 10px;
 }
 /* ==========================================================================
    Dialog Components

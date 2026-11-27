@@ -28,7 +28,7 @@ from ...utils.security import (
 from ...utils.tooltip_helper import get_tooltip_helper
 from ...utils.translation_utils import _
 from ..widgets.bash_text_view import BashTextView
-from .base_dialog import BaseDialog
+from .base_dialog import BaseDialog, close_on_escape
 
 
 class SessionEditDialog(BaseDialog):
@@ -1068,6 +1068,7 @@ class SessionEditDialog(BaseDialog):
             default_height=600,
         )
         dialog.set_title(_("Edit Port Forward") if is_edit else _("Add Port Forward"))
+        close_on_escape(dialog)
 
         # Use Adw.ToolbarView for proper layout
         toolbar_view = Adw.ToolbarView()

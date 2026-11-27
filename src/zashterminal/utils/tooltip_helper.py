@@ -149,7 +149,13 @@ class TooltipHelper:
                 margin_bottom=10,
                 halign=Gtk.Align.CENTER,
             )
-            self.popover.set_child(self.label)
+            # The background lives on our own body widget: global popover rules
+            # (theme/aurora) can leave ``contents`` transparent, which let the
+            # tab strip show through the tooltip text.
+            body = Gtk.Box()
+            body.add_css_class("zash-tooltip-body")
+            body.append(self.label)
+            self.popover.set_child(body)
 
             # CSS for tooltip animation is now loaded globally from components.css
             # Classes: .tooltip-popover, .tooltip-popover.visible
@@ -181,9 +187,8 @@ class TooltipHelper:
             use_terminal_theme: If True and settings_manager is available,
                                use terminal color scheme colors.
         """
-        # Skip color updates on X11 - using native tooltips
-        if self._use_native_tooltips:
-            return
+        # Native tooltips (X11/other backends) are styled by CSS only: libadwaita's
+        # default is a translucent black that lets the widgets below show through.
 
         if use_terminal_theme and self.settings_manager:
             gtk_theme = self.settings_manager.get("gtk_theme", "")
@@ -217,47 +222,34 @@ class TooltipHelper:
         if not bg_color and not fg_color:
             return
 
-        # Adjust tooltip background to be subtly different from window bg
-        tooltip_bg = bg_color
-        is_dark_theme = False
+        tooltip_bg = self._adjust_tooltip_background(bg_color) if bg_color else None
+
+        # One look for both paths: the shell (native tooltip window or popover
+        # contents) is invisible and .zash-tooltip-body paints the tooltip in
+        # the theme's header color with a brand-tinted edge.
+        shell = (
+            "tooltip.background"
+            if self._use_native_tooltips
+            else "popover.tooltip-popover > contents"
+        )
+        css_parts = [
+            f"{shell} {{ background: none; border: none; box-shadow: none;"
+            " padding: 0; margin: 0; }",
+        ]
+        body = [
+            "border: 1px solid alpha(@zash_brand, 0.55);",
+            "border-radius: 10px;",
+            "background-image: none;",
+        ]
         if bg_color:
-            tooltip_bg = self._adjust_tooltip_background(bg_color)
-            # Detect if original window bg is dark theme
-            try:
-                hex_val = bg_color.lstrip("#")
-                r = int(hex_val[0:2], 16)
-                g = int(hex_val[2:4], 16)
-                b = int(hex_val[4:6], 16)
-                luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255
-                is_dark_theme = luminance < 0.5
-            except (ValueError, IndexError):
-                pass
-
-        # Set subtle border color based on theme
-        # Just enough contrast to define the tooltip edge
-        if is_dark_theme:
-            # Subtle light border for dark theme
-            border_color = "#707070"
-        else:
-            # Subtle darker border for light theme
-            border_color = "#a0a0a0"
-
-        # Build CSS with maximum specificity selectors
-        # GTK4 CSS - only use supported properties
-        css_parts = ["popover.tooltip-popover > contents {"]
-        if tooltip_bg:
-            css_parts.append(f"    background-color: {tooltip_bg};")
-            css_parts.append("    background-image: none;")
+            # Theme header color, nudged slightly toward the text color so the
+            # tooltip separates from the bar behind it.
+            body.append(f"background-color: mix({bg_color}, {fg_color or tooltip_bg}, 0.08);")
         if fg_color:
-            css_parts.append(f"    color: {fg_color};")
-        # Use solid 1px border with hex color for maximum compatibility
-        css_parts.append(f"    border: 1px solid {border_color};")
-        css_parts.append("    border-radius: 8px;")
-        css_parts.append("}")
-
-        # Also style the label
+            body.append(f"color: {fg_color};")
+        css_parts.append(f".zash-tooltip-body {{ {' '.join(body)} }}")
         if fg_color:
-            css_parts.append(f"popover.tooltip-popover label {{ color: {fg_color}; }}")
+            css_parts.append(f".zash-tooltip-body label {{ color: {fg_color}; }}")
 
         css = "\n".join(css_parts)
 
@@ -411,7 +403,7 @@ class TooltipHelper:
 
         # On X11, use native GTK tooltip to avoid segfaults
         if self._use_native_tooltips:
-            widget.set_tooltip_text(full_text)
+            self._set_native_tooltip(widget, full_text)
             return
 
         # Store base text and action name for dynamic lookup
@@ -442,7 +434,7 @@ class TooltipHelper:
 
         # On X11, use native GTK tooltip to avoid segfaults
         if self._use_native_tooltips:
-            widget.set_tooltip_text(tooltip_text)
+            self._set_native_tooltip(widget, tooltip_text)
             return
 
         # Store tooltip text on the widget; drop any shortcut-based text so the
@@ -453,6 +445,34 @@ class TooltipHelper:
         # Clear any existing default tooltip
         widget.set_tooltip_text(None)
         self._attach_motion_controller(widget, self._on_enter)
+
+    def _set_native_tooltip(self, widget: Gtk.Widget, text: str) -> None:
+        """Native tooltip whose content is our own opaque, theme-colored widget."""
+        widget._zash_tooltip_text = text
+        # Keep the plain text too (fallback when the custom content is not used).
+        widget.set_tooltip_text(text)
+        if not getattr(widget, "_zash_tooltip_hooked", False):
+            widget._zash_tooltip_hooked = True
+            widget.connect("query-tooltip", self._on_query_tooltip)
+
+    def _on_query_tooltip(self, widget, _x, _y, _keyboard, tooltip) -> bool:
+        text = getattr(widget, "_zash_tooltip_text", None)
+        if not text or not self.is_enabled():
+            return False
+        label = Gtk.Label(
+            label=text,
+            wrap=True,
+            max_width_chars=45,
+            margin_start=12,
+            margin_end=12,
+            margin_top=7,
+            margin_bottom=7,
+        )
+        body = Gtk.Box()
+        body.add_css_class("zash-tooltip-body")
+        body.append(label)
+        tooltip.set_custom(body)
+        return True
 
     def _attach_motion_controller(self, widget: Gtk.Widget, on_enter) -> None:
         """Attach the hover controller once per widget (text updates reuse it)."""

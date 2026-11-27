@@ -119,12 +119,26 @@ class ThemeEngine:
         # Text on the brand gradient: pick the color that reads best on both stops
         avg = (lum(accent) + lum(second)) / 2
         on_brand = "#000000" if (avg + 0.05) / 0.05 > 1.05 / (avg + 0.05) else "#ffffff"
-        return (
+        css = (
             f"@define-color zash_brand {accent};"
             f"@define-color zash_brand_2 {second};"
             f"@define-color zash_brand_fg {on_brand};"
             f"@define-color zash_alert {alert};"
         )
+        # Monitor panel series follow the terminal palette (ANSI red, green,
+        # yellow, magenta, cyan); missing entries keep the window.css defaults.
+        for name, index in (
+            ("crit", 1),
+            ("net", 2),
+            ("warn", 3),
+            ("mem", 5),
+            ("lat", 6),
+        ):
+            if len(palette) > index:
+                css += f"@define-color zash_metric_{name} {palette[index]};"
+        if len(palette) > 2:
+            css += f"@define-color zash_metric_disk {palette[2]};"
+        return css
 
     @staticmethod
     def _get_root_vars_css(params: Dict[str, Any], gtk_theme_name: str) -> str:

@@ -1,0 +1,272 @@
+/* zashterminal/data/styles/preferences.css
+ * Preferences window: category sidebar, rounded setting cards, live preview.
+ * Colors derive from the active theme (window foreground alpha) so light,
+ * dark and "Terminal" themes keep working; the accent is the Aurora brand.
+ */
+
+/* ---- Window chrome ---------------------------------------------------- */
+window.prefs-window headerbar {
+    background: transparent;
+    box-shadow: none;
+    border-bottom: 1px solid alpha(@window_fg_color, 0.08);
+}
+
+.prefs-window-title {
+    font-weight: 700;
+    font-size: 1.05em;
+}
+
+/* ---- Sidebar ---------------------------------------------------------- */
+.prefs-sidebar {
+    background-color: alpha(@window_fg_color, 0.03);
+    border-right: 1px solid alpha(@window_fg_color, 0.08);
+}
+
+/* GtkSearchEntry's CSS node is "entry.search" (there is no "searchentry") */
+.prefs-sidebar entry.search {
+    border-radius: 10px;
+    min-height: 34px;
+    background-color: alpha(@window_fg_color, 0.05);
+    border: 1px solid alpha(@window_fg_color, 0.1);
+    box-shadow: none;
+}
+
+/* Leave room for the Ctrl+K badge so the placeholder never runs under it */
+.prefs-sidebar entry.search > text {
+    margin-right: 46px;
+}
+
+.prefs-search-badge {
+    font-size: 0.75em;
+    padding: 1px 6px;
+    border-radius: 6px;
+    background-color: alpha(@window_fg_color, 0.1);
+    color: alpha(@window_fg_color, 0.65);
+}
+
+.prefs-category-list {
+    background: transparent;
+}
+
+.prefs-category-list > row {
+    border-radius: 10px;
+    margin: 2px 0;
+    padding: 9px 12px;
+    min-height: 22px;
+    color: alpha(@window_fg_color, 0.85);
+}
+
+.prefs-category-list > row:hover {
+    background-color: alpha(@window_fg_color, 0.06);
+}
+
+.prefs-category-list > row:selected {
+    background-color: @zash_brand;
+    background-image: none;
+    color: @zash_brand_fg;
+    font-weight: 600;
+}
+
+/* Labels/icons get explicit colors from the theme CSS; keep them readable on
+   the brand fill. */
+.prefs-category-list > row:selected label,
+.prefs-category-list > row:selected image {
+    color: @zash_brand_fg;
+}
+
+.prefs-sidebar-footer {
+    padding-top: 10px;
+    border-top: 1px solid alpha(@window_fg_color, 0.08);
+}
+
+.prefs-app-icon {
+    background-color: alpha(@zash_brand, 0.22);
+    color: @zash_brand;
+    border-radius: 8px;
+    padding: 7px;
+}
+
+.prefs-app-name {
+    font-weight: 700;
+}
+
+.prefs-app-version {
+    font-size: 0.8em;
+    color: alpha(@window_fg_color, 0.55);
+}
+
+/* ---- Page header ------------------------------------------------------ */
+.prefs-page-icon {
+    color: @zash_brand;
+}
+
+.prefs-title {
+    font-size: 22px;
+    font-weight: 700;
+}
+
+.prefs-subtitle {
+    color: alpha(@window_fg_color, 0.6);
+}
+
+/* ---- Setting cards (Adw.PreferencesGroup) ----------------------------- */
+.prefs-window preferencespage > scrolledwindow > viewport > clamp > box {
+    margin-top: 6px;
+}
+
+.prefs-window preferencesgroup > box > box:first-child label.heading {
+    font-weight: 700;
+    font-size: 1.02em;
+}
+
+.prefs-window preferencesgroup list.boxed-list {
+    border-radius: 12px;
+    border: 1px solid alpha(@window_fg_color, 0.08);
+    background-color: alpha(@window_fg_color, 0.04);
+    box-shadow: none;
+}
+
+.prefs-window preferencesgroup list.boxed-list > row {
+    min-height: 40px;
+    background: transparent;
+}
+
+.prefs-window preferencesgroup list.boxed-list > row.expander {
+    background: transparent;
+}
+
+row.prefs-row-flash {
+    background-color: alpha(@zash_brand, 0.28);
+    transition: background-color 400ms ease;
+}
+
+/* ---- Search results --------------------------------------------------- */
+.prefs-result-heading {
+    font-weight: 700;
+    font-size: 0.95em;
+    color: alpha(@window_fg_color, 0.75);
+    margin-top: 10px;
+}
+
+.prefs-result-list {
+    border-radius: 12px;
+    border: 1px solid alpha(@window_fg_color, 0.08);
+    background-color: alpha(@window_fg_color, 0.04);
+}
+
+.prefs-result-list > row {
+    padding: 8px 14px;
+    min-height: 40px;
+    background: transparent;
+}
+
+.prefs-result-list > row:hover {
+    background-color: alpha(@window_fg_color, 0.06);
+}
+
+.prefs-result-subtitle {
+    font-size: 0.85em;
+    color: alpha(@window_fg_color, 0.6);
+}
+
+/* ---- Preview column --------------------------------------------------- */
+.prefs-card {
+    border-radius: 12px;
+    border: 1px solid alpha(@window_fg_color, 0.08);
+    background-color: alpha(@window_fg_color, 0.04);
+    padding: 14px;
+}
+
+.prefs-card-title {
+    font-weight: 700;
+}
+
+button.prefs-link-button {
+    color: @zash_brand_2;
+    font-size: 0.9em;
+    padding: 2px 8px;
+    min-height: 0;
+}
+
+button.prefs-card-action {
+    padding: 8px 6px;
+    border-top: 1px solid alpha(@window_fg_color, 0.08);
+    border-radius: 0 0 10px 10px;
+}
+
+.prefs-preview-frame {
+    border-radius: 10px;
+    border: 1px solid alpha(@window_fg_color, 0.14);
+    background-color: alpha(@window_bg_color, 0.6);
+}
+
+.prefs-preview-chrome {
+    padding: 8px 12px;
+    background-color: alpha(@window_fg_color, 0.06);
+}
+
+.prefs-preview-tab {
+    font-size: 0.8em;
+    padding: 3px 12px;
+    border-radius: 6px;
+    background-color: alpha(@window_fg_color, 0.1);
+}
+
+.prefs-dot {
+    min-width: 10px;
+    min-height: 10px;
+    border-radius: 999px;
+}
+
+.prefs-dot-red {
+    background-color: #ff5f57;
+}
+
+.prefs-dot-yellow {
+    background-color: #febc2e;
+}
+
+.prefs-dot-green {
+    background-color: #28c840;
+}
+
+.prefs-preview-terminal {
+    padding: 8px 10px;
+}
+
+/* ---- Scheme swatches -------------------------------------------------- */
+button.prefs-swatch {
+    padding: 0;
+    min-width: 0;
+    min-height: 0;
+    border-radius: 10px;
+    border: 2px solid alpha(@window_fg_color, 0.12);
+    background: none;
+    box-shadow: none;
+}
+
+button.prefs-swatch:hover {
+    border-color: alpha(@window_fg_color, 0.3);
+}
+
+button.prefs-swatch:checked {
+    border-color: #2f6df6;
+    background: none;
+}
+
+.prefs-swatch-label {
+    font-size: 0.8em;
+    color: alpha(@window_fg_color, 0.7);
+}
+
+/* ---- Footer ----------------------------------------------------------- */
+.prefs-footer {
+    padding: 12px 20px;
+    border-top: 1px solid alpha(@window_fg_color, 0.08);
+}
+
+.prefs-footer button {
+    padding: 8px 20px;
+    border-radius: 10px;
+    min-height: 22px;
+}

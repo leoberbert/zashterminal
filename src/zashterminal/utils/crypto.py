@@ -277,18 +277,27 @@ def clear_api_key(key_name: str) -> bool:
         return False
 
 
-def resolve_ai_assistant_api_key(settings_value: Optional[str]) -> str:
+def ai_api_key_name(provider: str) -> str:
+    """Keyring entry of a provider's AI API key (one key per provider).
+
+    An empty provider maps to the legacy shared entry.
     """
-    Resolve the AI API key from settings value + libsecret.
+    provider = (provider or "").strip()
+    return f"{AI_ASSISTANT_API_KEY_NAME}:{provider}" if provider else AI_ASSISTANT_API_KEY_NAME
+
+
+def resolve_ai_assistant_api_key(settings_value: Optional[str], provider: str = "") -> str:
+    """
+    Resolve the AI API key of ``provider`` from settings value + libsecret.
 
     Legacy plaintext in settings is returned as-is (caller should migrate).
-    Sentinel / empty means look up libsecret.
+    Sentinel / empty means look up the provider's libsecret entry.
     """
     value = (settings_value or "").strip()
     if value and value != API_KEY_SETTINGS_SENTINEL:
         return value
     try:
-        return lookup_api_key(AI_ASSISTANT_API_KEY_NAME) or ""
+        return lookup_api_key(ai_api_key_name(provider)) or ""
     except ZashterminalError:
         return ""
 

@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import os
 import threading
 import time
 import weakref
@@ -122,40 +123,32 @@ class ManualSSHTracker:
             pid = terminal_info.get("process_id")
             if not pid:
                 return
+            # Cheap path: the pty's foreground process group only changes when a
+            # job starts/ends. Scanning the process table (psutil builds a ppid
+            # map from every /proc/*/stat) on each tick cost several % CPU idle.
+            foreground = self._foreground_pgid(state)
+            if foreground is not None:
+                if foreground == self._last_child_count.get(terminal_id):
+                    return
+                self._last_child_count[terminal_id] = foreground
+                if foreground == pid:
+                    # Shell at its prompt: nothing (ssh included) runs in front.
+                    self._set_ssh_state(terminal_id, state, None)
+                    return
             try:
                 parent_proc = psutil_mod.Process(pid)
-                current_children_count = len(parent_proc.children())
-
-                if self._last_child_count.get(terminal_id) == current_children_count:
-                    if not state["in_ssh"]:
-                        return
-
-                self._last_child_count[terminal_id] = current_children_count
+                if foreground is None:
+                    current_children_count = len(parent_proc.children())
+                    if self._last_child_count.get(terminal_id) == current_children_count:
+                        if not state["in_ssh"]:
+                            return
+                    self._last_child_count[terminal_id] = current_children_count
 
                 children = parent_proc.children(recursive=True)
                 ssh_proc = next(
                     (p for p in children if p.name().lower() == "ssh"), None
                 )
-                currently_in_ssh = ssh_proc is not None
-                if currently_in_ssh != state["in_ssh"]:
-                    if currently_in_ssh:
-                        state["in_ssh"] = True
-                        cmdline = ssh_proc.cmdline()
-                        state["ssh_target"] = next(
-                            (arg for arg in cmdline if "@" in arg), ssh_proc.name()
-                        )
-                        self.logger.info(
-                            f"Detected manual SSH session in terminal {terminal_id}: {state['ssh_target']}"
-                        )
-                    else:
-                        self.logger.info(
-                            f"Manual SSH session ended in terminal {terminal_id}"
-                        )
-                        state["in_ssh"] = False
-                        state["ssh_target"] = None
-                    terminal = state["terminal_ref"]()
-                    if terminal and self.on_state_changed:
-                        GLib.idle_add(self.on_state_changed, terminal)
+                self._set_ssh_state(terminal_id, state, ssh_proc)
             except psutil_mod.NoSuchProcess:
                 if state["in_ssh"]:
                     state["in_ssh"] = False
@@ -167,6 +160,36 @@ class ManualSSHTracker:
                 self.logger.debug(
                     f"Error checking process tree for terminal {terminal_id}: {e}"
                 )
+
+    @staticmethod
+    def _foreground_pgid(state) -> Optional[int]:
+        terminal = state["terminal_ref"]()
+        try:
+            pty = terminal.get_pty() if terminal is not None else None
+            return os.tcgetpgrp(pty.get_fd()) if pty is not None else None
+        except (OSError, AttributeError):
+            return None
+
+    def _set_ssh_state(self, terminal_id: int, state, ssh_proc) -> None:
+        currently_in_ssh = ssh_proc is not None
+        if currently_in_ssh == state["in_ssh"]:
+            return
+        if currently_in_ssh:
+            state["in_ssh"] = True
+            cmdline = ssh_proc.cmdline()
+            state["ssh_target"] = next(
+                (arg for arg in cmdline if "@" in arg), ssh_proc.name()
+            )
+            self.logger.info(
+                f"Detected manual SSH session in terminal {terminal_id}: {state['ssh_target']}"
+            )
+        else:
+            self.logger.info(f"Manual SSH session ended in terminal {terminal_id}")
+            state["in_ssh"] = False
+            state["ssh_target"] = None
+        terminal = state["terminal_ref"]()
+        if terminal and self.on_state_changed:
+            GLib.idle_add(self.on_state_changed, terminal)
 
 
 class TerminalRegistry:
