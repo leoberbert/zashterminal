@@ -70,6 +70,7 @@ class StatusController:
         self._sync_poller()
 
     def shutdown(self) -> None:
+        self._shut_down = True
         if self._tick_id:
             GLib.source_remove(self._tick_id)
             self._tick_id = 0
@@ -119,6 +120,8 @@ class StatusController:
         return terminal_id, info.get("type", "none"), live, session
 
     def _evaluate(self) -> None:
+        if getattr(self, "_shut_down", False):
+            return
         terminal = self._active_terminal()
         terminal_id, kind, live, session = self._describe(terminal)
         self._update_terminal_info(terminal, kind)
@@ -250,6 +253,9 @@ class StatusController:
         return self.status_bar.get_visible() or self._detail_wanted()
 
     def _start_poller(self, signature: _Signature, session: Optional[SessionItem]) -> None:
+        if getattr(self, "_shut_down", False):
+            # Panel toggles after shutdown (window closing) must not restart it.
+            return
         _terminal_id, kind, live, = signature
         if not live or not self._metrics_wanted():
             if kind in ("ssh", "local") and not live:

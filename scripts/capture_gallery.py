@@ -59,6 +59,30 @@ def capture_widget(widget, path: Path) -> None:
     print(f"wrote {path.name} ({path.stat().st_size} bytes, {width}x{height})")
 
 
+def seed_history(config_dir: Path) -> None:
+    """A few recent connections for the History panel screenshot."""
+    now = time.time()
+    entries = [
+        ("prod-api", "api.prod.example", "ssh", 120, 14),
+        ("SFTP-prod-api", "api.prod.example", "sftp", 3_600, 3),
+        ("lab-db", "db.lab.local", "ssh", 7_200, 6),
+        ("Local", "", "local", 86_400, 22),
+        ("bastion", "bastion.example", "ssh", 3 * 86_400, 2),
+    ]
+    app_dir = config_dir / "zashterminal"
+    app_dir.mkdir(parents=True, exist_ok=True)
+    (app_dir / "connection_history.json").write_text(
+        json.dumps(
+            [
+                {"session_name": n, "host": h, "kind": k, "last_used": now - age, "count": c}
+                for n, h, k, age, c in entries
+            ],
+            indent=2,
+        ),
+        encoding="utf-8",
+    )
+
+
 def seed_sessions(config_dir: Path) -> None:
     payload = {
         "sessions": [
@@ -106,10 +130,74 @@ def seed_sessions(config_dir: Path) -> None:
     (app_dir / "sessions.json").write_text(json.dumps(payload, indent=2), encoding="utf-8")
 
 
+def demo_metrics(step: int):
+    """Deterministic, fictional host metrics for screenshots."""
+    import math
+
+    from zashterminal.utils.system_metrics import DiskInfo, ProcInfo, SystemMetrics
+
+    wave = math.sin(step / 3.0)
+    return SystemMetrics(
+        os_name="Ubuntu 24.04 LTS",
+        kernel="6.8.0-45-generic",
+        arch="x86_64",
+        hostname="web-01",
+        cpu_model="AMD EPYC 7763 64-Core Processor",
+        cores=8,
+        cpu_percent=32 + 18 * wave + (step % 5) * 3,
+        mem_used=int(5.4 * 2**30),
+        mem_total=16 * 2**30,
+        swap_used=0,
+        swap_total=4 * 2**30,
+        disk_percent=43.0,
+        disk_mount="/",
+        uptime_seconds=1_067_220,
+        load=(0.82, 0.64, 0.51),
+        latency_ms=None,
+        net_rx_bps=180_000 + 90_000 * wave,
+        net_tx_bps=40_000 + 25_000 * math.cos(step / 2.0),
+        core_percents=tuple(20 + (i * 9 + step * 7) % 60 for i in range(8)),
+        disks=(
+            DiskInfo("/", 43.0, 100 * 2**30),
+            DiskInfo("/var/lib/docker", 71.0, 200 * 2**30),
+            DiskInfo("/boot", 18.0, 2**30),
+        ),
+        procs_total=214,
+        top_cpu=(
+            ProcInfo("nginx", 12.4, 1.2),
+            ProcInfo("python3", 8.1, 4.6),
+            ProcInfo("postgres", 5.3, 9.8),
+            ProcInfo("node", 2.2, 3.1),
+            ProcInfo("sshd", 0.4, 0.1),
+        ),
+        top_mem=(
+            ProcInfo("postgres", 5.3, 9.8),
+            ProcInfo("python3", 8.1, 4.6),
+            ProcInfo("node", 2.2, 3.1),
+            ProcInfo("redis-server", 0.9, 2.4),
+            ProcInfo("nginx", 12.4, 1.2),
+        ),
+    )
+
+
+def show_demo_metrics(window, terminal) -> None:
+    """Stop live collection and fill the status bar and monitor with demo data."""
+    window.status_controller.shutdown()
+    panel = window.ui_builder.monitor_panel
+    panel.set_terminal(getattr(terminal, "terminal_id", None))
+    panel.set_title("web-01")
+    for step in range(45):
+        metrics = demo_metrics(step)
+        panel.set_metrics(metrics)
+    window.ui_builder.status_bar.set_metrics(metrics)
+
+
 def seed_home(home: Path) -> None:
     for d in ("projects/api", "projects/infra", "Documents", "Downloads", ".ssh"):
         (home / d).mkdir(parents=True, exist_ok=True)
     (home / "README.md").write_text("# demo\n", encoding="utf-8")
+    # Neutral prompt in every shell/pane (no real user or host name in shots)
+    (home / ".bashrc").write_text("PS1='\\[\\e[1;32m\\]demo@web-01\\[\\e[0m\\]:\\[\\e[1;34m\\]\\w\\[\\e[0m\\]$ '\n", encoding="utf-8")
     (home / "deploy.sh").write_text("#!/bin/sh\necho deploy\n", encoding="utf-8")
     (home / "notes.txt").write_text("todo: rotate keys\n", encoding="utf-8")
     (home / "projects/api/main.py").write_text("print('ok')\n", encoding="utf-8")
@@ -127,6 +215,7 @@ def main() -> int:
     with tempfile.TemporaryDirectory(prefix="zash-gallery-") as tmp:
         config_home = Path(tmp)
         seed_sessions(config_home)
+        seed_history(config_home)
         os.environ["XDG_CONFIG_HOME"] = str(config_home)
         os.environ["XDG_CACHE_HOME"] = str(config_home / "cache")
         # Isolated HOME: no real ~/.ssh/config hosts or personal files in shots.
@@ -195,7 +284,7 @@ def main() -> int:
                     (
                         "clear; printf '\\033[1;36mZashterminal\\033[0m "
                         "- sessions, files, search and AI\\n\\n'; "
-                        "ls --color=always -lah\n"
+                        "ls --color=always -lhgo\n"
                     ).encode()
                 )
                 pump(1.0)
@@ -204,6 +293,10 @@ def main() -> int:
                 window.refresh_tree()
             except Exception:
                 pass
+
+            # Demo metrics instead of this machine's (hostname, CPU, processes)
+            show_demo_metrics(window, terminal)
+            pump(0.3)
 
             capture_widget(window, OUT / "01-main-terminal.png")
 
@@ -226,7 +319,7 @@ def main() -> int:
 
 
             if terminal:
-                terminal.feed_child(b"ls --color=always -lah\n")
+                terminal.feed_child(b"ls --color=always -lhgo\n")
                 pump(0.6)
 
             if terminal:
@@ -342,11 +435,28 @@ def main() -> int:
                     print(f"command manager skipped: {exc}")
 
                 try:
-                    window.split_view.set_show_sidebar(True)
+                    window.ui_builder._on_rail_page_toggled("sessions", True)
                     pump(0.3)
                     capture_widget(window, OUT / "13-sessions-sidebar.png")
                 except Exception as exc:
                     print(f"sidebar skipped: {exc}")
+
+                try:
+                    ui = window.ui_builder
+                    ui._on_rail_page_toggled("monitor", True)
+                    pump(0.5)
+                    capture_widget(window, OUT / "15-monitor-panel.png")
+                    ui.monitor_panel._on_expand_clicked(None)
+                    pump(0.8)
+                    monitor_window = ui.monitor_panel._window
+                    capture_widget(monitor_window, OUT / "16-monitor-window.png")
+                    monitor_window.close()
+                    pump(0.2)
+                    ui._on_rail_page_toggled("history", True)
+                    pump(0.4)
+                    capture_widget(window, OUT / "17-history.png")
+                except Exception as exc:
+                    print(f"monitor skipped: {exc}")
             except Exception:
                 traceback.print_exc()
             finally:
