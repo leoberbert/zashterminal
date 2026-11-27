@@ -9018,3 +9018,31 @@ msgstr "Välj en giltig katalog!"
 #: src/zashterminal/ui/dialogs/tftp_server_dialog.py
 msgid "The TFTP server uses local directories for uploading and downloading files."
 msgstr "TFTP-servern använder lokala kataloger för uppladdning och nedladdning av filer."
+
+#: src/zashterminal/terminal/tabs.py
+msgid "Log Session"
+msgstr "Logga session"
+
+#: src/zashterminal/terminal/tabs.py
+msgid "Stop Session Log"
+msgstr "Stoppa sessionslogg"
+
+#: src/zashterminal/terminal/tabs.py
+msgid "Open Session Log Folder"
+msgstr "Öppna mapp för sessionslogg"
+
+#: src/zashterminal/terminal/tabs.py
+msgid "Save Session Log As..."
+msgstr "Spara sessionslogg som..."
+
+#: src/zashterminal/terminal/manager.py
+msgid "Session log saved to {path}"
+msgstr "Sessionsloggen sparades i {path}"
+
+#: src/zashterminal/terminal/manager.py
+msgid "Could not open the log folder."
+msgstr "Det gick inte att öppna loggmappen."
+
+#: src/zashterminal/terminal/tabs.py
+msgid "This tab has an active SSH connection. Closing will disconnect it. Are you sure?"
+msgstr "Den här fliken har en aktiv SSH-anslutning. Om du stänger den kopplas den från. Är du säker?"

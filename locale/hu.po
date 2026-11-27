@@ -9034,3 +9034,31 @@ msgstr "Válasszon érvényes könyvtárat!"
 #: src/zashterminal/ui/dialogs/tftp_server_dialog.py
 msgid "The TFTP server uses local directories for uploading and downloading files."
 msgstr "A TFTP-kiszolgáló helyi könyvtárakat használ a fájlok feltöltéséhez és letöltéséhez."
+
+#: src/zashterminal/terminal/tabs.py
+msgid "Log Session"
+msgstr "Munkamenet naplózása"
+
+#: src/zashterminal/terminal/tabs.py
+msgid "Stop Session Log"
+msgstr "Munkamenet-napló leállítása"
+
+#: src/zashterminal/terminal/tabs.py
+msgid "Open Session Log Folder"
+msgstr "Munkamenet-napló mappájának megnyitása"
+
+#: src/zashterminal/terminal/tabs.py
+msgid "Save Session Log As..."
+msgstr "Munkamenet-napló mentése másként..."
+
+#: src/zashterminal/terminal/manager.py
+msgid "Session log saved to {path}"
+msgstr "Munkamenet-napló mentve ide: {path}"
+
+#: src/zashterminal/terminal/manager.py
+msgid "Could not open the log folder."
+msgstr "Nem sikerült megnyitni a naplómappát."
+
+#: src/zashterminal/terminal/tabs.py
+msgid "This tab has an active SSH connection. Closing will disconnect it. Are you sure?"
+msgstr "Ennek a fülnek aktív SSH-kapcsolata van. A bezárás megszakítja. Biztos benne?"

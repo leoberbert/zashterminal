@@ -9019,3 +9019,31 @@ msgstr "Vyberte prosím platný adresár!"
 #: src/zashterminal/ui/dialogs/tftp_server_dialog.py
 msgid "The TFTP server uses local directories for uploading and downloading files."
 msgstr "Server TFTP používa lokálne adresáre na nahrávanie a sťahovanie súborov."
+
+#: src/zashterminal/terminal/tabs.py
+msgid "Log Session"
+msgstr "Zaznamenávať reláciu"
+
+#: src/zashterminal/terminal/tabs.py
+msgid "Stop Session Log"
+msgstr "Zastaviť záznam relácie"
+
+#: src/zashterminal/terminal/tabs.py
+msgid "Open Session Log Folder"
+msgstr "Otvoriť priečinok záznamu relácie"
+
+#: src/zashterminal/terminal/tabs.py
+msgid "Save Session Log As..."
+msgstr "Uložiť záznam relácie ako..."
+
+#: src/zashterminal/terminal/manager.py
+msgid "Session log saved to {path}"
+msgstr "Záznam relácie uložený do {path}"
+
+#: src/zashterminal/terminal/manager.py
+msgid "Could not open the log folder."
+msgstr "Priečinok so záznamami sa nepodarilo otvoriť."
+
+#: src/zashterminal/terminal/tabs.py
+msgid "This tab has an active SSH connection. Closing will disconnect it. Are you sure?"
+msgstr "Táto karta má aktívne pripojenie SSH. Zatvorením sa odpojí. Naozaj chcete pokračovať?"

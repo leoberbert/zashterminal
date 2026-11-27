@@ -9016,3 +9016,31 @@ msgstr "Lütfen geçerli bir dizin seçin!"
 #: src/zashterminal/ui/dialogs/tftp_server_dialog.py
 msgid "The TFTP server uses local directories for uploading and downloading files."
 msgstr "TFTP sunucusu, dosya yükleme ve indirme için yerel dizinleri kullanır."
+
+#: src/zashterminal/terminal/tabs.py
+msgid "Log Session"
+msgstr "Oturumu kaydet"
+
+#: src/zashterminal/terminal/tabs.py
+msgid "Stop Session Log"
+msgstr "Oturum kaydını durdur"
+
+#: src/zashterminal/terminal/tabs.py
+msgid "Open Session Log Folder"
+msgstr "Oturum kaydı klasörünü aç"
+
+#: src/zashterminal/terminal/tabs.py
+msgid "Save Session Log As..."
+msgstr "Oturum kaydını farklı kaydet..."
+
+#: src/zashterminal/terminal/manager.py
+msgid "Session log saved to {path}"
+msgstr "Oturum kaydı şuraya kaydedildi: {path}"
+
+#: src/zashterminal/terminal/manager.py
+msgid "Could not open the log folder."
+msgstr "Kayıt klasörü açılamadı."
+
+#: src/zashterminal/terminal/tabs.py
+msgid "This tab has an active SSH connection. Closing will disconnect it. Are you sure?"
+msgstr "Bu sekmenin etkin bir SSH bağlantısı var. Kapatmak bağlantıyı keser. Emin misiniz?"

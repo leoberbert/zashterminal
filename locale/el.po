@@ -9045,3 +9045,31 @@ msgstr "Επιλέξτε έναν έγκυρο κατάλογο!"
 #: src/zashterminal/ui/dialogs/tftp_server_dialog.py
 msgid "The TFTP server uses local directories for uploading and downloading files."
 msgstr "Ο διακομιστής TFTP χρησιμοποιεί τοπικούς καταλόγους για την αποστολή και τη λήψη αρχείων."
+
+#: src/zashterminal/terminal/tabs.py
+msgid "Log Session"
+msgstr "Καταγραφή συνεδρίας"
+
+#: src/zashterminal/terminal/tabs.py
+msgid "Stop Session Log"
+msgstr "Διακοπή καταγραφής συνεδρίας"
+
+#: src/zashterminal/terminal/tabs.py
+msgid "Open Session Log Folder"
+msgstr "Άνοιγμα φακέλου καταγραφής συνεδρίας"
+
+#: src/zashterminal/terminal/tabs.py
+msgid "Save Session Log As..."
+msgstr "Αποθήκευση καταγραφής συνεδρίας ως..."
+
+#: src/zashterminal/terminal/manager.py
+msgid "Session log saved to {path}"
+msgstr "Η καταγραφή συνεδρίας αποθηκεύτηκε στο {path}"
+
+#: src/zashterminal/terminal/manager.py
+msgid "Could not open the log folder."
+msgstr "Δεν ήταν δυνατό το άνοιγμα του φακέλου καταγραφών."
+
+#: src/zashterminal/terminal/tabs.py
+msgid "This tab has an active SSH connection. Closing will disconnect it. Are you sure?"
+msgstr "Αυτή η καρτέλα έχει ενεργή σύνδεση SSH. Το κλείσιμο θα την αποσυνδέσει. Είστε σίγουροι;"

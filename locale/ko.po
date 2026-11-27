@@ -8973,3 +8973,31 @@ msgstr "올바른 디렉터리를 선택하세요!"
 #: src/zashterminal/ui/dialogs/tftp_server_dialog.py
 msgid "The TFTP server uses local directories for uploading and downloading files."
 msgstr "TFTP 서버는 파일 업로드와 다운로드에 로컬 디렉터리를 사용합니다."
+
+#: src/zashterminal/terminal/tabs.py
+msgid "Log Session"
+msgstr "세션 기록"
+
+#: src/zashterminal/terminal/tabs.py
+msgid "Stop Session Log"
+msgstr "세션 기록 중지"
+
+#: src/zashterminal/terminal/tabs.py
+msgid "Open Session Log Folder"
+msgstr "세션 기록 폴더 열기"
+
+#: src/zashterminal/terminal/tabs.py
+msgid "Save Session Log As..."
+msgstr "세션 기록을 다른 이름으로 저장..."
+
+#: src/zashterminal/terminal/manager.py
+msgid "Session log saved to {path}"
+msgstr "세션 기록이 {path}에 저장되었습니다"
+
+#: src/zashterminal/terminal/manager.py
+msgid "Could not open the log folder."
+msgstr "기록 폴더를 열 수 없습니다."
+
+#: src/zashterminal/terminal/tabs.py
+msgid "This tab has an active SSH connection. Closing will disconnect it. Are you sure?"
+msgstr "이 탭에 활성 SSH 연결이 있습니다. 닫으면 연결이 끊어집니다. 계속하시겠습니까?"

@@ -9055,3 +9055,31 @@ msgstr "Palun valige kehtiv kataloog!"
 #: src/zashterminal/ui/dialogs/tftp_server_dialog.py
 msgid "The TFTP server uses local directories for uploading and downloading files."
 msgstr "TFTP-server kasutab failide üles- ja allalaadimiseks kohalikke katalooge."
+
+#: src/zashterminal/terminal/tabs.py
+msgid "Log Session"
+msgstr "Logi seanssi"
+
+#: src/zashterminal/terminal/tabs.py
+msgid "Stop Session Log"
+msgstr "Peata seansi logi"
+
+#: src/zashterminal/terminal/tabs.py
+msgid "Open Session Log Folder"
+msgstr "Ava seansi logi kaust"
+
+#: src/zashterminal/terminal/tabs.py
+msgid "Save Session Log As..."
+msgstr "Salvesta seansi logi nimega..."
+
+#: src/zashterminal/terminal/manager.py
+msgid "Session log saved to {path}"
+msgstr "Seansi logi salvestatud: {path}"
+
+#: src/zashterminal/terminal/manager.py
+msgid "Could not open the log folder."
+msgstr "Logikausta ei õnnestunud avada."
+
+#: src/zashterminal/terminal/tabs.py
+msgid "This tab has an active SSH connection. Closing will disconnect it. Are you sure?"
+msgstr "Sellel vahelehel on aktiivne SSH-ühendus. Sulgemine katkestab selle. Kas olete kindel?"
