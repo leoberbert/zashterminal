@@ -1,0 +1,32 @@
+/* History and monitor side panels */
+.zash-history-panel, .zash-monitor-panel { padding: 12px; }
+.zash-history-title, .zash-monitor-title { font-weight: 700; font-size: 1.05em; }
+.zash-history-list { background: transparent; }
+.zash-history-row {
+  border-radius: 10px;
+  margin: 3px 0;
+  border: 1px solid alpha(currentColor, 0.08);
+  background: alpha(currentColor, 0.04);
+}
+.zash-history-row:hover { background: alpha(currentColor, 0.08); }
+.zash-history-icon { color: #2f6df6; }
+.zash-history-name { font-weight: 700; }
+.zash-history-sub, .zash-history-time { opacity: 0.6; font-size: 0.85em; }
+.zash-history-remove { min-width: 24px; min-height: 24px; padding: 0; opacity: 0.5; }
+.zash-history-remove:hover { opacity: 1; }
+
+.zash-monitor-card {
+  border-radius: 12px;
+  padding: 12px;
+  border: 1px solid alpha(currentColor, 0.08);
+  background: alpha(currentColor, 0.04);
+}
+.zash-monitor-host { font-weight: 700; }
+.zash-monitor-dim { opacity: 0.6; font-size: 0.85em; }
+.zash-monitor-value { font-weight: 700; font-variant-numeric: tabular-nums; }
+.zash-monitor-bar trough { min-height: 6px; border-radius: 3px; }
+.zash-monitor-bar block { min-height: 6px; border-radius: 3px; }
+.zash-monitor-bar block.filled { background: #2f6df6; }
+.zash-monitor-bar.zash-monitor-warn block.filled { background: #e5a50a; }
+.zash-monitor-bar.zash-monitor-crit block.filled { background: #e01b24; }
+.zash-monitor-spark { color: #2f6df6; min-height: 32px; }
