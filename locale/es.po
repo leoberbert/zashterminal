@@ -9518,3 +9518,11 @@ msgstr "{provider} no devolvió contenido utilizable."
 #: src/zashterminal/terminal/ai_providers.py
 msgid "{provider} returned HTTP {status}: {message}{detail}"
 msgstr "{provider} devolvió HTTP {status}: {message}{detail}"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "Hide Side Bar"
+msgstr "Ocultar barra lateral"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "Show Side Bar"
+msgstr "Mostrar barra lateral"

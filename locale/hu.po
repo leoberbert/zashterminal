@@ -9510,3 +9510,11 @@ msgstr "A(z) {provider} nem adott használható választ."
 #: src/zashterminal/terminal/ai_providers.py
 msgid "{provider} returned HTTP {status}: {message}{detail}"
 msgstr "A(z) {provider} HTTP {status} választ adott: {message}{detail}"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "Hide Side Bar"
+msgstr "Oldalsáv elrejtése"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "Show Side Bar"
+msgstr "Oldalsáv megjelenítése"

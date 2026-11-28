@@ -9503,3 +9503,11 @@ msgstr "{provider} gaf geen bruikbare inhoud terug."
 #: src/zashterminal/terminal/ai_providers.py
 msgid "{provider} returned HTTP {status}: {message}{detail}"
 msgstr "{provider} antwoordde met HTTP {status}: {message}{detail}"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "Hide Side Bar"
+msgstr "Zijbalk verbergen"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "Show Side Bar"
+msgstr "Zijbalk tonen"

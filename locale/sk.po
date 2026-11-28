@@ -9495,3 +9495,11 @@ msgstr "{provider} nevrátil použiteľný obsah."
 #: src/zashterminal/terminal/ai_providers.py
 msgid "{provider} returned HTTP {status}: {message}{detail}"
 msgstr "{provider} vrátil HTTP {status}: {message}{detail}"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "Hide Side Bar"
+msgstr "Skryť bočný panel"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "Show Side Bar"
+msgstr "Zobraziť bočný panel"

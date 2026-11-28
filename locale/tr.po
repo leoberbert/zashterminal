@@ -9492,3 +9492,11 @@ msgstr "{provider} kullanılabilir içerik döndürmedi."
 #: src/zashterminal/terminal/ai_providers.py
 msgid "{provider} returned HTTP {status}: {message}{detail}"
 msgstr "{provider} HTTP {status} döndürdü: {message}{detail}"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "Hide Side Bar"
+msgstr "Kenar çubuğunu gizle"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "Show Side Bar"
+msgstr "Kenar çubuğunu göster"

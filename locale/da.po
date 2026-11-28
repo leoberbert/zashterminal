@@ -9499,3 +9499,11 @@ msgstr "{provider} returnerede intet brugbart indhold."
 #: src/zashterminal/terminal/ai_providers.py
 msgid "{provider} returned HTTP {status}: {message}{detail}"
 msgstr "{provider} svarede HTTP {status}: {message}{detail}"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "Hide Side Bar"
+msgstr "Skjul sidepanel"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "Show Side Bar"
+msgstr "Vis sidepanel"

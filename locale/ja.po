@@ -9452,3 +9452,11 @@ msgstr "{provider} から利用可能な内容が返されませんでした。"
 #: src/zashterminal/terminal/ai_providers.py
 msgid "{provider} returned HTTP {status}: {message}{detail}"
 msgstr "{provider} が HTTP {status} を返しました: {message}{detail}"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "Hide Side Bar"
+msgstr "サイドバーを隠す"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "Show Side Bar"
+msgstr "サイドバーを表示"

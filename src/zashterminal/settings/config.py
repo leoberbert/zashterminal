@@ -244,6 +244,8 @@ class DefaultSettings:
             "console_log_level": "ERROR",
             # Bottom status bar (connection, host metrics, encoding, font)
             "status_bar_visible": True,
+            # Activity rail (left icon column); hide for a minimalist layout
+            "activity_rail_visible": True,
             # Session transcript logging (terminal output capture)
             "transcript_logging_enabled": False,
             "transcript_strip_ansi": True,

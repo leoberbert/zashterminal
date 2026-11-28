@@ -9449,3 +9449,11 @@ msgstr "{provider}이(가) 사용할 수 있는 내용을 반환하지 않았습
 #: src/zashterminal/terminal/ai_providers.py
 msgid "{provider} returned HTTP {status}: {message}{detail}"
 msgstr "{provider}이(가) HTTP {status}를 반환했습니다: {message}{detail}"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "Hide Side Bar"
+msgstr "사이드바 숨기기"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "Show Side Bar"
+msgstr "사이드바 표시"

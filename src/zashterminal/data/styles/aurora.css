@@ -151,6 +151,7 @@ popover.menu modelbutton:selected {
 /* Section headings: same look as the group titles in Preferences */
 popover.menu label.title {
     color: @zash_brand_2;
+    opacity: 1;
     font-size: 0.82em;
     font-weight: 800;
     letter-spacing: 0.08em;
