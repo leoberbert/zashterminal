@@ -49,6 +49,45 @@ class ThemeEngine:
         return f"#{r:02x}{g:02x}{b:02x}"
 
     @staticmethod
+    def _relative_luminance(color: str) -> float:
+        def lin(v: int) -> float:
+            c = v / 255
+            return c / 12.92 if c <= 0.04045 else ((c + 0.055) / 1.055) ** 2.4
+
+        r, g, b = ThemeEngine._hex_to_rgb(color)
+        return 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b)
+
+    @classmethod
+    def contrast_ratio(cls, first: str, second: str) -> float:
+        low, high = sorted((cls._relative_luminance(first), cls._relative_luminance(second)))
+        return (high + 0.05) / (low + 0.05)
+
+    @classmethod
+    def ensure_contrast(cls, color: str, backgrounds: list, target: float) -> str:
+        """Nudge ``color`` toward black or white until it reads on every background.
+
+        Used for interface text only (never the terminal's own colors), so a
+        soft scheme such as Solarized Light keeps its hue but stays legible in
+        side panels, menus and captions.
+        """
+        if not color or not color.startswith("#") or len(color) != 7:
+            return color
+
+        def worst(c: str) -> float:
+            return min(cls.contrast_ratio(c, bg) for bg in backgrounds)
+
+        if worst(color) >= target:
+            return color
+        # Pull toward the extreme that contrasts best with the backgrounds
+        mean_lum = sum(cls._relative_luminance(bg) for bg in backgrounds) / len(backgrounds)
+        pole = "#000000" if mean_lum > 0.179 else "#ffffff"
+        for step in range(1, 21):
+            candidate = cls._mix_hex(pole, color, step * 0.05)
+            if worst(candidate) >= target:
+                return candidate
+        return pole
+
+    @staticmethod
     def _alpha(color: str, alpha: float) -> str:
         alpha = max(0.0, min(1.0, alpha))
         return f"alpha({color}, {alpha:.3f})"
@@ -59,8 +98,15 @@ class ThemeEngine:
     ) -> Dict[str, Any]:
         """Extract and compute theme parameters from color scheme."""
         bg_color = scheme.get("background", "#000000")
-        fg_color = scheme.get("foreground", "#ffffff")
         header_bg_color = scheme.get("headerbar_background", bg_color)
+        # Interface text/accent are adjusted for legibility; the terminal itself
+        # keeps the scheme's exact colors.
+        fg_color = ThemeEngine.ensure_contrast(
+            scheme.get("foreground", "#ffffff"), [bg_color, header_bg_color], 9.0
+        )
+        accent = scheme.get("accent")
+        if accent:
+            accent = ThemeEngine.ensure_contrast(accent, [bg_color, header_bg_color], 3.5)
 
         r = int(bg_color[1:3], 16) / 255
         g = int(bg_color[3:5], 16) / 255
@@ -76,7 +122,7 @@ class ThemeEngine:
             "luminance": luminance,
             "min_luminance": min_luminance,
             "is_dark_theme": is_dark_theme,
-            "accent": scheme.get("accent"),
+            "accent": accent,
             "palette": list(scheme.get("palette", [])),
             "accent_foreground": scheme.get("selection_foreground", "#ffffff"),
         }
@@ -89,6 +135,7 @@ class ThemeEngine:
             cls._get_root_vars_css(params, gtk_theme_name),
             cls._get_headerbar_css(params, gtk_theme_name),
             cls._get_tabs_css(params, gtk_theme_name),
+            cls._get_chrome_css(params, gtk_theme_name),
         ]
         return "".join(css_parts)
 
@@ -107,7 +154,14 @@ class ThemeEngine:
         second = palette[6] if len(palette) > 6 else cls._mix_hex(accent, params["fg_color"], 0.7)
         if second.lower() == accent.lower():
             second = cls._mix_hex(accent, params["fg_color"], 0.7)
-        alert = palette[3] if len(palette) > 3 else "#e66100"
+        backgrounds = [params["bg_color"], params["header_bg_color"]]
+        accent = cls.ensure_contrast(accent, backgrounds, 3.5)
+        second = cls.ensure_contrast(second, backgrounds, 3.5)
+        alert = cls.ensure_contrast(
+            palette[3] if len(palette) > 3 else "#e66100",
+            [params["bg_color"], params["header_bg_color"]],
+            3.5,
+        )
 
         def lum(color: str) -> float:
             chans = [
@@ -303,3 +357,32 @@ class ThemeEngine:
             }}
             """
         return ""
+
+    @staticmethod
+    def _get_chrome_css(params: Dict[str, Any], gtk_theme_name: str) -> str:
+        """Paint the rail, sessions panel, tab strip and status bar like the terminal.
+
+        They share the header bar's color (and its transparency) so the whole
+        window reads as one surface instead of tinted side panels.
+        """
+        if gtk_theme_name != "terminal":
+            return ""
+        base = params["header_bg_color"]
+        opacity = 100 - params["user_transparency"]
+        if opacity >= 100:
+            bg = base
+        elif ThemeEngine._supports_modern_css():
+            bg = f"color-mix(in srgb, {base} {opacity}%, transparent)"
+        else:
+            bg = ThemeEngine._alpha(base, opacity / 100.0)
+        fg = params["fg_color"]
+        return f"""
+        .zash-rail,
+        .sidebar-container,
+        .zash-tabstrip,
+        .zash-statusbar {{
+            background-color: {bg};
+            background-image: none;
+            color: {fg};
+        }}
+        """

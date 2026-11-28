@@ -500,6 +500,7 @@ class WindowUIBuilder:
             self.cleanup_button,
         ]
 
+
     def _header_end_buttons(self) -> list:
         """Buttons packed next to the window controls."""
         return [self.menu_button]
@@ -690,6 +691,7 @@ class WindowUIBuilder:
         rail = ActivityRail()
         self.activity_rail = rail
 
+
         rail.add_item(
             "sessions",
             "network-server-symbolic",
@@ -753,7 +755,47 @@ class WindowUIBuilder:
         )
         self.file_manager_button.connect("toggled", lambda *_a: self._sync_rail())
         self._sync_rail()
-        return rail
+
+        # Minimal "<" on the rail's inner edge collapses it; an edge handle restores it
+        self.rail_hide_button = Gtk.Button(
+            halign=Gtk.Align.END,
+            valign=Gtk.Align.CENTER,
+            css_classes=["flat", "zash-rail-collapse"],
+        )
+        self.rail_hide_button.set_child(icon_image("pan-start-symbolic", size=12))
+        self.rail_hide_button.set_focus_on_click(False)
+        self.rail_hide_button.connect(
+            "clicked", lambda _b: self._set_rail_visible(False)
+        )
+        self.tooltip_helper.add_tooltip(self.rail_hide_button, _("Hide Side Bar"))
+        rail_overlay = Gtk.Overlay(child=rail)
+        rail_overlay.add_overlay(self.rail_hide_button)
+
+        self.rail_handle_button = Gtk.Button(
+            valign=Gtk.Align.CENTER,
+            css_classes=["flat", "zash-rail-collapse", "zash-rail-handle"],
+        )
+        self.rail_handle_button.set_child(icon_image("pan-end-symbolic", size=12))
+        self.rail_handle_button.set_focus_on_click(False)
+        self.rail_handle_button.connect(
+            "clicked", lambda _b: self._set_rail_visible(True)
+        )
+        self.tooltip_helper.add_tooltip(self.rail_handle_button, _("Show Side Bar"))
+        holder = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+        holder.append(rail_overlay)
+        holder.append(self.rail_handle_button)
+        self._set_rail_visible(
+            bool(self.settings_manager.get("activity_rail_visible", True)),
+            save=False,
+        )
+        return holder
+
+    def _set_rail_visible(self, visible: bool, save: bool = True) -> None:
+        self.activity_rail.set_visible(visible)
+        self.rail_hide_button.set_visible(visible)
+        self.rail_handle_button.set_visible(not visible)
+        if save:
+            self.settings_manager.set("activity_rail_visible", visible)
 
     def _on_rail_page_toggled(self, page: str, active: bool) -> None:
         if self._rail_syncing:

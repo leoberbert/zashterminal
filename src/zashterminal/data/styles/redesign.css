@@ -174,3 +174,46 @@
 
 /* ---- Header bar --------------------------------------------------------- */
 
+
+.zash-rail-collapse {
+    min-width: 0;
+    min-height: 0;
+    padding: 14px 1px;
+    margin: 0;
+    border-radius: 8px 0 0 8px;
+    opacity: 0.7;
+}
+
+.zash-rail-collapse:hover {
+    opacity: 1;
+    background: alpha(currentColor, 0.10);
+}
+
+/* Edge handle that restores the rail: same look as the collapse chevron, mirrored */
+.zash-rail-handle {
+    border-radius: 0 8px 8px 0;
+}
+
+/* Secondary text: keep Adwaita's dimming but stay readable on every scheme */
+headerbar.main-header-bar .subtitle {
+    opacity: 0.8;
+}
+
+popover.menu accelerator,
+popover.menu modelbutton accelerator {
+    opacity: 1;
+}
+
+popover.menu accelerator label,
+popover.menu label.accelerator {
+    opacity: 0.85;
+}
+
+.sidebar-search placeholder {
+    opacity: 0.8;
+}
+
+/* Adwaita dims .dim-label to 55%, which is unreadable on soft light schemes */
+.dim-label {
+    opacity: 0.72;
+}

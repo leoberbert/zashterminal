@@ -1025,6 +1025,9 @@ class SettingsManager:
             bg_color = scheme.get("background", "#000000")
             fg_color = scheme.get("foreground", "#ffffff")
             header_bg_color = scheme.get("headerbar_background", bg_color)
+            from ..utils.theme_engine import ThemeEngine
+
+            fg_color = ThemeEngine.ensure_contrast(fg_color, [bg_color, header_bg_color], 9.0)
             user_transparency = self.get("headerbar_transparency", 0)
 
             # Determine if theme is dark or light based on background luminance
@@ -1078,6 +1081,9 @@ class SettingsManager:
             selected_alpha = "15%" if is_dark_theme else "12%"
             palette = scheme.get("palette", [])
             accent_color = scheme.get("accent") or (palette[4] if len(palette) > 4 else "#3584e4")
+            accent_color = ThemeEngine.ensure_contrast(
+                accent_color, [bg_color, header_bg_color], 3.5
+            )
             accent_foreground = scheme.get("selection_foreground", "#ffffff")
             file_hover_mix = "22%" if is_dark_theme else "16%"
             file_selected_mix = "32%" if is_dark_theme else "24%"
@@ -1998,6 +2004,10 @@ class SettingsManager:
         palette = scheme.get("palette", [])
         accent_color = scheme.get("accent") or (palette[4] if len(palette) > 4 else "#3584e4")
 
+        from ..utils.theme_engine import ThemeEngine
+
+        fg_color = ThemeEngine.ensure_contrast(fg_color, [bg_color, header_bg], 9.0)
+        accent_color = ThemeEngine.ensure_contrast(accent_color, [bg_color, header_bg], 3.5)
         # Parse RGB values
         r = int(bg_color[1:3], 16)
         g = int(bg_color[3:5], 16)
@@ -2401,13 +2411,19 @@ class SettingsManager:
         # sidebar/file-manager/session views while preserving the newer app CSS provider.
         if self.get("gtk_theme") == "terminal":
             wallpaper = self._get_wallpaper()
-            if wallpaper:
-                from ..utils.wallpaper import luminance
+            from ..utils.wallpaper import luminance
 
+            if wallpaper:
                 dark = luminance(wallpaper["scheme"]["background"]) < 0.3
-                Adw.StyleManager.get_default().set_color_scheme(
-                    Adw.ColorScheme.FORCE_DARK if dark else Adw.ColorScheme.FORCE_LIGHT
-                )
+            else:
+                # Libadwaita widgets not covered by the terminal CSS (switches,
+                # menus, dialogs) must follow the scheme's brightness, or light
+                # schemes end up with white-on-white text.
+                # 0.179 is where white and black text have equal contrast.
+                dark = luminance(self.get_color_scheme_data()["background"]) < 0.179
+            Adw.StyleManager.get_default().set_color_scheme(
+                Adw.ColorScheme.FORCE_DARK if dark else Adw.ColorScheme.FORCE_LIGHT
+            )
             self._apply_gtk_terminal_theme_full(window)
             return
         self._update_app_theme_css(window)

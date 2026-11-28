@@ -9521,3 +9521,11 @@ msgstr "{provider} n'a renvoyé aucun contenu exploitable."
 #: src/zashterminal/terminal/ai_providers.py
 msgid "{provider} returned HTTP {status}: {message}{detail}"
 msgstr "{provider} a répondu HTTP {status} : {message}{detail}"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "Hide Side Bar"
+msgstr ""
+
+#: src/zashterminal/ui/window_ui.py
+msgid "Show Side Bar"
+msgstr ""

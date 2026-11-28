@@ -9492,3 +9492,11 @@ msgstr "{provider} не повернув придатного вмісту."
 #: src/zashterminal/terminal/ai_providers.py
 msgid "{provider} returned HTTP {status}: {message}{detail}"
 msgstr "{provider} повернув HTTP {status}: {message}{detail}"
+
+#: src/zashterminal/ui/window_ui.py
+msgid "Hide Side Bar"
+msgstr ""
+
+#: src/zashterminal/ui/window_ui.py
+msgid "Show Side Bar"
+msgstr ""

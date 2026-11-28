@@ -234,3 +234,14 @@ Cada item tem: problema, mudança, arquivos principais e critério de aceite.
 
 | 2026-11-27 | VIS-03 | (ver git log) | Trilho, cartões, abas abaixo do cabeçalho, barra de status, histórico e monitor |
 | 2026-11-27 | VIS-04 | (ver git log) | Preferências com navegação lateral e preview |
+
+### VIS-05 `[x]` Barra lateral ocultável, tema aplicado à moldura e legibilidade em esquemas claros
+- **Feito:** seta `<` dentro da barra de ícones a esconde; `>` na borda esquerda a traz de volta (`activity_rail_visible`,
+  salvo). Com o tema "Terminal", barra de ícones, painel lateral, abas e barra de status usam a cor do cabeçalho.
+  O modo claro/escuro do Libadwaita agora segue o brilho do esquema (antes ficava sempre escuro, deixando texto branco
+  em fundo claro). Texto da interface garante 9:1 e cores de destaque 3,5:1 sobre o fundo (`ThemeEngine.ensure_contrast`);
+  cores do terminal não mudam. Textos secundários (`.dim-label`, atalhos de menu, subtítulo) menos esmaecidos.
+- **Arquivos:** `ui/window_ui.py`, `utils/theme_engine.py`, `settings/manager.py`, `settings/config.py`,
+  `data/styles/redesign.css`, `data/styles/aurora.css`.
+
+| 2026-11-28 | VIS-05 | (ver git log) | Barra lateral ocultável, tema na moldura, contraste em esquemas claros |
