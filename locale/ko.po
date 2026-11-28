@@ -9452,8 +9452,8 @@ msgstr "{provider}이(가) HTTP {status}를 반환했습니다: {message}{detail
 
 #: src/zashterminal/ui/window_ui.py
 msgid "Hide Side Bar"
-msgstr ""
+msgstr "사이드바 숨기기"
 
 #: src/zashterminal/ui/window_ui.py
 msgid "Show Side Bar"
-msgstr ""
+msgstr "사이드바 표시"

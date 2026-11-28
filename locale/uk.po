@@ -9495,8 +9495,8 @@ msgstr "{provider} повернув HTTP {status}: {message}{detail}"
 
 #: src/zashterminal/ui/window_ui.py
 msgid "Hide Side Bar"
-msgstr ""
+msgstr "Приховати бічну панель"
 
 #: src/zashterminal/ui/window_ui.py
 msgid "Show Side Bar"
-msgstr ""
+msgstr "Показати бічну панель"

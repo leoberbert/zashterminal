@@ -9495,8 +9495,8 @@ msgstr "{provider} HTTP {status} döndürdü: {message}{detail}"
 
 #: src/zashterminal/ui/window_ui.py
 msgid "Hide Side Bar"
-msgstr ""
+msgstr "Kenar çubuğunu gizle"
 
 #: src/zashterminal/ui/window_ui.py
 msgid "Show Side Bar"
-msgstr ""
+msgstr "Kenar çubuğunu göster"

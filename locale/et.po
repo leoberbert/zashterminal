@@ -9534,8 +9534,8 @@ msgstr "{provider} vastas HTTP {status}: {message}{detail}"
 
 #: src/zashterminal/ui/window_ui.py
 msgid "Hide Side Bar"
-msgstr ""
+msgstr "Peida külgriba"
 
 #: src/zashterminal/ui/window_ui.py
 msgid "Show Side Bar"
-msgstr ""
+msgstr "Kuva külgriba"

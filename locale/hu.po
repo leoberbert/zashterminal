@@ -9513,8 +9513,8 @@ msgstr "A(z) {provider} HTTP {status} választ adott: {message}{detail}"
 
 #: src/zashterminal/ui/window_ui.py
 msgid "Hide Side Bar"
-msgstr ""
+msgstr "Oldalsáv elrejtése"
 
 #: src/zashterminal/ui/window_ui.py
 msgid "Show Side Bar"
-msgstr ""
+msgstr "Oldalsáv megjelenítése"

@@ -9492,8 +9492,8 @@ msgstr "{provider} vrátil HTTP {status}: {message}{detail}"
 
 #: src/zashterminal/ui/window_ui.py
 msgid "Hide Side Bar"
-msgstr ""
+msgstr "Skrýt boční panel"
 
 #: src/zashterminal/ui/window_ui.py
 msgid "Show Side Bar"
-msgstr ""
+msgstr "Zobrazit boční panel"

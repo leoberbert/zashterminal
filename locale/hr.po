@@ -9494,8 +9494,8 @@ msgstr "{provider} je vratio HTTP {status}: {message}{detail}"
 
 #: src/zashterminal/ui/window_ui.py
 msgid "Hide Side Bar"
-msgstr ""
+msgstr "Sakrij bočnu traku"
 
 #: src/zashterminal/ui/window_ui.py
 msgid "Show Side Bar"
-msgstr ""
+msgstr "Prikaži bočnu traku"

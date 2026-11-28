@@ -9524,8 +9524,8 @@ msgstr "Ο {provider} απάντησε HTTP {status}: {message}{detail}"
 
 #: src/zashterminal/ui/window_ui.py
 msgid "Hide Side Bar"
-msgstr ""
+msgstr "Απόκρυψη πλαϊνής γραμμής"
 
 #: src/zashterminal/ui/window_ui.py
 msgid "Show Side Bar"
-msgstr ""
+msgstr "Εμφάνιση πλαϊνής γραμμής"

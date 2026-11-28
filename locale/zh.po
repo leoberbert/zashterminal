@@ -9450,8 +9450,8 @@ msgstr "{provider} 返回 HTTP {status}：{message}{detail}"
 
 #: src/zashterminal/ui/window_ui.py
 msgid "Hide Side Bar"
-msgstr ""
+msgstr "隐藏侧边栏"
 
 #: src/zashterminal/ui/window_ui.py
 msgid "Show Side Bar"
-msgstr ""
+msgstr "显示侧边栏"
